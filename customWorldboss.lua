@@ -14,7 +14,7 @@
 --               -  adjust config in this file
 --               -  add this script to ../lua_scripts/
 ------------------------------------------------------------------------------------------------
--- GM GUIDE:     -  use .spawnboss $event $difficulty to start and spawn 
+-- GM GUIDE:     -  use .startevent $event $difficulty to start and spawn 
 --               -  maybe offer teleports               '
 ------------------------------------------------------------------------------------------------
 local Config = {}
@@ -31,6 +31,8 @@ local Config.printErrorsToConsole = 1
 -- NPC to spawn for event [n]
 Config_npcEntry[1] = 1112001
 Config_addAmount[1] = 3
+local eventNPC
+local difficulty
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -38,7 +40,8 @@ Config_addAmount[1] = 3
 
 local PLAYER_EVENT_ON_COMMAND = 42       -- (event, player, command) - player is nil if command used from console. Can return false
 local TEMPSUMMON_DEAD_DESPAWN = 7        -- despawns when the creature disappears
-loca TEMPSUMMON_MANUAL_DESPAWN = 8       -- despawns when UnSummon() is called
+local TEMPSUMMON_MANUAL_DESPAWN = 8      -- despawns when UnSummon() is called
+local GOSSIP_EVENT_ON_SELECT = 2         -- (event, player, object, sender, intid, code, menu_id)
 
 -- todo: make a function to add the custom NPC to creature_template
 
@@ -62,16 +65,23 @@ local function eS_command(event, player, command)
         end
     end
   
+    if commandArray[2] == nil then commandArray[2] = 1 end
     if commandArray[3] == nil then commandArray[3] = 1 end
     
-    if commandArray[2] == "summonBoss" then
-        summonBoss(commandArray[2], commandArray[3])
+    if commandArray[1] == "startevent" then
+        eventNPC = tonumber(commandArray[2])
+        difficulty = tonumber(commandArray[3])
+        summonEventNPC()
         return false
     end
 end
     
-local function summonBoss(NPC, difficulty)
+local function summonEventNPC()
+    print("summonEventNPC")
+end
 
+local function spawnBoss(NPC, difficulty)
+    print("spawnBoss")
 end
 
 local function eS_splitString(inputstr, seperator)
@@ -86,3 +96,6 @@ local function eS_splitString(inputstr, seperator)
 end
 
 RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, eS_command)
+local cancelGossipEvent = RegisterCreatureGossipEvent(Config_npcEntry[n], GOSSIP_EVENT_ON_SELECT, spawnBoss) 
+--todo: Try this! maybe it's (event, player, object, sender, intid, code, menu_id)
+--todo: Try creating a gossip
