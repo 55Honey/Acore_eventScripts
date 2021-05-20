@@ -46,7 +46,7 @@ local GOSSIP_EVENT_ON_SELECT = 2         -- (event, player, object, sender, inti
 
 local eventNPC
 local difficulty
-local eventInProgress
+local bossfightInProgress
 local cancelGossipEvent
 -- todo: make a function to add the custom NPC to creature_template
 
@@ -87,8 +87,9 @@ local function eS_command(event, player, command)
         end  
     end
     
-    if commandArray[] == "initcustomworldboss" then
+    if commandArray[1] == "initcustomworldboss" then
         initCustomWorldBoss()
+        return false
     end
 end
     
@@ -99,15 +100,19 @@ local function summonEventNPC()
     cancelGossipEvent = RegisterCreatureGossipEvent(Config_npcEntry[n], GOSSIP_EVENT_ON_SELECT, spawnBoss)   
 end
 
-local function initCustomWorldBoss()
-    -- query to add the costom NPCs to the db
-    print("initCustomWorldBoss")
-end
-
 local function spawnBoss(event, player, object, sender, intid, code, menu_id)
     print("spawnBoss")
-    --spawn the boss in another phase
+    --spawn the boss+adds in another phase
     --move the whole raid to the boss-phase
+    --create events to bring players back to phase 1
+    --create events to reset bossfightInProgress and despawn bosses/adds
+    --set bossfightInProgress
+end
+
+local function initCustomWorldBoss()
+    -- query to add the custom NPCs to the db
+    -- query to create a Gossip for the NPC
+    print("initCustomWorldBoss")
 end
 
 local function getSize(difficulty)
