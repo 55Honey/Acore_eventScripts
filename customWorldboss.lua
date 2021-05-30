@@ -1,4 +1,5 @@
 --
+--
 -- Created by IntelliJ IDEA.
 -- User: Silvia
 -- Date: 17/05/2021
@@ -13,49 +14,75 @@
 -- ADMIN GUIDE:  -  compile the core with ElunaLua module
 --               -  adjust config in this file
 --               -  add this script to ../lua_scripts/
---               -  run .initcustomworldboss to add the required NPCs
+--               -  adjust the IDs and config flags in case of conflicts and run the associated SQL to add the required NPCs
 ------------------------------------------------------------------------------------------------
 -- GM GUIDE:     -  use .startevent $event $difficulty to start and spawn 
 --               -  maybe offer teleports               '
 ------------------------------------------------------------------------------------------------
-local Config = {}
-local Config_npcEntry = {}
-local Config_addAmount = {}
+local Config = {}                   --general config flags
+local Config_npcEntry = {}          --db entry of the NPC creature to summon the boss
+local Config_npcText = {}           --gossip in npc_text to be told by the summoning NPC
+local Config_bossEntry = {}         --db entry of the boss creature
+local Config_addEntry = {}          --db entry of the add creature
 
 -- Name of Eluna dB scheme
-local Config.customDbName = "ac_eluna"
+Config.customDbName = "ac_eluna"
 -- Min GM rank to start an event
-local Config.GMRankForEventStart = 2
+Config.GMRankForEventStart = 2
 -- Min GM rank to add NPCs to the db
-local Config.GMRankForUpdateDB = 3
+Config.GMRankForUpdateDB = 3
 -- set to 1 to print error messages to the console. Any other value including nil turns it off.
-local Config.printErrorsToConsole = 1 
+Config.printErrorsToConsole = 1
 
--- NPC to spawn for event [n]
-Config_npcEntry[1] = 1112001
-Config_addAmount[1] = 3
+-- Database NPC entries. Must match the associated .sql file
+Config_bossEntry[1] = 1112001
+Config_npcEntry[1] = 1112002
+Config_addEntry[1] = 1112003
+Config_npcText[1] = 91111
+
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
 ------------------------------------------
 
-local PLAYER_EVENT_ON_COMMAND = 42       -- (event, player, command) - player is nil if command used from console. Can return false
-local TEMPSUMMON_DEAD_DESPAWN = 7        -- despawns when the creature disappears
-local TEMPSUMMON_MANUAL_DESPAWN = 8      -- despawns when UnSummon() is called
-local GOSSIP_EVENT_ON_SELECT = 2         -- (event, player, object, sender, intid, code, menu_id)
+--constants
+local PLAYER_EVENT_ON_LOGOUT = 4            -- (event, player)
+local PLAYER_EVENT_ON_REPOP = 35            -- (event, player)
+local PLAYER_EVENT_ON_COMMAND = 42          -- (event, player, command) - player is nil if command used from console. Can return false
+local TEMPSUMMON_MANUAL_DESPAWN = 8         -- despawns when UnSummon() is called
+local GOSSIP_EVENT_ON_HELLO = 1             -- (event, player, object) - Object is the Creature/GameObject/Item. Can return false to do default action. For item gossip can return false to stop spell casting.
+local GOSSIP_EVENT_ON_SELECT = 2            -- (event, player, object, sender, intid, code, menu_id)
+local OPTION_ICON_CHAT = 0
+local OPTION_ICON_BATTLE = 9
 
-local eventNPC
-local difficulty
-local bossfightInProgress
+--local variables
 local cancelGossipEvent
--- todo: make a function to add the custom NPC to creature_template
+local eventInProgress
+local bossfightInProgress
+local difficulty                            -- difficulty is set when using .startevent and it is meant for a range of 1-5
+local addsDownCounter
+local phase
+local x
+local y
+local z
+local o
+
+--local arrays
+local cancelEventIdHello = {}
+local cancelEventIdStart = {}
+local addNPC = {}
+local bossNPC = {}
+local playersInRaid = {}
+
+-- todo: create a SQL file to add the custom NPCs and texts to the world db
 
 local function eS_command(event, player, command)
     local commandArray = {}
+    local eventNPC
 
     --prevent players from using this  
     if player ~= nil then  
-        if player:GetGMRank() < Config.minGMRankForBind then
+        if player:GetGMRank() < Config.GMRankForEventStart then
             return
         end  
     end
@@ -76,8 +103,18 @@ local function eS_command(event, player, command)
     if commandArray[1] == "startevent" then
         eventNPC = tonumber(commandArray[2])
         difficulty = tonumber(commandArray[3])
-        summonEventNPC()
-        return false
+
+        if difficulty <= 0 then difficulty = 1 end
+
+        if eventInProgress == nil then
+            eventInProgress = eventNPC
+            eS_summonEventNPC(player:GetGUID())
+            player:SendBroadcastMessage("Starting event "..eventInProgress..".")
+            return false
+        else
+            player:SendBroadcastMessage("Event "..eventInProgress.." is already active.")
+            return false
+        end
     end
     
     --prevent non-Admins from using the rest
@@ -87,37 +124,240 @@ local function eS_command(event, player, command)
         end  
     end
     
-    if commandArray[1] == "initcustomworldboss" then
-        initCustomWorldBoss()
-        return false
-    end
 end
     
-local function summonEventNPC()
-    -- tempSummon an NPC with a dialouge option to start the encounter
+function eS_summonEventNPC(playerGuid)
+    local spawnedCreature
+    local player
+    -- tempSummon an NPC with a dialouge option to start the encounter, store the guid for later unsummon
+    player = GetPlayerByGUID(playerGuid)
+    x = player:GetX()
+    y = player:GetY()
+    z = player:GetZ()
+    o = player:GetO()
+    spawnedCreature = player:SpawnCreature(Config_npcEntry[eventInProgress], x, y, z, o)
+
     print("summonEventNPC")
-    -- add an event to spawn the Boss in a phase when the only gossip is clicked
-    cancelGossipEvent = RegisterCreatureGossipEvent(Config_npcEntry[n], GOSSIP_EVENT_ON_SELECT, spawnBoss)   
+
+    -- add an event to spawn the Boss in a phase when gossip is clicked
+    cancelEventIdHello[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_HELLO, eS_onHello)
+    cancelEventIdStart[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_SELECT, eS_spawnBoss)
 end
 
-local function spawnBoss(event, player, object, sender, intid, code, menu_id)
+function eS_onHello(event, player, creature)
+    print("event: "..event)
+    if bossfightInProgress ~= nil then return end
+
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 0)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything.", Config_npcEntry[eventInProgress], 1)
+    player:GossipSendMenu(Config_npcText[1], creature,0)
+end
+
+function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
+    print("event: "..event)
+    print("intid: "..intid)
+    print("sender: "..sender)
     print("spawnBoss")
-    --spawn the boss+adds in another phase
-    --move the whole raid to the boss-phase
+
+    if player:IsInGroup() == false then
+        player:SendBroadcastMessage("You need to be in a party.")
+        player:GossipComplete()
+        return
+    end
+
+    local group = player:GetGroup()
+
+    if intid == 0 then
+        if group:IsRaidGroup() == true then
+            player:SendBroadcastMessage("You can not accept that task while in a raid group.")
+            return
+        end
+        --start 5man encounter
+        bossfightInProgress = 1
+        local spawnedCreature
+        spawnedCreature = player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
+        spawnedCreature:SetPhaseMask(2)
+        spawnedCreature:SetScale(eS_getSize(difficulty))
+
+        local groupPlayers = group:GetMembers()
+        for n, v in pairs(groupPlayers) do
+            v:SetPhaseMask(2)
+            playersInRaid[n] = v:GetGUID()
+        end
+
+    elseif intid == 1 then
+        if group:IsRaidGroup() == false then
+            player:SendBroadcastMessage("You can not accept that task without being in a raid group.")
+            return
+        end
+        --start raid encounter
+        bossfightInProgress = 2
+
+        local spawnedBoss
+        local spawnedCreature1
+        local spawnedCreature2
+        local spawnedCreature3
+        spawnedBoss = player:SpawnCreature(Config_bossEntry[eventInProgress], x, y, z+2, o)
+        spawnedCreature1 = player:SpawnCreature(Config_addEntry[eventInProgress], x-15, y, z+2, o)
+        spawnedCreature2 = player:SpawnCreature(Config_addEntry[eventInProgress], x, y-15, z+2, o)
+        spawnedCreature3 = player:SpawnCreature(Config_addEntry[eventInProgress], x, y+15, z+2, o)
+        spawnedBoss:SetPhaseMask(2)
+        spawnedCreature1:SetPhaseMask(2)
+        spawnedCreature2:SetPhaseMask(2)
+        spawnedCreature3:SetPhaseMask(2)
+        spawnedBoss:SetScale(eS_getSize(difficulty))
+        spawnedCreature1:SetScale(eS_getSize(difficulty))
+        spawnedCreature2:SetScale(eS_getSize(difficulty))
+        spawnedCreature3:SetScale(eS_getSize(difficulty))
+
+        local groupPlayers = group:GetMembers()
+        for n, v in pairs(groupPlayers) do
+            v:SetPhaseMask(2)
+            playersInRaid[n] = v:GetGUID()
+        end
+    end
     --create events to bring players back to phase 1
-    --create events to reset bossfightInProgress and despawn bosses/adds
-    --set bossfightInProgress
+    --create events to reset eventInProgress and despawn bosses/adds
+    --set eventInProgress
+    player:GossipComplete()
 end
 
-local function initCustomWorldBoss()
-    -- query to add the custom NPCs to the db
-    -- query to create a Gossip for the NPC
-    print("initCustomWorldBoss")
+-- list of spells:
+-- 60488 Shadow Bolt (30)
+-- 24326 HIGH knockback (ZulFarrak beast)
+-- 12421 Mithril Frag Bomb 8y 149-201 damage + stun
+
+-- 38846 Forceful Cleave (Target + nearest ally)
+-- 25840 Full heal
+-- 59969 Poison Cloud
+-- 45108 CKs Fireball
+
+function bossNPC.onEnterCombat(event, creature, target)
+    local timer1 = 8000
+    local timer2 = 11000
+    local timer3 = 10000
+
+    timer1 = timer1 / (1 + ((difficulty - 1) / 5))
+    timer2 = timer2 / (1 + ((difficulty - 1) / 5))
+    timer3 = timer3 / (1 + ((difficulty - 1) / 5))
+
+    creature:RegisterEvent(bossNPC.Cleave, timer1, 0)
+    creature:RegisterEvent(bossNPC.AoE, timer2, 0)
+    creature:RegisterEvent(bossNPC.HealOrBoom, timer3, 0)
+    creature:CallAssistance()
+    creature:SendUnitYell("You will NOT interrupt this mission!", 0 )
+    phase = 1
 end
 
-local function getSize(difficulty)
+function bossNPC.reset(event, creature)
+    print("bossNPC.reset")
+    local player
+    creature:RemoveEvents()
+    for n, v in pairs(playersInRaid) do
+        player = GetPlayerByGUID(v)
+        player:SetPhaseMask(1)
+    end
+    bossfightInProgress = nil
+    addsDownCounter = nil
+    creature:SendUnitYell("This... was not... the last time...", 0 )
+    creature:DespawnOrUnsummon(0)
+end
+
+function bossNPC.Cleave(event, delay, pCall, creature)
+    creature:CastSpell(creature:GetVictim(), 38846)
+    eS_checkInCombat()
+end
+
+function bossNPC.AoE(event, delay, pCall, creature)
+    --AoE spell on a random player
+    local players = creature:GetPlayersInRange()
+    creature:CastSpell(players[math.random(1, #players)], 59969)
+end
+
+function bossNPC.HealOrBoom(event, delay, pCall, creature)          -- also handles yells
+    --heal self if adds alive, else random singletarget
+    if addsDownCounter < 3 then
+        creature:CastSpell(creature, 69898)
+        return
+    elseif phase == 1 then
+        --Phase2
+        creature:SendUnitYell("You might have handled these creatures. But now I WILL handle YOU!", 0 )
+        phase = 2
+    elseif phase == 2 then
+        creature:SendUnitYell("FEEL MY WRATH!", 0 )
+        phase = 3
+    else
+        if (math.random(1, 100) <= 25) then
+            local players = creature:GetPlayersInRange()
+            creature:CastSpell(players[math.random(1, #players)], 45108)
+        end
+    end
+end
+
+function addNPC.onEnterCombat(event, creature, target)
+    local timer1 = 8000
+    local timer2 = 6000
+    local timer3 = 15000
+
+    timer1 = timer1 / (1 + ((difficulty - 1) / 5))
+    timer2 = timer2 / (1 + ((difficulty - 1) / 5))
+    timer3 = timer3 / (1 + ((difficulty - 1) / 5))
+
+    print("addNPC.onEnterCombat")
+
+    creature:RegisterEvent(addNPC.Bomb, timer1, 0)
+    creature:RegisterEvent(addNPC.Bolt, timer2, 0)
+    creature:RegisterEvent(addNPC.Knockback, timer3, 0)
+end
+
+function addNPC.Bomb(event, delay, pCall, creature)
+    local players = creature:GetPlayersInRange()
+    creature:CastSpell(players[math.random(1, #players)], 12421)
+end
+
+function addNPC.Bolt(event, delay, pCall, creature)
+    if (math.random(1, 100) <= 25) then
+        creature:CastSpell(creature:GetVictim(), 60488)
+    end
+end
+
+function addNPC.Knockback(event, delay, pCall, creature)
+    creature:CastSpell(creature, 24326)
+    eS_checkInCombat()
+end
+
+function addNPC.reset(event, creature)
+    print("addNPC.reset")
+    local player
+    creature:RemoveEvents()
+    creature:DespawnOrUnsummon(0)
+    if bossfightInProgress == 1 then
+        for n, v in pairs(playersInRaid) do
+            player = GetPlayerByGUID(v)
+            player:SetPhaseMask(1)
+        end
+        bossfightInProgress = nil
+    else
+        if creature:IsDead() == true then
+            if addsDownCounter == nil then
+                addsDownCounter = 1
+            else
+                addsDownCounter = addsDownCounter + 1
+            end
+        end
+    end
+end
+
+function eS_resetPlayers(event, player)
+    if eS_has_value(player:GetGUID()) then
+        player:SetPhaseMask(1)
+        player:SendBroadcastMessage("You left the event.")
+    end
+end
+
+function eS_getSize(difficulty)
     local value
-    if diffculty == 1 then
+    if difficulty == 1 then
         value = 1
     else
         value = (difficulty - 1) / 4
@@ -125,7 +365,7 @@ local function getSize(difficulty)
     return value
 end
 
-local function eS_splitString(inputstr, seperator)
+function eS_splitString(inputstr, seperator)
     if seperator == nil then
         seperator = "%s"
     end
@@ -136,6 +376,47 @@ local function eS_splitString(inputstr, seperator)
     return t
 end
 
-RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, eS_command)
+function eS_checkInCombat()
+    --check if all players are in combat
+    local player
+    for n, v in pairs(playersInRaid) do
+        player = GetPlayerByGUID(v)
+        if player:IsInCombat() == false then
+            player:SetPhaseMask(1)
+            player:SendBroadcastMessage("You where returned to the real time because you did not participate.")
+        end
+    end
+end
 
---todo: Try creating a gossip
+local function eS_has_value (tab, val)
+    for index, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+    return false
+end
+
+RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, eS_command)
+RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, eS_resetPlayers)
+
+--init combat events
+RegisterCreatureEvent(1112003, 1, addNPC.onEnterCombat)
+RegisterCreatureEvent(1112003, 2, addNPC.reset) -- OnLeaveCombat
+RegisterCreatureEvent(1112003, 4, addNPC.reset) -- OnDied
+
+RegisterCreatureEvent(1112001, 1, bossNPC.onEnterCombat)
+RegisterCreatureEvent(1112001, 2, bossNPC.reset) -- OnLeaveCombat
+RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
+
+--todo: Insert a function to end the event, despawn everything and set eventInProgress to nil
+
+-- Custom Boss NPC:
+-- INSERT INTO `chr_world`.`creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `DamageModifier`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES ('1112001', '0', '0', '0', '0', '0', '3456', '0', '0', '0', 'Glorifrir Flintshoulder', '', '0', '43', '43', '0', '63', '0', '1', '1.14286', '3', '3', '0', '30', '2000', '2000', '1', '1', '1', '32832', '2048', '0', '0', '0', '0', '0', '0', '7', '4', '0', '0', '0', '0', '0', '50000', '60000', 'SmartAI', '1', '3', '1', '600', '1', '1', '0', '0', '1', '0', '0', '256', '', '12340');
+-- Custom Chromie:
+-- INSERT INTO `chr_world`.`creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `DamageModifier`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES ('1112002', '0', '0', '0', '0', '0', '10008', '0', '0', '0', 'Chromie', '62001', '63', '63', '0', '35', '1', '1', '1.14286', '1', '0', '0', '1', '2000', '2000', '1', '1', '1', '33536', '2048', '0', '0', '0', '0', '0', '0', '2', '0', '0', '0', '100001', '0', '0', '0', '0', '', '0', '3', '1', '1.35', '1', '1', '0', '0', '1', '0', '0', '2', '', '12340');
+-- Custom Add NPC:
+-- INSERT INTO `chr_world`.`creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `DamageModifier`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES ('1112003', '0', '0', '0', '0', '0', '21443', '0', '0', '0', 'Zombie Captain', '0', '42', '42', '0', '415', '0', '1', '1.14286', '1', '1', '0', '10', '2000', '2000', '1', '1', '1', '0', '2048', '0', '0', '0', '0', '0', '0', '6', '0', '4860', '0', '0', '0', '0', '297', '393', 'SmartAI', '1', '3', '1', '30', '1', '1', '0', '0', '1', '650854271', '0', '0', '', '12340');
+-- npc_text
+-- INSERT INTO `chr_world`.`npc_text` (`ID`, `text0_0`, `BroadcastTextID0`, `lang0`, `Probability0`, `em0_0`, `em0_1`, `em0_2`, `em0_3`, `em0_4`, `em0_5`, `BroadcastTextID1`, `lang1`, `Probability1`, `em1_0`, `em1_1`, `em1_2`, `em1_3`, `em1_4`, `em1_5`, `BroadcastTextID2`, `lang2`, `Probability2`, `em2_0`, `em2_1`, `em2_2`, `em2_3`, `em2_4`, `em2_5`, `BroadcastTextID3`, `lang3`, `Probability3`, `em3_0`, `em3_1`, `em3_2`, `em3_3`, `em3_4`, `em3_5`, `BroadcastTextID4`, `lang4`, `Probability4`, `em4_0`, `em4_1`, `em4_2`, `em4_3`, `em4_4`, `em4_5`, `BroadcastTextID5`, `lang5`, `Probability5`, `em5_0`, `em5_1`, `em5_2`, `em5_3`, `em5_4`, `em5_5`, `BroadcastTextID6`, `lang6`, `Probability6`, `em6_0`, `em6_1`, `em6_2`, `em6_3`, `em6_4`, `em6_5`, `BroadcastTextID7`, `lang7`, `Probability7`, `em7_0`, `em7_1`, `em7_2`, `em7_3`, `em7_4`, `em7_5`, `VerifiedBuild`) VALUES ('91111', 'Greetings, $n. One of the invaders of the timeline is in a nearby timenode. I might be able to make them visible for your eyes and vulnerable to your magic and weapons, but i can not aid you in this fight while i am maintaining the spell. Are you ready to face the worst this timeline has to deal with?', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1');
+-- INSERT INTO `chr_world`.`gossip_menu` (`MenuID`, `TextID`) VALUES ('62001', '91111');
