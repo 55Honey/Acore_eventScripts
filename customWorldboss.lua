@@ -66,6 +66,10 @@ local x
 local y
 local z
 local o
+local spawnedBoss
+local spawnedCreature1
+local spawnedCreature2
+local spawnedCreature3
 
 --local arrays
 local cancelEventIdHello = {}
@@ -73,8 +77,6 @@ local cancelEventIdStart = {}
 local addNPC = {}
 local bossNPC = {}
 local playersInRaid = {}
-
--- todo: create a SQL file to add the custom NPCs and texts to the world db
 
 local function eS_command(event, player, command)
     local commandArray = {}
@@ -170,6 +172,7 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
     if intid == 0 then
         if group:IsRaidGroup() == true then
             player:SendBroadcastMessage("You can not accept that task while in a raid group.")
+            player:GossipComplete()
             return
         end
         --start 5man encounter
@@ -188,15 +191,12 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
     elseif intid == 1 then
         if group:IsRaidGroup() == false then
             player:SendBroadcastMessage("You can not accept that task without being in a raid group.")
+            player:GossipComplete()
             return
         end
         --start raid encounter
         bossfightInProgress = 2
 
-        local spawnedBoss
-        local spawnedCreature1
-        local spawnedCreature2
-        local spawnedCreature3
         spawnedBoss = player:SpawnCreature(Config_bossEntry[eventInProgress], x, y, z+2, o)
         spawnedCreature1 = player:SpawnCreature(Config_addEntry[eventInProgress], x-15, y, z+2, o)
         spawnedCreature2 = player:SpawnCreature(Config_addEntry[eventInProgress], x, y-15, z+2, o)
@@ -216,9 +216,6 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
             playersInRaid[n] = v:GetGUID()
         end
     end
-    --create events to bring players back to phase 1
-    --create events to reset eventInProgress and despawn bosses/adds
-    --set eventInProgress
     player:GossipComplete()
 end
 
@@ -229,13 +226,15 @@ end
 
 -- 38846 Forceful Cleave (Target + nearest ally)
 -- 25840 Full heal
--- 59969 Poison Cloud
+-- 53721 Death and decay
+
 -- 45108 CKs Fireball
 
 function bossNPC.onEnterCombat(event, creature, target)
-    local timer1 = 8000
-    local timer2 = 11000
-    local timer3 = 10000
+    local timer1 = 19000
+    local timer2 = 20000
+    local timer3 = 11000
+    local player
 
     timer1 = timer1 / (1 + ((difficulty - 1) / 5))
     timer2 = timer2 / (1 + ((difficulty - 1) / 5))
@@ -247,23 +246,43 @@ function bossNPC.onEnterCombat(event, creature, target)
     creature:CallAssistance()
     creature:SendUnitYell("You will NOT interrupt this mission!", 0 )
     phase = 1
+    addsDownCounter = 0
+    -- todo: set everyone in combat with all adds
+    creature:CallForHelp(200)
+    for _, v in pairs(playersInRaid) do
+        player = GetPlayerByGUID(v)
+        creature:AddThreat(player, 1)
+    end
 end
 
 function bossNPC.reset(event, creature)
     print("bossNPC.reset")
     local player
     creature:RemoveEvents()
-    for n, v in pairs(playersInRaid) do
-        player = GetPlayerByGUID(v)
-        player:SetPhaseMask(1)
-    end
     bossfightInProgress = nil
     addsDownCounter = nil
-    creature:SendUnitYell("This... was not... the last time...", 0 )
+    if creature:IsDead() == true then
+        creature:SendUnitYell("This... was not... the last time...", 0 )
+        local playerListString
+        for _, v in pairs(playersInRaid) do
+            player = GetPlayerByGUID(v)
+            if playerListString == nil then
+                playerListString = player:GetName()
+            else
+                playerListString = playerListString..", "..v:GetName()
+            end
+            player:SetPhaseMask(1)
+        end
+        SendWorldMessage("The raid encounter Glorifrir Flintshoulder was completed on difficulty "..difficulty.." by: "..playerListString.." Congratulations!")
+        CreateLuaEvent(eS_castFireworks, 1000, 20)
+    else
+        creature:SendUnitYell("You never had a chance.", 0 )
+    end
     creature:DespawnOrUnsummon(0)
 end
 
 function bossNPC.Cleave(event, delay, pCall, creature)
+    creature:CallForHelp(100)
     creature:CastSpell(creature:GetVictim(), 38846)
     eS_checkInCombat()
 end
@@ -271,10 +290,11 @@ end
 function bossNPC.AoE(event, delay, pCall, creature)
     --AoE spell on a random player
     local players = creature:GetPlayersInRange()
-    creature:CastSpell(players[math.random(1, #players)], 59969)
+    creature:CastSpell(players[math.random(1, #players)], 53721)
 end
 
-function bossNPC.HealOrBoom(event, delay, pCall, creature)          -- also handles yells
+function bossNPC.HealOrBoom(event, delay, pCall, creature)          -- also handles yells/phases
+    local targetPlayer
     --heal self if adds alive, else random singletarget
     if addsDownCounter < 3 then
         creature:CastSpell(creature, 69898)
@@ -283,13 +303,16 @@ function bossNPC.HealOrBoom(event, delay, pCall, creature)          -- also hand
         --Phase2
         creature:SendUnitYell("You might have handled these creatures. But now I WILL handle YOU!", 0 )
         phase = 2
-    elseif phase == 2 then
+    elseif phase == 2 and creature:GetHealthPct() < 10 then
         creature:SendUnitYell("FEEL MY WRATH!", 0 )
         phase = 3
+        creature:CastSpell(creature, 69166)
     else
         if (math.random(1, 100) <= 25) then
             local players = creature:GetPlayersInRange()
-            creature:CastSpell(players[math.random(1, #players)], 45108)
+            targetPlayer = players[math.random(1, #players)]
+            creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
+            creature:CastSpell(targetPlayer, 45108)
         end
     end
 end
@@ -298,6 +321,7 @@ function addNPC.onEnterCombat(event, creature, target)
     local timer1 = 8000
     local timer2 = 6000
     local timer3 = 15000
+    local player
 
     timer1 = timer1 / (1 + ((difficulty - 1) / 5))
     timer2 = timer2 / (1 + ((difficulty - 1) / 5))
@@ -308,6 +332,12 @@ function addNPC.onEnterCombat(event, creature, target)
     creature:RegisterEvent(addNPC.Bomb, timer1, 0)
     creature:RegisterEvent(addNPC.Bolt, timer2, 0)
     creature:RegisterEvent(addNPC.Knockback, timer3, 0)
+    creature:CallAssistance()
+    -- todo: set everyone in combat
+    for _, v in pairs(playersInRaid) do
+        player = GetPlayerByGUID(v)
+        creature:AddThreat(player, 1)
+    end
 end
 
 function addNPC.Bomb(event, delay, pCall, creature)
@@ -337,6 +367,18 @@ function addNPC.reset(event, creature)
             player:SetPhaseMask(1)
         end
         bossfightInProgress = nil
+        local playerListString
+        CreateLuaEvent(eS_castFireworks, 1000, 20)
+        for _, v in pairs(playersInRaid) do
+            player = GetPlayerByGUID(v)
+            if playerListString == nil then
+                playerListString = player:GetName()
+            else
+                playerListString = playerListString..", "..player:GetName()
+            end
+            player:SetPhaseMask(1)
+        end
+        SendWorldMessage("The encounter to slay an add of Glorifrir Flintshoulder was completed on difficulty "..difficulty.." by: "..playerListString.." Congratulations!")
     else
         if creature:IsDead() == true then
             if addsDownCounter == nil then
@@ -345,6 +387,24 @@ function addNPC.reset(event, creature)
                 addsDownCounter = addsDownCounter + 1
             end
         end
+    end
+end
+
+function eS_castFireworks()
+    local fireworks = {}
+    local player
+    fireworks[1] = 66400
+    fireworks[2] = 66402
+    fireworks[3] = 46847
+    fireworks[4] = 46829
+    fireworks[5] = 46830
+    fireworks[6] = 62074
+    fireworks[7] = 62075
+    fireworks[8] = 62077
+    fireworks[9] = 55420
+    for n, v in pairs(playersInRaid) do
+        player = GetPlayerByGUID(v)
+        player:CastSpell(player, fireworks[math.random(1, #fireworks)])
     end
 end
 
@@ -381,7 +441,7 @@ function eS_checkInCombat()
     local player
     for n, v in pairs(playersInRaid) do
         player = GetPlayerByGUID(v)
-        if player:IsInCombat() == false then
+        if player:IsInCombat() == false and player:GetPhaseMask() == 2 then
             player:SetPhaseMask(1)
             player:SendBroadcastMessage("You where returned to the real time because you did not participate.")
         end
