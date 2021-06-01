@@ -77,6 +77,7 @@ local spawnedCreature1Guid
 local spawnedCreature2Guid
 local spawnedCreature3Guid
 local spawnedNPC
+local encounterStartTime
 
 --local arrays
 local cancelEventIdHello = {}
@@ -202,6 +203,7 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         spawnedCreature = player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
         spawnedCreature:SetPhaseMask(2)
         spawnedCreature:SetScale(eS_getSize(difficulty))
+        encounterStartTime = GetCurrTime()
 
         groupPlayers = group:GetMembers()
         --todo: add a range check
@@ -234,6 +236,7 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         spawnedCreature1:SetScale(eS_getSize(difficulty))
         spawnedCreature2:SetScale(eS_getSize(difficulty))
         spawnedCreature3:SetScale(eS_getSize(difficulty))
+        encounterStartTime = GetCurrTime()
 
         groupPlayers = group:GetMembers()
         --todo: add a range check
@@ -312,7 +315,7 @@ function bossNPC.reset(event, creature)
                 playerListString = playerListString..", "..player:GetName()
             end
         end
-        SendWorldMessage("The raid encounter Glorifrir Flintshoulder was completed on difficulty "..difficulty.." by: "..playerListString.." Congratulations!")
+        SendWorldMessage("The raid encounter Glorifrir Flintshoulder was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
         CreateLuaEvent(eS_castFireworks, 1000, 20)
     else
         creature:SendUnitYell("You never had a chance.", 0 )
@@ -429,7 +432,7 @@ function addNPC.reset(event, creature)
             end
             player:SetPhaseMask(1)
         end
-        SendWorldMessage("The encounter to slay an add of Glorifrir Flintshoulder was completed on difficulty "..difficulty.." by: "..playerListString.." Congratulations!")
+        SendWorldMessage("The encounter to slay an add of Glorifrir Flintshoulder was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
     else
         if creature:IsDead() == true then
             if addsDownCounter == nil then
@@ -499,7 +502,12 @@ function eS_checkInCombat()
     end
 end
 
-local function eS_has_value (tab, val)
+function eS_getEncounterDuration()
+    local dt = GetTimeDiff(encounterStartTime)
+    return string.format("%.2d:%.2d", (dt / 1000 / 60) % 60, (dt / 1000) % 60)
+end
+
+function eS_has_value (tab, val)
     for index, value in ipairs(tab) do
         if value == val then
             return true
@@ -526,7 +534,7 @@ RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 --local spawnedBoss = map:GetWorldObject(spawnedBossGuid):ToCreature()
 --spawnedBoss:SendUnitSay("It works!", 0)
 
---todo: add a timer to the victory announcement and differ the party and raid announcements
+--todo: differ the party and raid announcements
 --todo: Check DnD damaging adds
 
 -- Custom Boss NPC:
