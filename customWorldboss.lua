@@ -55,6 +55,12 @@ local GOSSIP_EVENT_ON_SELECT = 2            -- (event, player, object, sender, i
 local OPTION_ICON_CHAT = 0
 local OPTION_ICON_BATTLE = 9
 
+local SELECT_TARGET_RANDOM = 0              -- Just selects a random target
+local SELECT_TARGET_TOPAGGRO = 1            -- Selects targets from top aggro to bottom
+local SELECT_TARGET_BOTTOMAGGRO = 2         -- Selects targets from bottom aggro to top
+local SELECT_TARGET_NEAREST = 3
+local SELECT_TARGET_FARTHEST = 4
+
 --local variables
 local cancelGossipEvent
 local eventInProgress
@@ -66,10 +72,10 @@ local x
 local y
 local z
 local o
-local spawnedBoss
-local spawnedCreature1
-local spawnedCreature2
-local spawnedCreature3
+local spawnedBossGuid
+local spawnedCreature1Guid
+local spawnedCreature2Guid
+local spawnedCreature3Guid
 
 --local arrays
 local cancelEventIdHello = {}
@@ -77,6 +83,7 @@ local cancelEventIdStart = {}
 local addNPC = {}
 local bossNPC = {}
 local playersInRaid = {}
+local groupPlayers = {}
 
 local function eS_command(event, player, command)
     local commandArray = {}
@@ -161,6 +168,12 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
     print("sender: "..sender)
     print("spawnBoss")
 
+    local spawnedBoss
+    local spawnedCreature
+    local spawnedCreature1
+    local spawnedCreature2
+    local spawnedCreature3
+
     if player:IsInGroup() == false then
         player:SendBroadcastMessage("You need to be in a party.")
         player:GossipComplete()
@@ -177,15 +190,17 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         end
         --start 5man encounter
         bossfightInProgress = 1
-        local spawnedCreature
         spawnedCreature = player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
         spawnedCreature:SetPhaseMask(2)
         spawnedCreature:SetScale(eS_getSize(difficulty))
 
-        local groupPlayers = group:GetMembers()
+        groupPlayers = group:GetMembers()
         for n, v in pairs(groupPlayers) do
             v:SetPhaseMask(2)
             playersInRaid[n] = v:GetGUID()
+            spawnedCreature:SetInCombatWith(v)
+            v:SetInCombatWith(spawnedCreature)
+            spawnedCreature:AddThreat(v, 1)
         end
 
     elseif intid == 1 then
@@ -198,9 +213,9 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         bossfightInProgress = 2
 
         spawnedBoss = player:SpawnCreature(Config_bossEntry[eventInProgress], x, y, z+2, o)
-        spawnedCreature1 = player:SpawnCreature(Config_addEntry[eventInProgress], x-15, y, z+2, o)
-        spawnedCreature2 = player:SpawnCreature(Config_addEntry[eventInProgress], x, y-15, z+2, o)
-        spawnedCreature3 = player:SpawnCreature(Config_addEntry[eventInProgress], x, y+15, z+2, o)
+        spawnedCreature1 = player:SpawnCreature(Config_addEntry[eventInProgress], x-10, y, z+2, o)
+        spawnedCreature2 = player:SpawnCreature(Config_addEntry[eventInProgress], x, y-10, z+2, o)
+        spawnedCreature3 = player:SpawnCreature(Config_addEntry[eventInProgress], x, y+10, z+2, o)
         spawnedBoss:SetPhaseMask(2)
         spawnedCreature1:SetPhaseMask(2)
         spawnedCreature2:SetPhaseMask(2)
@@ -210,11 +225,28 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         spawnedCreature2:SetScale(eS_getSize(difficulty))
         spawnedCreature3:SetScale(eS_getSize(difficulty))
 
-        local groupPlayers = group:GetMembers()
+        groupPlayers = group:GetMembers()
         for n, v in pairs(groupPlayers) do
             v:SetPhaseMask(2)
             playersInRaid[n] = v:GetGUID()
+            spawnedBoss:SetInCombatWith(v)
+            spawnedCreature1:SetInCombatWith(v)
+            spawnedCreature2:SetInCombatWith(v)
+            spawnedCreature3:SetInCombatWith(v)
+            v:SetInCombatWith(spawnedBoss)
+            v:SetInCombatWith(spawnedCreature1)
+            v:SetInCombatWith(spawnedCreature2)
+            v:SetInCombatWith(spawnedCreature3)
+            spawnedBoss:AddThreat(v, 1)
+            spawnedCreature1:AddThreat(v, 1)
+            spawnedCreature2:AddThreat(v, 1)
+            spawnedCreature3:AddThreat(v, 1)
         end
+
+        spawnedBossGuid = spawnedBoss:GetGUID()
+        spawnedCreature1Guid = spawnedCreature1:GetGUID()
+        spawnedCreature2Guid = spawnedCreature2:GetGUID()
+        spawnedCreature3Guid = spawnedCreature3:GetGUID()
     end
     player:GossipComplete()
 end
@@ -249,10 +281,7 @@ function bossNPC.onEnterCombat(event, creature, target)
     addsDownCounter = 0
     -- todo: set everyone in combat with all adds
     creature:CallForHelp(200)
-    for _, v in pairs(playersInRaid) do
-        player = GetPlayerByGUID(v)
-        creature:AddThreat(player, 1)
-    end
+
 end
 
 function bossNPC.reset(event, creature)
@@ -266,17 +295,21 @@ function bossNPC.reset(event, creature)
         local playerListString
         for _, v in pairs(playersInRaid) do
             player = GetPlayerByGUID(v)
+            player:SetPhaseMask(1)
             if playerListString == nil then
                 playerListString = player:GetName()
             else
-                playerListString = playerListString..", "..v:GetName()
+                playerListString = playerListString..", "..player:GetName()
             end
-            player:SetPhaseMask(1)
         end
         SendWorldMessage("The raid encounter Glorifrir Flintshoulder was completed on difficulty "..difficulty.." by: "..playerListString.." Congratulations!")
         CreateLuaEvent(eS_castFireworks, 1000, 20)
     else
         creature:SendUnitYell("You never had a chance.", 0 )
+        for _, v in pairs(playersInRaid) do
+            player = GetPlayerByGUID(v)
+            player:SetPhaseMask(1)
+        end
     end
     creature:DespawnOrUnsummon(0)
 end
@@ -289,8 +322,13 @@ end
 
 function bossNPC.AoE(event, delay, pCall, creature)
     --AoE spell on a random player
-    local players = creature:GetPlayersInRange()
-    creature:CastSpell(players[math.random(1, #players)], 53721)
+    local players = creature:GetPlayersInRange(30)
+    if #players > 1 then
+        local random = math.random(2,5)
+        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, random, 30), 53721)
+    else
+        creature:CastSpell(creature:GetVictim(),53721)
+    end
 end
 
 function bossNPC.HealOrBoom(event, delay, pCall, creature)          -- also handles yells/phases
@@ -341,8 +379,13 @@ function addNPC.onEnterCombat(event, creature, target)
 end
 
 function addNPC.Bomb(event, delay, pCall, creature)
-    local players = creature:GetPlayersInRange()
-    creature:CastSpell(players[math.random(1, #players)], 12421)
+    local players = creature:GetPlayersInRange(30)
+    if #players > 1 then
+        local random = math.random(2,5)
+        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, random, 30), 12421)
+    else
+        creature:CastSpell(creature:GetVictim(),12421)
+    end
 end
 
 function addNPC.Bolt(event, delay, pCall, creature)
