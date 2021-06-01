@@ -76,6 +76,7 @@ local spawnedBossGuid
 local spawnedCreature1Guid
 local spawnedCreature2Guid
 local spawnedCreature3Guid
+local spawnedNPC
 
 --local arrays
 local cancelEventIdHello = {}
@@ -124,6 +125,15 @@ local function eS_command(event, player, command)
             player:SendBroadcastMessage("Event "..eventInProgress.." is already active.")
             return false
         end
+    elseif commandArray[1] == "stopevent" then
+        if eventInProgress == nil then
+            player:SendBroadcastMessage("There is no event in progress.")
+            return false
+        end
+        player:SendBroadcastMessage("Stopping event "..eventInProgress..".")
+        ClearCreatureGossipEvents(Config_npcEntry[eventInProgress])
+        --todo: find a way to unsummon Chromie
+        eventInProgress = nil
     end
     
     --prevent non-Admins from using the rest
@@ -136,7 +146,6 @@ local function eS_command(event, player, command)
 end
     
 function eS_summonEventNPC(playerGuid)
-    local spawnedCreature
     local player
     -- tempSummon an NPC with a dialouge option to start the encounter, store the guid for later unsummon
     player = GetPlayerByGUID(playerGuid)
@@ -144,7 +153,7 @@ function eS_summonEventNPC(playerGuid)
     y = player:GetY()
     z = player:GetZ()
     o = player:GetO()
-    spawnedCreature = player:SpawnCreature(Config_npcEntry[eventInProgress], x, y, z, o)
+    spawnedNPC = player:SpawnCreature(Config_npcEntry[eventInProgress], x, y, z, o)
 
     --print("summonEventNPC")
 
@@ -195,6 +204,7 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         spawnedCreature:SetScale(eS_getSize(difficulty))
 
         groupPlayers = group:GetMembers()
+        --todo: add a range check
         for n, v in pairs(groupPlayers) do
             v:SetPhaseMask(2)
             playersInRaid[n] = v:GetGUID()
@@ -226,6 +236,7 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         spawnedCreature3:SetScale(eS_getSize(difficulty))
 
         groupPlayers = group:GetMembers()
+        --todo: add a range check
         for n, v in pairs(groupPlayers) do
             v:SetPhaseMask(2)
             playersInRaid[n] = v:GetGUID()
@@ -279,7 +290,6 @@ function bossNPC.onEnterCombat(event, creature, target)
     creature:SendUnitYell("You will NOT interrupt this mission!", 0 )
     phase = 1
     addsDownCounter = 0
-    -- todo: set everyone in combat with all adds
     creature:CallForHelp(200)
 
 end
@@ -510,7 +520,14 @@ RegisterCreatureEvent(1112001, 1, bossNPC.onEnterCombat)
 RegisterCreatureEvent(1112001, 2, bossNPC.reset) -- OnLeaveCombat
 RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 
---todo: Insert a function to end the event, despawn everything and set eventInProgress to nil
+--todo: Insert a function to despawn everything into .stopevent
+-- get creature like this:
+--local map = player:GetMap()
+--local spawnedBoss = map:GetWorldObject(spawnedBossGuid):ToCreature()
+--spawnedBoss:SendUnitSay("It works!", 0)
+
+--todo: add a timer to the victory announcement and differ the party and raid announcements
+--todo: Check DnD damaging adds
 
 -- Custom Boss NPC:
 -- INSERT INTO `chr_world`.`creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `DamageModifier`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES ('1112001', '0', '0', '0', '0', '0', '3456', '0', '0', '0', 'Glorifrir Flintshoulder', '', '0', '43', '43', '0', '63', '0', '1', '1.14286', '3', '3', '0', '30', '2000', '2000', '1', '1', '1', '32832', '2048', '0', '0', '0', '0', '0', '0', '7', '4', '0', '0', '0', '0', '0', '50000', '60000', 'SmartAI', '1', '3', '1', '600', '1', '1', '0', '0', '1', '0', '0', '256', '', '12340');
