@@ -324,8 +324,7 @@ function bossNPC.AoE(event, delay, pCall, creature)
     --AoE spell on a random player
     local players = creature:GetPlayersInRange(30)
     if #players > 1 then
-        local random = math.random(2,5)
-        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, random, 30), 53721)
+        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 2, 30), 53721)
     else
         creature:CastSpell(creature:GetVictim(),53721)
     end
@@ -356,9 +355,9 @@ function bossNPC.HealOrBoom(event, delay, pCall, creature)          -- also hand
 end
 
 function addNPC.onEnterCombat(event, creature, target)
-    local timer1 = 8000
-    local timer2 = 6000
-    local timer3 = 15000
+    local timer1 = 12000
+    local timer2 = 7000
+    local timer3 = 24000
     local player
 
     timer1 = timer1 / (1 + ((difficulty - 1) / 5))
@@ -371,7 +370,6 @@ function addNPC.onEnterCombat(event, creature, target)
     creature:RegisterEvent(addNPC.Bolt, timer2, 0)
     creature:RegisterEvent(addNPC.Knockback, timer3, 0)
     creature:CallAssistance()
-    -- todo: set everyone in combat
     for _, v in pairs(playersInRaid) do
         player = GetPlayerByGUID(v)
         creature:AddThreat(player, 1)
@@ -380,9 +378,9 @@ end
 
 function addNPC.Bomb(event, delay, pCall, creature)
     local players = creature:GetPlayersInRange(30)
+    print("#players: "..#players)
     if #players > 1 then
-        local random = math.random(2,5)
-        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, random, 30), 12421)
+        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 2, 30), 12421)
     else
         creature:CastSpell(creature:GetVictim(),12421)
     end
