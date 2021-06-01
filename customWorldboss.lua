@@ -146,7 +146,7 @@ function eS_summonEventNPC(playerGuid)
     o = player:GetO()
     spawnedCreature = player:SpawnCreature(Config_npcEntry[eventInProgress], x, y, z, o)
 
-    print("summonEventNPC")
+    --print("summonEventNPC")
 
     -- add an event to spawn the Boss in a phase when gossip is clicked
     cancelEventIdHello[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_HELLO, eS_onHello)
@@ -154,7 +154,7 @@ function eS_summonEventNPC(playerGuid)
 end
 
 function eS_onHello(event, player, creature)
-    print("event: "..event)
+    --print("event: "..event)
     if bossfightInProgress ~= nil then return end
 
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 0)
@@ -163,10 +163,10 @@ function eS_onHello(event, player, creature)
 end
 
 function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
-    print("event: "..event)
-    print("intid: "..intid)
-    print("sender: "..sender)
-    print("spawnBoss")
+    --print("event: "..event)
+    --print("intid: "..intid)
+    --print("sender: "..sender)
+    --print("spawnBoss")
 
     local spawnedBoss
     local spawnedCreature
@@ -285,7 +285,7 @@ function bossNPC.onEnterCombat(event, creature, target)
 end
 
 function bossNPC.reset(event, creature)
-    print("bossNPC.reset")
+    --print("bossNPC.reset")
     local player
     creature:RemoveEvents()
     bossfightInProgress = nil
@@ -364,7 +364,7 @@ function addNPC.onEnterCombat(event, creature, target)
     timer2 = timer2 / (1 + ((difficulty - 1) / 5))
     timer3 = timer3 / (1 + ((difficulty - 1) / 5))
 
-    print("addNPC.onEnterCombat")
+    --print("addNPC.onEnterCombat")
 
     creature:RegisterEvent(addNPC.Bomb, timer1, 0)
     creature:RegisterEvent(addNPC.Bolt, timer2, 0)
@@ -378,7 +378,7 @@ end
 
 function addNPC.Bomb(event, delay, pCall, creature)
     local players = creature:GetPlayersInRange(30)
-    print("#players: "..#players)
+    --print("#players: "..#players)
     if #players > 1 then
         creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 2, 30), 12421)
     else
@@ -398,7 +398,7 @@ function addNPC.Knockback(event, delay, pCall, creature)
 end
 
 function addNPC.reset(event, creature)
-    print("addNPC.reset")
+    --print("addNPC.reset")
     local player
     creature:RemoveEvents()
     creature:DespawnOrUnsummon(0)
