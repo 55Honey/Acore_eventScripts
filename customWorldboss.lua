@@ -275,6 +275,12 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         spawnedCreature1Guid = spawnedCreature1:GetGUID()
         spawnedCreature2Guid = spawnedCreature2:GetGUID()
         spawnedCreature3Guid = spawnedCreature3:GetGUID()
+        spawnedCreature1:AddAura( 34184, spawnedCreature1 )         -- Arcane
+        spawnedCreature1:AddAura( 7941, spawnedCreature1 )          -- Nature
+        spawnedCreature2:AddAura( 7942, spawnedCreature2 )          -- Fire
+        spawnedCreature2:AddAura( 7940, spawnedCreature2 )          -- Frost
+        spawnedCreature3:AddAura( 34182, spawnedCreature3 )         -- Holy
+        spawnedCreature3:AddAura( 34309, spawnedCreature3 )         -- Shadow
     end
     player:GossipComplete()
 end
@@ -329,7 +335,7 @@ function bossNPC.reset(event, creature)
                 playerListString = playerListString..", "..player:GetName()
             end
         end
-        SendWorldMessage("The raid encounter Glorifrir Flintshoulder was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
+        SendWorldMessage("The raid encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
         CreateLuaEvent(eS_castFireworks, 1000, 20)
     else
         creature:SendUnitYell("You never had a chance.", 0 )
