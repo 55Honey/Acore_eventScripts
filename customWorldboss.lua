@@ -294,6 +294,7 @@ end
 -- 25840 Hot
 -- 53721 Death and decay (10% hp per second)
 -- 45108 CKs Fireball
+-- 37279 Rain of Fire
 
 function bossNPC.onEnterCombat(event, creature, target)
     local timer1 = 19000
@@ -354,11 +355,15 @@ end
 
 function bossNPC.Bolt(event, delay, pCall, creature)
     if (math.random(1, 100) <= 50) then
-        local players = creature:GetPlayersInRange()
-        targetPlayer = players[math.random(1, #players)]
+        local players = creature:GetPlayersInRange(35)
+        local targetPlayer = players[math.random(1, #players)]
         creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
         -- todo: add immobility to prevent kiting and add an event to remove immobility when interrupted or cast ended
         creature:CastSpell(targetPlayer, 45108)
+    else
+        local players = creature:GetPlayersInRange(40)
+        local targetPlayer = players[math.random(1, #players)]
+        creature:CastSpell(targetPlayer, 37279)
     end
 end
 
