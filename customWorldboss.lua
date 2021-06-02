@@ -559,3 +559,4 @@ RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 --todo: add taunt immunity
 --todo: check difficulty scaling.
 --todo: check party encounter despawn failing, mob throws grenades at self
+--todo: add cheesy lines for hacki
