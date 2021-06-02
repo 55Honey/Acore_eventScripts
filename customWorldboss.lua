@@ -291,9 +291,8 @@ end
 -- 12421 Mithril Frag Bomb 8y 149-201 damage + stun
 
 -- 38846 Forceful Cleave (Target + nearest ally)
--- 25840 Full heal
--- 53721 Death and decay
-
+-- 25840 Hot
+-- 53721 Death and decay (10% hp per second)
 -- 45108 CKs Fireball
 
 function bossNPC.onEnterCombat(event, creature, target)
@@ -389,9 +388,9 @@ function bossNPC.HealOrBoom(event, delay, pCall, creature)          -- also hand
 end
 
 function addNPC.onEnterCombat(event, creature, target)
-    local timer1 = 12000
+    local timer1 = 13000
     local timer2 = 7000
-    local timer3 = 24000
+    local timer3 = 23000
     local player
 
     timer1 = timer1 / (1 + ((difficulty - 1) / 5))
