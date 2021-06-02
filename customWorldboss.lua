@@ -137,6 +137,7 @@ local function eS_command(event, player, command)
         local spawnedNPC = map:GetWorldObject(spawnedNPCGuid):ToCreature()
         spawnedNPC:DespawnOrUnsummon(0)
         eventInProgress = nil
+        return false
     end
     
     --prevent non-Admins from using the rest
@@ -145,7 +146,7 @@ local function eS_command(event, player, command)
             return
         end  
     end
-    
+    --nothing here yet
 end
     
 function eS_summonEventNPC(playerGuid)
