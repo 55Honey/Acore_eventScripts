@@ -76,7 +76,7 @@ local spawnedBossGuid
 local spawnedCreature1Guid
 local spawnedCreature2Guid
 local spawnedCreature3Guid
-local spawnedNPC
+local spawnedNPCGuid
 local encounterStartTime
 
 --local arrays
@@ -133,7 +133,9 @@ local function eS_command(event, player, command)
         end
         player:SendBroadcastMessage("Stopping event "..eventInProgress..".")
         ClearCreatureGossipEvents(Config_npcEntry[eventInProgress])
-        --todo: find a way to unsummon Chromie
+        local map = player:GetMap()
+        local spawnedNPC = map:GetWorldObject(spawnedNPCGuid):ToCreature()
+        spawnedNPC:DespawnOrUnsummon(0)
         eventInProgress = nil
     end
     
@@ -154,7 +156,8 @@ function eS_summonEventNPC(playerGuid)
     y = player:GetY()
     z = player:GetZ()
     o = player:GetO()
-    spawnedNPC = player:SpawnCreature(Config_npcEntry[eventInProgress], x, y, z, o)
+    local spawnedNPC = player:SpawnCreature(Config_npcEntry[eventInProgress], x, y, z, o)
+    spawnedNPCGuid = spawnedNPC:GetGUID()
 
     --print("summonEventNPC")
 
@@ -242,7 +245,7 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         spawnedCreature1:SetPhaseMask(2)
         spawnedCreature2:SetPhaseMask(2)
         spawnedCreature3:SetPhaseMask(2)
-        spawnedBoss:SetScale(eS_getSize(difficulty))
+        spawnedBoss:SetScale(2 * eS_getSize(difficulty))
         spawnedCreature1:SetScale(eS_getSize(difficulty))
         spawnedCreature2:SetScale(eS_getSize(difficulty))
         spawnedCreature3:SetScale(eS_getSize(difficulty))
