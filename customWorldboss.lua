@@ -560,3 +560,4 @@ RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 --todo: check difficulty scaling.
 --todo: check party encounter despawn failing, mob throws grenades at self
 --todo: add cheesy lines for hacki
+--todo: add another mechanic at higher difficulty. maybe aggro reset
