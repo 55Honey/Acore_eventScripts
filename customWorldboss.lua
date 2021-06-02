@@ -360,7 +360,7 @@ function bossNPC.Bolt(event, delay, pCall, creature)
         creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
         -- todo: add immobility to prevent kiting and add an event to remove immobility when interrupted or cast ended
         creature:CastSpell(targetPlayer, 45108)
-    else
+    elseif phase > 1 then
         local players = creature:GetPlayersInRange(40)
         local targetPlayer = players[math.random(1, #players)]
         creature:CastSpell(targetPlayer, 37279)
