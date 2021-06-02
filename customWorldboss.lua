@@ -198,6 +198,11 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
             player:GossipComplete()
             return
         end
+        if not group:IsLeader(player:GetGUID()) then
+            player:SendBroadcastMessage("You are not the leader of your group.")
+            player:GossipComplete()
+            return
+        end
         --start 5man encounter
         bossfightInProgress = 1
         spawnedCreature = player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
@@ -218,6 +223,11 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
     elseif intid == 1 then
         if group:IsRaidGroup() == false then
             player:SendBroadcastMessage("You can not accept that task without being in a raid group.")
+            player:GossipComplete()
+            return
+        end
+        if not group:IsLeader(player:GetGUID()) then
+            player:SendBroadcastMessage("You are not the leader of your group.")
             player:GossipComplete()
             return
         end
