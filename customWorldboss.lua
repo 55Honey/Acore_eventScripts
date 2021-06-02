@@ -298,7 +298,7 @@ end
 
 function bossNPC.onEnterCombat(event, creature, target)
     local timer1 = 19000
-    local timer2 = 20000
+    local timer2 = 23000
     local timer3 = 11000
     local player
 
@@ -307,7 +307,7 @@ function bossNPC.onEnterCombat(event, creature, target)
     timer3 = timer3 / (1 + ((difficulty - 1) / 5))
 
     creature:RegisterEvent(bossNPC.Cleave, timer1, 0)
-    creature:RegisterEvent(bossNPC.AoE, timer2, 0)
+    creature:RegisterEvent(bossNPC.Bolt, timer2, 0)
     creature:RegisterEvent(bossNPC.HealOrBoom, timer3, 0)
     creature:CallAssistance()
     creature:SendUnitYell("You will NOT interrupt this mission!", 0 )
@@ -353,13 +353,13 @@ function bossNPC.Cleave(event, delay, pCall, creature)
     eS_checkInCombat()
 end
 
-function bossNPC.AoE(event, delay, pCall, creature)
-    --AoE spell on a random player
-    local players = creature:GetPlayersInRange(30)
-    if #players > 1 then
-        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 2, 30), 53721)
-    else
-        creature:CastSpell(creature:GetVictim(),53721)
+function bossNPC.Bolt(event, delay, pCall, creature)
+    if (math.random(1, 100) <= 50) then
+        local players = creature:GetPlayersInRange()
+        targetPlayer = players[math.random(1, #players)]
+        creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
+        -- todo: add immobility to prevent kiting and add an event to remove immobility when interrupted or cast ended
+        creature:CastSpell(targetPlayer, 45108)
     end
 end
 
@@ -378,11 +378,12 @@ function bossNPC.HealOrBoom(event, delay, pCall, creature)          -- also hand
         phase = 3
         creature:CastSpell(creature, 69166)
     else
-        if (math.random(1, 100) <= 25) then
-            local players = creature:GetPlayersInRange()
-            targetPlayer = players[math.random(1, #players)]
-            creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
-            creature:CastSpell(targetPlayer, 45108)
+        --DnD spell on the 2nd nearest player
+        local players = creature:GetPlayersInRange(30)
+        if #players > 1 then
+            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 2, 30), 53721)
+        else
+            creature:CastSpell(creature:GetVictim(),53721)
         end
     end
 end
