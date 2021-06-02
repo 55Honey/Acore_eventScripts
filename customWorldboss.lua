@@ -395,7 +395,7 @@ end
 function addNPC.onEnterCombat(event, creature, target)
     local timer1 = 13000
     local timer2 = 7000
-    local timer3 = 23000
+    local timer3 = 37000
     local player
 
     timer1 = timer1 / (1 + ((difficulty - 1) / 5))
@@ -553,11 +553,8 @@ RegisterCreatureEvent(1112001, 1, bossNPC.onEnterCombat)
 RegisterCreatureEvent(1112001, 2, bossNPC.reset) -- OnLeaveCombat
 RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 
---todo: Insert a function to despawn everything into .stopevent
--- get creature like this:
---local map = player:GetMap()
---local spawnedBoss = map:GetWorldObject(spawnedBossGuid):ToCreature()
---spawnedBoss:SendUnitSay("It works!", 0)
-
 --todo: differ the party and raid announcements
 --todo: Check DnD damaging adds
+--todo: increase run speed to prevent kiting
+--todo: add taunt immunity
+--todo: check difficulty scaling.
