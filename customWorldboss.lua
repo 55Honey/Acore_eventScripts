@@ -115,6 +115,11 @@ local function eS_command(event, player, command)
         eventNPC = tonumber(commandArray[2])
         difficulty = tonumber(commandArray[3])
 
+        if Config_npcEntry[eventNPC] == nil or Config_bossEntry == nil or Config_addEntry == nil or Config_npcText == nil then
+            player:SendBroadcastMessage("Event "..eventNPC.." is not properly configured. Aborting")
+            return false
+        end
+
         if difficulty <= 0 then difficulty = 1 end
 
         if eventInProgress == nil then
@@ -441,7 +446,6 @@ function addNPC.reset(event, creature)
     creature:RemoveEvents()
     if bossfightInProgress == 1 then
         if creature:IsDead() == true then
-            bossfightInProgress = nil
             local playerListString
             CreateLuaEvent(eS_castFireworks, 1000, 20)
             for _, v in pairs(playersInRaid) do
@@ -472,6 +476,7 @@ function addNPC.reset(event, creature)
             end
         end
     end
+    bossfightInProgress = nil
     creature:DespawnOrUnsummon(0)
 end
 
@@ -505,7 +510,7 @@ function eS_getSize(difficulty)
     if difficulty == 1 then
         value = 1
     else
-        value = (difficulty - 1) / 4
+        value = 1 + (difficulty - 1) / 4
     end
     return value
 end
@@ -559,7 +564,6 @@ RegisterCreatureEvent(1112001, 1, bossNPC.onEnterCombat)
 RegisterCreatureEvent(1112001, 2, bossNPC.reset) -- OnLeaveCombat
 RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 
---todo: check difficulty scaling.
 --todo: add cheesy lines for hacki
 --todo: add another mechanic at higher difficulty. maybe aggro reset
 --todo: move corpses to phase1 on repop
