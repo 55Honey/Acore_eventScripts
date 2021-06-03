@@ -408,6 +408,7 @@ function addNPC.onEnterCombat(event, creature, target)
         player = GetPlayerByGUID(v)
         creature:AddThreat(player, 1)
     end
+    phase = 1
 end
 
 function addNPC.Bomb(event, delay, pCall, creature)
@@ -420,12 +421,25 @@ function addNPC.Bomb(event, delay, pCall, creature)
 end
 
 function addNPC.Bolt(event, delay, pCall, creature)
-    if (math.random(1, 100) <= 25) then
-        creature:CastSpell(creature:GetVictim(), 60488)
+    if phase == 1 and creature:GetHealthPct() < 68 then
+        phase = 2
+        creature:SendUnitYell("ENOUGH", 0 )
+        local players = creature:GetPlayersInRange(30)
+        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), 19471)
+    elseif phase == 2 and creature:GetHealthPct() < 35 then
+        phase = 3
+        creature:SendUnitYell("ENOUGH", 0 )
+        local players = creature:GetPlayersInRange(30)
+        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), 19471)
+    else
+        if (math.random(1, 100) <= 25) then
+            creature:CastSpell(creature:GetVictim(), 60488)
+        end
     end
 end
 
 function addNPC.Knockback(event, delay, pCall, creature)
+    creature:SendUnitSay("Me smash.", 0 )
     creature:CastSpell(creature, 24326)
     eS_checkInCombat()
 end
@@ -450,7 +464,7 @@ function addNPC.reset(event, creature)
             playersForFireworks = playersInRaid
             playersInRaid = {}
         else
-            creature:SendUnitYell("Hahahaha!.", 0 )
+            creature:SendUnitYell("Hahahaha!", 0 )
             for _, v in pairs(playersInRaid) do
                 player = GetPlayerByGUID(v)
                 player:SetPhaseMask(1)
@@ -556,6 +570,3 @@ RegisterCreatureEvent(1112003, 4, addNPC.reset) -- OnDied
 RegisterCreatureEvent(1112001, 1, bossNPC.onEnterCombat)
 RegisterCreatureEvent(1112001, 2, bossNPC.reset) -- OnLeaveCombat
 RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
-
---todo: add cheesy lines for hacki
---todo: add another mechanic at higher difficulty. maybe aggro reset
