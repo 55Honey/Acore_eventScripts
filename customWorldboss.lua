@@ -566,4 +566,3 @@ RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 
 --todo: add cheesy lines for hacki
 --todo: add another mechanic at higher difficulty. maybe aggro reset
---todo: move corpses to phase1 on repop
