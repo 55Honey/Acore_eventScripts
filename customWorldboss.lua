@@ -211,7 +211,7 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         bossfightInProgress = 1
         spawnedCreature = player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
         spawnedCreature:SetPhaseMask(2)
-        spawnedCreature:SetScale(eS_getSize(difficulty))
+        spawnedCreature:SetScale(spawnedCreature:GetScale() * eS_getSize(difficulty))
         encounterStartTime = GetCurrTime()
 
         groupPlayers = group:GetMembers()
@@ -246,10 +246,10 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         spawnedCreature1:SetPhaseMask(2)
         spawnedCreature2:SetPhaseMask(2)
         spawnedCreature3:SetPhaseMask(2)
-        spawnedBoss:SetScale(2 * eS_getSize(difficulty))
-        spawnedCreature1:SetScale(eS_getSize(difficulty))
-        spawnedCreature2:SetScale(eS_getSize(difficulty))
-        spawnedCreature3:SetScale(eS_getSize(difficulty))
+        spawnedBoss:SetScale(spawnedBoss:GetScale() * eS_getSize(difficulty))
+        spawnedCreature1:SetScale(spawnedCreature1:GetScale() * eS_getSize(difficulty))
+        spawnedCreature2:SetScale(spawnedCreature2:GetScale() * eS_getSize(difficulty))
+        spawnedCreature3:SetScale(spawnedCreature3:GetScale() * eS_getSize(difficulty))
         encounterStartTime = GetCurrTime()
 
         groupPlayers = group:GetMembers()
@@ -439,25 +439,30 @@ function addNPC.reset(event, creature)
     --print("addNPC.reset")
     local player
     creature:RemoveEvents()
-    creature:DespawnOrUnsummon(0)
     if bossfightInProgress == 1 then
-        for n, v in pairs(playersInRaid) do
-            player = GetPlayerByGUID(v)
-            player:SetPhaseMask(1)
-        end
-        bossfightInProgress = nil
-        local playerListString
-        CreateLuaEvent(eS_castFireworks, 1000, 20)
-        for _, v in pairs(playersInRaid) do
-            player = GetPlayerByGUID(v)
-            if playerListString == nil then
-                playerListString = player:GetName()
-            else
-                playerListString = playerListString..", "..player:GetName()
+        if creature:IsDead() == true then
+            bossfightInProgress = nil
+            local playerListString
+            CreateLuaEvent(eS_castFireworks, 1000, 20)
+            for _, v in pairs(playersInRaid) do
+                player = GetPlayerByGUID(v)
+                if playerListString == nil then
+                    playerListString = player:GetName()
+                else
+                    playerListString = playerListString..", "..player:GetName()
+                end
+                player:SetPhaseMask(1)
             end
-            player:SetPhaseMask(1)
+            SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
+            playersInRaid = {}
+        else
+            creature:SendUnitYell("Hahahaha!.", 0 )
+            for _, v in pairs(playersInRaid) do
+                player = GetPlayerByGUID(v)
+                player:SetPhaseMask(1)
+            end
+            playersInRaid = {}
         end
-        SendWorldMessage("The encounter to slay an add of Glorifrir Flintshoulder was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
     else
         if creature:IsDead() == true then
             if addsDownCounter == nil then
@@ -467,6 +472,7 @@ function addNPC.reset(event, creature)
             end
         end
     end
+    creature:DespawnOrUnsummon(0)
 end
 
 function eS_castFireworks()
@@ -488,7 +494,7 @@ function eS_castFireworks()
 end
 
 function eS_resetPlayers(event, player)
-    if eS_has_value(player:GetGUID()) then
+    if eS_has_value(playersInRaid, player:GetGUID()) and player:GetPhaseMask() ~= 1 then
         player:SetPhaseMask(1)
         player:SendBroadcastMessage("You left the event.")
     end
@@ -553,11 +559,7 @@ RegisterCreatureEvent(1112001, 1, bossNPC.onEnterCombat)
 RegisterCreatureEvent(1112001, 2, bossNPC.reset) -- OnLeaveCombat
 RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 
---todo: differ the party and raid announcements
---todo: Check DnD damaging adds
---todo: increase run speed to prevent kiting
---todo: add taunt immunity
 --todo: check difficulty scaling.
---todo: check party encounter despawn failing, mob throws grenades at self
 --todo: add cheesy lines for hacki
 --todo: add another mechanic at higher difficulty. maybe aggro reset
+--todo: move corpses to phase1 on repop
