@@ -166,15 +166,12 @@ function eS_summonEventNPC(playerGuid)
     local spawnedNPC = player:SpawnCreature(Config_npcEntry[eventInProgress], x, y, z, o)
     spawnedNPCGuid = spawnedNPC:GetGUID()
 
-    --print("summonEventNPC")
-
     -- add an event to spawn the Boss in a phase when gossip is clicked
     cancelEventIdHello[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_HELLO, eS_onHello)
     cancelEventIdStart[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_SELECT, eS_spawnBoss)
 end
 
 function eS_onHello(event, player, creature)
-    --print("event: "..event)
     if bossfightInProgress ~= nil then return end
 
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 0)
@@ -183,10 +180,6 @@ function eS_onHello(event, player, creature)
 end
 
 function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
-    --print("event: "..event)
-    --print("intid: "..intid)
-    --print("sender: "..sender)
-    --print("spawnBoss")
 
     local spawnedBoss
     local spawnedCreature
@@ -324,7 +317,6 @@ function bossNPC.onEnterCombat(event, creature, target)
 end
 
 function bossNPC.reset(event, creature)
-    --print("bossNPC.reset")
     local player
     creature:RemoveEvents()
     bossfightInProgress = nil
@@ -400,15 +392,13 @@ end
 
 function addNPC.onEnterCombat(event, creature, target)
     local timer1 = 13000
-    local timer2 = 7000
+    local timer2 = 11000
     local timer3 = 37000
     local player
 
     timer1 = timer1 / (1 + ((difficulty - 1) / 5))
     timer2 = timer2 / (1 + ((difficulty - 1) / 5))
     timer3 = timer3 / (1 + ((difficulty - 1) / 5))
-
-    --print("addNPC.onEnterCombat")
 
     creature:RegisterEvent(addNPC.Bomb, timer1, 0)
     creature:RegisterEvent(addNPC.Bolt, timer2, 0)
@@ -441,7 +431,6 @@ function addNPC.Knockback(event, delay, pCall, creature)
 end
 
 function addNPC.reset(event, creature)
-    --print("addNPC.reset")
     local player
     creature:RemoveEvents()
     if bossfightInProgress == 1 then
