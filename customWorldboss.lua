@@ -439,7 +439,7 @@ function addNPC.Bolt(event, delay, pCall, creature)
 end
 
 function addNPC.Knockback(event, delay, pCall, creature)
-    creature:SendUnitSay("Me smash.", 0 )
+    creature:SendUnitYell("Me smash.", 0 )
     creature:CastSpell(creature, 24326)
     eS_checkInCombat()
 end
@@ -540,7 +540,7 @@ function eS_checkInCombat()
         player = GetPlayerByGUID(v)
         if player:IsInCombat() == false and player:GetPhaseMask() == 2 then
             player:SetPhaseMask(1)
-            player:SendBroadcastMessage("You where returned to the real time because you did not participate.")
+            player:SendBroadcastMessage("You were returned to the real time because you did not participate.")
         end
     end
 end
