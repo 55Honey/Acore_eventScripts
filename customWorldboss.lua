@@ -86,6 +86,7 @@ local addNPC = {}
 local bossNPC = {}
 local playersInRaid = {}
 local groupPlayers = {}
+local playersForFireworks = {}
 
 local function eS_command(event, player, command)
     local commandArray = {}
@@ -421,9 +422,8 @@ end
 
 function addNPC.Bomb(event, delay, pCall, creature)
     local players = creature:GetPlayersInRange(30)
-    --print("#players: "..#players)
     if #players > 1 then
-        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 2, 30), 12421)
+        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), 12421)
     else
         creature:CastSpell(creature:GetVictim(),12421)
     end
@@ -458,6 +458,7 @@ function addNPC.reset(event, creature)
                 player:SetPhaseMask(1)
             end
             SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
+            playersForFireworks = playersInRaid
             playersInRaid = {}
         else
             creature:SendUnitYell("Hahahaha!.", 0 )
@@ -480,7 +481,7 @@ function addNPC.reset(event, creature)
     creature:DespawnOrUnsummon(0)
 end
 
-function eS_castFireworks()
+function eS_castFireworks(eventId, delay, repeats)
     local fireworks = {}
     local player
     fireworks[1] = 66400
@@ -492,9 +493,12 @@ function eS_castFireworks()
     fireworks[7] = 62075
     fireworks[8] = 62077
     fireworks[9] = 55420
-    for n, v in pairs(playersInRaid) do
+    for n, v in pairs(playersForFireworks) do
         player = GetPlayerByGUID(v)
         player:CastSpell(player, fireworks[math.random(1, #fireworks)])
+    end
+    if repeats == 1 then
+        playersForFireworks = {}
     end
 end
 
