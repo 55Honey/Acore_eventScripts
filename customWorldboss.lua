@@ -126,7 +126,7 @@ local function eS_command(event, player, command)
         if eventInProgress == nil then
             eventInProgress = eventNPC
             eS_summonEventNPC(player:GetGUID())
-            player:SendBroadcastMessage("Starting event "..eventInProgress..".")
+            player:SendBroadcastMessage("Starting event "..eventInProgress.." with difficulty "..difficulty..".")
             return false
         else
             player:SendBroadcastMessage("Event "..eventInProgress.." is already active.")
@@ -214,13 +214,16 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         encounterStartTime = GetCurrTime()
 
         groupPlayers = group:GetMembers()
-        --todo: add a range check
         for n, v in pairs(groupPlayers) do
-            v:SetPhaseMask(2)
-            playersInRaid[n] = v:GetGUID()
-            spawnedCreature:SetInCombatWith(v)
-            v:SetInCombatWith(spawnedCreature)
-            spawnedCreature:AddThreat(v, 1)
+            if v:GetDistance(player) < 80 then
+                v:SetPhaseMask(2)
+                playersInRaid[n] = v:GetGUID()
+                spawnedCreature:SetInCombatWith(v)
+                v:SetInCombatWith(spawnedCreature)
+                spawnedCreature:AddThreat(v, 1)
+            else
+                v:SendBroadcastMessage("You were too far away to join the fight.")
+            end
         end
 
     elseif intid == 1 then
@@ -252,22 +255,25 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         encounterStartTime = GetCurrTime()
 
         groupPlayers = group:GetMembers()
-        --todo: add a range check
         for n, v in pairs(groupPlayers) do
-            v:SetPhaseMask(2)
-            playersInRaid[n] = v:GetGUID()
-            spawnedBoss:SetInCombatWith(v)
-            spawnedCreature1:SetInCombatWith(v)
-            spawnedCreature2:SetInCombatWith(v)
-            spawnedCreature3:SetInCombatWith(v)
-            v:SetInCombatWith(spawnedBoss)
-            v:SetInCombatWith(spawnedCreature1)
-            v:SetInCombatWith(spawnedCreature2)
-            v:SetInCombatWith(spawnedCreature3)
-            spawnedBoss:AddThreat(v, 1)
-            spawnedCreature1:AddThreat(v, 1)
-            spawnedCreature2:AddThreat(v, 1)
-            spawnedCreature3:AddThreat(v, 1)
+            if v:GetDistance(player) < 80 then
+                v:SetPhaseMask(2)
+                playersInRaid[n] = v:GetGUID()
+                spawnedBoss:SetInCombatWith(v)
+                spawnedCreature1:SetInCombatWith(v)
+                spawnedCreature2:SetInCombatWith(v)
+                spawnedCreature3:SetInCombatWith(v)
+                v:SetInCombatWith(spawnedBoss)
+                v:SetInCombatWith(spawnedCreature1)
+                v:SetInCombatWith(spawnedCreature2)
+                v:SetInCombatWith(spawnedCreature3)
+                spawnedBoss:AddThreat(v, 1)
+                spawnedCreature1:AddThreat(v, 1)
+                spawnedCreature2:AddThreat(v, 1)
+                spawnedCreature3:AddThreat(v, 1)
+            else
+                v:SendBroadcastMessage("You were too far away to join the fight.")
+            end
         end
 
         spawnedBossGuid = spawnedBoss:GetGUID()
@@ -356,7 +362,6 @@ function bossNPC.Bolt(event, delay, pCall, creature)
         local players = creature:GetPlayersInRange(35)
         local targetPlayer = players[math.random(1, #players)]
         creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
-        -- todo: add immobility to prevent kiting and add an event to remove immobility when interrupted or cast ended
         creature:CastSpell(targetPlayer, 45108)
     elseif phase > 1 then
         local players = creature:GetPlayersInRange(40)
@@ -383,7 +388,7 @@ function bossNPC.HealOrBoom(event, delay, pCall, creature)          -- also hand
         --DnD spell on the 2nd nearest player
         local players = creature:GetPlayersInRange(30)
         if #players > 1 then
-            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 2, 30), 53721)
+            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), 53721)
         else
             creature:CastSpell(creature:GetVictim(),53721)
         end
@@ -412,9 +417,10 @@ function addNPC.onEnterCombat(event, creature, target)
 end
 
 function addNPC.Bomb(event, delay, pCall, creature)
+    local random = math.random(0, 2)
     local players = creature:GetPlayersInRange(30)
     if #players > 1 then
-        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), 12421)
+        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, random, 30), 12421)
     else
         creature:CastSpell(creature:GetVictim(),12421)
     end
@@ -425,12 +431,20 @@ function addNPC.Bolt(event, delay, pCall, creature)
         phase = 2
         creature:SendUnitYell("ENOUGH", 0 )
         local players = creature:GetPlayersInRange(30)
-        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), 19471)
+        if #players > 1 then
+            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 19471)
+        else
+            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 60488)
+        end
     elseif phase == 2 and creature:GetHealthPct() < 35 then
         phase = 3
         creature:SendUnitYell("ENOUGH", 0 )
         local players = creature:GetPlayersInRange(30)
-        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), 19471)
+        if #players > 1 then
+            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 19471)
+        else
+            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 60488)
+        end
     else
         if (math.random(1, 100) <= 25) then
             creature:CastSpell(creature:GetVictim(), 60488)
