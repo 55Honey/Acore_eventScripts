@@ -68,6 +68,7 @@ local bossfightInProgress
 local difficulty                            -- difficulty is set when using .startevent and it is meant for a range of 1-5
 local addsDownCounter
 local phase
+local addphase
 local x
 local y
 local z
@@ -296,7 +297,7 @@ end
 -- 12421 Mithril Frag Bomb 8y 149-201 damage + stun
 
 -- 38846 Forceful Cleave (Target + nearest ally)
--- 25840 Hot
+-- 69898 Hot
 -- 53721 Death and decay (10% hp per second)
 -- 45108 CKs Fireball
 -- 37279 Rain of Fire
@@ -319,7 +320,7 @@ function bossNPC.onEnterCombat(event, creature, target)
     phase = 1
     addsDownCounter = 0
     creature:CallForHelp(200)
-
+    creature:PlayDirectSound(8645)
 end
 
 function bossNPC.reset(event, creature)
@@ -328,7 +329,8 @@ function bossNPC.reset(event, creature)
     bossfightInProgress = nil
     addsDownCounter = nil
     if creature:IsDead() == true then
-        creature:SendUnitYell("This... was not... the last time...", 0 )
+        creature:SendUnitYell("Master, save me!", 0 )
+        creature:PlayDirectSound(8865)
         local playerListString
         for _, v in pairs(playersInRaid) do
             player = GetPlayerByGUID(v)
@@ -341,6 +343,8 @@ function bossNPC.reset(event, creature)
         end
         SendWorldMessage("The raid encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
         CreateLuaEvent(eS_castFireworks, 1000, 20)
+        playersForFireworks = playersInRaid
+        playersInRaid = {}
     else
         creature:SendUnitYell("You never had a chance.", 0 )
         for _, v in pairs(playersInRaid) do
@@ -413,7 +417,7 @@ function addNPC.onEnterCombat(event, creature, target)
         player = GetPlayerByGUID(v)
         creature:AddThreat(player, 1)
     end
-    phase = 1
+    addphase = 1
 end
 
 function addNPC.Bomb(event, delay, pCall, creature)
@@ -427,18 +431,20 @@ function addNPC.Bomb(event, delay, pCall, creature)
 end
 
 function addNPC.Bolt(event, delay, pCall, creature)
-    if phase == 1 and creature:GetHealthPct() < 68 then
-        phase = 2
+    if addphase == 1 and creature:GetHealthPct() < 68 then
+        addphase = 2
         creature:SendUnitYell("ENOUGH", 0 )
+        creature:PlayDirectSound(412)
         local players = creature:GetPlayersInRange(30)
         if #players > 1 then
             creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 19471)
         else
             creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 60488)
         end
-    elseif phase == 2 and creature:GetHealthPct() < 35 then
-        phase = 3
+    elseif addphase == 2 and creature:GetHealthPct() < 35 then
+        addphase = 3
         creature:SendUnitYell("ENOUGH", 0 )
+        creature:PlayDirectSound(412)
         local players = creature:GetPlayersInRange(30)
         if #players > 1 then
             creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 19471)
@@ -447,6 +453,7 @@ function addNPC.Bolt(event, delay, pCall, creature)
         end
     else
         if (math.random(1, 100) <= 25) then
+            creature:PlayDirectSound(6436)
             creature:CastSpell(creature:GetVictim(), 60488)
         end
     end
@@ -465,6 +472,7 @@ function addNPC.reset(event, creature)
         if creature:IsDead() == true then
             local playerListString
             CreateLuaEvent(eS_castFireworks, 1000, 20)
+            creature:PlayDirectSound(8803)
             for _, v in pairs(playersInRaid) do
                 player = GetPlayerByGUID(v)
                 if playerListString == nil then
