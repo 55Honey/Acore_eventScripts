@@ -123,6 +123,7 @@ local function eS_command(event, player, command)
         end
 
         if difficulty <= 0 then difficulty = 1 end
+        if difficulty > 5 then difficulty = 5 end
 
         if eventInProgress == nil then
             eventInProgress = eventNPC
