@@ -335,11 +335,13 @@ function bossNPC.reset(event, creature)
         local playerListString
         for _, v in pairs(playersInRaid) do
             player = GetPlayerByGUID(v)
-            player:SetPhaseMask(1)
-            if playerListString == nil then
-                playerListString = player:GetName()
-            else
-                playerListString = playerListString..", "..player:GetName()
+            if player ~= nil then
+                player:SetPhaseMask(1)
+                if playerListString == nil then
+                    playerListString = player:GetName()
+                else
+                    playerListString = playerListString..", "..player:GetName()
+                end
             end
         end
         SendWorldMessage("The raid encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
@@ -350,7 +352,9 @@ function bossNPC.reset(event, creature)
         creature:SendUnitYell("You never had a chance.", 0 )
         for _, v in pairs(playersInRaid) do
             player = GetPlayerByGUID(v)
-            player:SetPhaseMask(1)
+            if player ~= nil then
+                player:SetPhaseMask(1)
+            end
         end
         playersInRaid = {}
     end
@@ -477,12 +481,14 @@ function addNPC.reset(event, creature)
             creature:PlayDirectSound(8803)
             for _, v in pairs(playersInRaid) do
                 player = GetPlayerByGUID(v)
-                if playerListString == nil then
-                    playerListString = player:GetName()
-                else
-                    playerListString = playerListString..", "..player:GetName()
+                if player ~= nil then
+                    player:SetPhaseMask(1)
+                    if playerListString == nil then
+                        playerListString = player:GetName()
+                    else
+                        playerListString = playerListString..", "..player:GetName()
+                    end
                 end
-                player:SetPhaseMask(1)
             end
             SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
             playersForFireworks = playersInRaid
@@ -491,7 +497,9 @@ function addNPC.reset(event, creature)
             creature:SendUnitYell("Hahahaha!", 0 )
             for _, v in pairs(playersInRaid) do
                 player = GetPlayerByGUID(v)
-                player:SetPhaseMask(1)
+                if player ~= nil then
+                    player:SetPhaseMask(1)
+                end
             end
             playersInRaid = {}
         end
@@ -531,8 +539,10 @@ end
 
 function eS_resetPlayers(event, player)
     if eS_has_value(playersInRaid, player:GetGUID()) and player:GetPhaseMask() ~= 1 then
-        player:SetPhaseMask(1)
-        player:SendBroadcastMessage("You left the event.")
+        if player ~= nil then
+            player:SetPhaseMask(1)
+            player:SendBroadcastMessage("You left the event.")
+        end
     end
 end
 
@@ -562,9 +572,11 @@ function eS_checkInCombat()
     local player
     for n, v in pairs(playersInRaid) do
         player = GetPlayerByGUID(v)
-        if player:IsInCombat() == false and player:GetPhaseMask() == 2 then
-            player:SetPhaseMask(1)
-            player:SendBroadcastMessage("You were returned to the real time because you did not participate.")
+        if player ~= nil then
+            if player:IsInCombat() == false and player:GetPhaseMask() == 2 then
+                player:SetPhaseMask(1)
+                player:SendBroadcastMessage("You were returned to the real time because you did not participate.")
+            end
         end
     end
 end
