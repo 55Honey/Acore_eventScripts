@@ -352,6 +352,7 @@ function bossNPC.reset(event, creature)
             player = GetPlayerByGUID(v)
             player:SetPhaseMask(1)
         end
+        playersInRaid = {}git
     end
     creature:DespawnOrUnsummon(0)
 end
