@@ -428,6 +428,7 @@ function addNPC.onEnterCombat(event, creature, target)
 end
 
 function addNPC.Bomb(event, delay, pCall, creature)
+    if creature:IsCasting() == true then return end
     local random = math.random(0, 2)
     local players = creature:GetPlayersInRange(30)
     if #players > 1 then
@@ -438,6 +439,7 @@ function addNPC.Bomb(event, delay, pCall, creature)
 end
 
 function addNPC.Bolt(event, delay, pCall, creature)
+    if creature:IsCasting() == true then return end
     if addphase == 1 and creature:GetHealthPct() < 68 then
         addphase = 2
         creature:SendUnitYell("ENOUGH", 0 )
