@@ -17,7 +17,7 @@
 --               -  adjust the IDs and config flags in case of conflicts and run the associated SQL to add the required NPCs
 ------------------------------------------------------------------------------------------------
 -- GM GUIDE:     -  use .startevent $event $difficulty to start and spawn 
---               -  maybe offer teleports               '
+--               -  maybe offer teleports
 ------------------------------------------------------------------------------------------------
 local Config = {}                   --general config flags
 local Config_npcEntry = {}          --db entry of the NPC creature to summon the boss
@@ -123,7 +123,7 @@ local function eS_command(event, player, command)
         end
 
         if difficulty <= 0 then difficulty = 1 end
-        if difficulty > 5 then difficulty = 5 end
+        if difficulty > 10 then difficulty = 10 end
 
         if eventInProgress == nil then
             eventInProgress = eventNPC
@@ -161,6 +161,7 @@ function eS_summonEventNPC(playerGuid)
     local player
     -- tempSummon an NPC with a dialouge option to start the encounter, store the guid for later unsummon
     player = GetPlayerByGUID(playerGuid)
+    if player == nil then return end
     x = player:GetX()
     y = player:GetY()
     z = player:GetZ()
@@ -176,19 +177,20 @@ end
 function eS_onHello(event, player, creature)
     if bossfightInProgress ~= nil then return end
 
+    if player == nil then return end
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 0)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything.", Config_npcEntry[eventInProgress], 1)
     player:GossipSendMenu(Config_npcText[1], creature,0)
 end
 
 function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
-
     local spawnedBoss
     local spawnedCreature
     local spawnedCreature1
     local spawnedCreature2
     local spawnedCreature3
 
+    if player == nil then return end
     if player:IsInGroup() == false then
         player:SendBroadcastMessage("You need to be in a party.")
         player:GossipComplete()
@@ -307,7 +309,6 @@ function bossNPC.onEnterCombat(event, creature, target)
     local timer1 = 19000
     local timer2 = 23000
     local timer3 = 11000
-    local player
 
     timer1 = timer1 / (1 + ((difficulty - 1) / 5))
     timer2 = timer2 / (1 + ((difficulty - 1) / 5))
@@ -530,7 +531,9 @@ function eS_castFireworks(eventId, delay, repeats)
     fireworks[9] = 55420
     for n, v in pairs(playersForFireworks) do
         player = GetPlayerByGUID(v)
-        player:CastSpell(player, fireworks[math.random(1, #fireworks)])
+        if player ~= nil then
+            player:CastSpell(player, fireworks[math.random(1, #fireworks)])
+        end
     end
     if repeats == 1 then
         playersForFireworks = {}
