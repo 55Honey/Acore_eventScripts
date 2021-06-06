@@ -18,12 +18,33 @@
 ------------------------------------------------------------------------------------------------
 -- GM GUIDE:     -  use .startevent $event $difficulty to start and spawn 
 --               -  maybe offer teleports
+--               -  use .stopevent to end the event and despawn the NPC
 ------------------------------------------------------------------------------------------------
 local Config = {}                   --general config flags
 local Config_npcEntry = {}          --db entry of the NPC creature to summon the boss
 local Config_npcText = {}           --gossip in npc_text to be told by the summoning NPC
 local Config_bossEntry = {}         --db entry of the boss creature
 local Config_addEntry = {}          --db entry of the add creature
+
+local Config_bossSpell1 = {}
+local Config_bossSpell2 = {}
+local Config_bossSpell3 = {}
+local Config_bossSpell4 = {}
+local Config_bossSpellSelf = {}
+
+local Config_bossSpellTimer1 = {}
+local Config_bossSpellTimer2 = {}
+local Config_bossSpellTimer3 = {}
+local Config_bossSpellTimer4 = {}
+local Config_bossSpellSelfTimer = {}
+
+local Config_addSpell1 = {}
+local Config_addSpell2 = {}
+local Config_addSpell3 = {}
+
+local Config_addSpellTimer1 = {}
+local Config_addSpellTimer2 = {}
+local Config_addSpellTimer3 = {}
 
 -- Name of Eluna dB scheme
 Config.customDbName = "ac_eluna"
@@ -40,6 +61,24 @@ Config_npcEntry[1] = 1112002
 Config_addEntry[1] = 1112003
 Config_npcText[1] = 91111
 
+-- list of spells:
+Config_addSpell1[1] = 60488 -- Mithril Frag Bomb 8y 149-201 damage + stun
+Config_addSpell2[1] = 24326 -- Shadow Bolt (30)
+Config_addSpell3[1] = 12421 -- HIGH knockback (ZulFarrak beast)
+
+Config_bossSpell1[1] = 38846 -- Forceful Cleave (Target + nearest ally)
+Config_bossSpell2[1] = 45108 -- CKs Fireball
+Config_bossSpell3[1] = 37279 -- Rain of Fire
+Config_bossSpell4[1] = 53721 -- Death and decay (10% hp per second)
+Config_bossSpellSelf[1] = 69898 -- Hot
+
+Config_addSpellTimer1[1] = 13000
+Config_addSpellTimer2[1] = 11000
+Config_addSpellTimer3[1] = 37000
+
+Config_bossSpellTimer1[1] = 19000 -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[1] = 23000 -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[1] = 11000 -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3 + 4 randomly later
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -65,7 +104,7 @@ local SELECT_TARGET_FARTHEST = 4
 local cancelGossipEvent
 local eventInProgress
 local bossfightInProgress
-local difficulty                            -- difficulty is set when using .startevent and it is meant for a range of 1-5
+local difficulty                            -- difficulty is set when using .startevent and it is meant for a range of 1-10
 local addsDownCounter
 local phase
 local addphase
@@ -79,6 +118,7 @@ local spawnedCreature2Guid
 local spawnedCreature3Guid
 local spawnedNPCGuid
 local encounterStartTime
+local mapEventStart
 
 --local arrays
 local cancelEventIdHello = {}
@@ -94,7 +134,7 @@ local function eS_command(event, player, command)
     local eventNPC
 
     --prevent players from using this  
-    if player ~= nil then  
+    if player ~= nil then
         if player:GetGMRank() < Config.GMRankForEventStart then
             return
         end  
@@ -122,6 +162,8 @@ local function eS_command(event, player, command)
             return false
         end
 
+        mapEventStart = player:GetMap():GetMapId()
+
         if difficulty <= 0 then difficulty = 1 end
         if difficulty > 10 then difficulty = 10 end
 
@@ -139,9 +181,14 @@ local function eS_command(event, player, command)
             player:SendBroadcastMessage("There is no event in progress.")
             return false
         end
+        local map = player:GetMap()
+        local mapId = map:GetMapId()
+        if mapId ~= mapEventStart then
+            player:SendBroadcastMessage("You must be in the same map to stop an event.")
+            return false
+        end
         player:SendBroadcastMessage("Stopping event "..eventInProgress..".")
         ClearCreatureGossipEvents(Config_npcEntry[eventInProgress])
-        local map = player:GetMap()
         local spawnedNPC = map:GetWorldObject(spawnedNPCGuid):ToCreature()
         spawnedNPC:DespawnOrUnsummon(0)
         eventInProgress = nil
@@ -219,12 +266,14 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
 
         groupPlayers = group:GetMembers()
         for n, v in pairs(groupPlayers) do
-            if v:GetDistance(player) < 80 then
-                v:SetPhaseMask(2)
-                playersInRaid[n] = v:GetGUID()
-                spawnedCreature:SetInCombatWith(v)
-                v:SetInCombatWith(spawnedCreature)
-                spawnedCreature:AddThreat(v, 1)
+            if v:GetDistance(player) ~= nil then
+                if v:GetDistance(player) < 80 then
+                    v:SetPhaseMask(2)
+                    playersInRaid[n] = v:GetGUID()
+                    spawnedCreature:SetInCombatWith(v)
+                    v:SetInCombatWith(spawnedCreature)
+                    spawnedCreature:AddThreat(v, 1)
+                end
             else
                 v:SendBroadcastMessage("You were too far away to join the fight.")
             end
@@ -260,21 +309,23 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
 
         groupPlayers = group:GetMembers()
         for n, v in pairs(groupPlayers) do
-            if v:GetDistance(player) < 80 then
-                v:SetPhaseMask(2)
-                playersInRaid[n] = v:GetGUID()
-                spawnedBoss:SetInCombatWith(v)
-                spawnedCreature1:SetInCombatWith(v)
-                spawnedCreature2:SetInCombatWith(v)
-                spawnedCreature3:SetInCombatWith(v)
-                v:SetInCombatWith(spawnedBoss)
-                v:SetInCombatWith(spawnedCreature1)
-                v:SetInCombatWith(spawnedCreature2)
-                v:SetInCombatWith(spawnedCreature3)
-                spawnedBoss:AddThreat(v, 1)
-                spawnedCreature1:AddThreat(v, 1)
-                spawnedCreature2:AddThreat(v, 1)
-                spawnedCreature3:AddThreat(v, 1)
+            if v:GetDistance(player) ~= nil then
+                if v:GetDistance(player) < 80 then
+                    v:SetPhaseMask(2)
+                    playersInRaid[n] = v:GetGUID()
+                    spawnedBoss:SetInCombatWith(v)
+                    spawnedCreature1:SetInCombatWith(v)
+                    spawnedCreature2:SetInCombatWith(v)
+                    spawnedCreature3:SetInCombatWith(v)
+                    v:SetInCombatWith(spawnedBoss)
+                    v:SetInCombatWith(spawnedCreature1)
+                    v:SetInCombatWith(spawnedCreature2)
+                    v:SetInCombatWith(spawnedCreature3)
+                    spawnedBoss:AddThreat(v, 1)
+                    spawnedCreature1:AddThreat(v, 1)
+                    spawnedCreature2:AddThreat(v, 1)
+                    spawnedCreature3:AddThreat(v, 1)
+                end
             else
                 v:SendBroadcastMessage("You were too far away to join the fight.")
             end
