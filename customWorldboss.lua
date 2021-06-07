@@ -21,6 +21,7 @@
 --               -  use .stopevent to end the event and despawn the NPC
 ------------------------------------------------------------------------------------------------
 local Config = {}                   --general config flags
+
 local Config_npcEntry = {}          --db entry of the NPC creature to summon the boss
 local Config_npcText = {}           --gossip in npc_text to be told by the summoning NPC
 local Config_bossEntry = {}         --db entry of the boss creature
@@ -31,16 +32,18 @@ local Config_bossSpell2 = {}
 local Config_bossSpell3 = {}
 local Config_bossSpell4 = {}
 local Config_bossSpellSelf = {}
+local Config_bossSpellEnrage = {}
 
-local Config_bossSpellTimer1 = {}
-local Config_bossSpellTimer2 = {}
-local Config_bossSpellTimer3 = {}
-local Config_bossSpellTimer4 = {}
+local Config_bossSpellTimer1 = {}       -- This timer applies to Config_bossSpell1
+local Config_bossSpellTimer2 = {}       -- This timer applies to Config_bossSpell2
+local Config_bossSpellTimer3 = {}       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 local Config_bossSpellSelfTimer = {}
+local Config_bossSpellEnrageTimer = {}
 
 local Config_addSpell1 = {}
 local Config_addSpell2 = {}
 local Config_addSpell3 = {}
+local Config_addSpellEnrage = {}
 
 local Config_addSpellTimer1 = {}
 local Config_addSpellTimer2 = {}
@@ -62,23 +65,25 @@ Config_addEntry[1] = 1112003
 Config_npcText[1] = 91111
 
 -- list of spells:
-Config_addSpell1[1] = 60488 -- Mithril Frag Bomb 8y 149-201 damage + stun
-Config_addSpell2[1] = 24326 -- Shadow Bolt (30)
-Config_addSpell3[1] = 12421 -- HIGH knockback (ZulFarrak beast)
+Config_addSpell1[1] = 60488         -- Mithril Frag Bomb 8y 149-201 damage + stun
+Config_addSpell2[1] = 24326         -- Shadow Bolt (30)
+Config_addSpell3[1] = 12421         -- HIGH knockback (ZulFarrak beast)
 
-Config_bossSpell1[1] = 38846 -- Forceful Cleave (Target + nearest ally)
-Config_bossSpell2[1] = 45108 -- CKs Fireball
-Config_bossSpell3[1] = 37279 -- Rain of Fire
-Config_bossSpell4[1] = 53721 -- Death and decay (10% hp per second)
-Config_bossSpellSelf[1] = 69898 -- Hot
+Config_bossSpell1[1] = 38846        -- Forceful Cleave (Target + nearest ally)
+Config_bossSpell2[1] = 45108        -- CKs Fireball
+Config_bossSpell3[1] = 37279        -- Rain of Fire
+Config_bossSpell4[1] = 53721        -- Death and decay (10% hp per second)
+Config_bossSpellSelf[1] = 69898     -- Hot
+Config_bossSpellEnrage[1] = 69166   -- Soft Enrage
 
 Config_addSpellTimer1[1] = 13000
 Config_addSpellTimer2[1] = 11000
 Config_addSpellTimer3[1] = 37000
 
-Config_bossSpellTimer1[1] = 19000 -- This timer applies to Config_bossSpell1
-Config_bossSpellTimer2[1] = 23000 -- This timer applies to Config_bossSpell2
-Config_bossSpellTimer3[1] = 11000 -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3 + 4 randomly later
+Config_bossSpellTimer1[1] = 19000   -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[1] = 23000   -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[1] = 11000   -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellEnrageTimer[1] = 180
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
