@@ -657,8 +657,8 @@ function eS_getEncounterDuration()
     return string.format("%.2d:%.2d", (dt / 1000 / 60) % 60, (dt / 1000) % 60)
 end
 
-function eS_getTimeSinceEncounterStart()
-    local dt = GetTimeDiff(encounterStartTime)
+function eS_getTimeSince(time)
+    local dt = GetTimeDiff(time)
     return dt
 end
 
