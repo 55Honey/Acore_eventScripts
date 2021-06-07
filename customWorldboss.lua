@@ -29,15 +29,14 @@ local Config_addEntry = {}          --db entry of the add creature
 
 local Config_bossSpell1 = {}
 local Config_bossSpell2 = {}
-local Config_bossSpell3 = {}
-local Config_bossSpell4 = {}
+local Config_bossSpell3 = {}            --on the 2nd nearest player
+local Config_bossSpell4 = {}            --on a random player within 30y
 local Config_bossSpellSelf = {}
 local Config_bossSpellEnrage = {}
 
 local Config_bossSpellTimer1 = {}       -- This timer applies to Config_bossSpell1
 local Config_bossSpellTimer2 = {}       -- This timer applies to Config_bossSpell2
 local Config_bossSpellTimer3 = {}       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
-local Config_bossSpellSelfTimer = {}
 local Config_bossSpellEnrageTimer = {}
 
 local Config_addSpell1 = {}
@@ -57,7 +56,7 @@ local Config_aura2Add2 = {}                    -- another aura to add toe the 2n
 local Config_aura1Add3 = {}                    -- an aura to add to the 3rd add
 local Config_aura2Add3 = {}                    -- another aura to add toe the 3rd add
 
-local fireworks = {}
+local Config_fireworks = {}
 
 ------------------------------------------
 -- Begin of config section
@@ -85,8 +84,8 @@ Config_addSpell3[1] = 12421         -- HIGH knockback (ZulFarrak beast)
 
 Config_bossSpell1[1] = 38846        -- Forceful Cleave (Target + nearest ally)
 Config_bossSpell2[1] = 45108        -- CKs Fireball
-Config_bossSpell3[1] = 37279        -- Rain of Fire
-Config_bossSpell4[1] = 53721        -- Death and decay (10% hp per second)
+Config_bossSpell3[1] = 53721        -- Death and decay (10% hp per second)
+Config_bossSpell4[1] = 37279        -- Rain of Fire
 Config_bossSpellSelf[1] = 69898     -- Hot
 Config_bossSpellEnrage[1] = 69166   -- Soft Enrage
 
@@ -97,7 +96,7 @@ Config_addSpellTimer3[1] = 37000
 Config_bossSpellTimer1[1] = 19000   -- This timer applies to Config_bossSpell1
 Config_bossSpellTimer2[1] = 23000   -- This timer applies to Config_bossSpell2
 Config_bossSpellTimer3[1] = 11000   -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
-Config_bossSpellEnrageTimer[1] = 180
+Config_bossSpellEnrageTimer[1] = 180000
 
 Config_addsAmount[1] = 3
 
@@ -108,15 +107,15 @@ Config_aura2Add2[1] = 7940          -- Frost
 Config_aura1Add3[1] = 34182         -- Holy
 Config_aura2Add3[1] = 34309         -- Shadow
 
-fireworks[1] = 66400
-fireworks[2] = 66402
-fireworks[3] = 46847
-fireworks[4] = 46829
-fireworks[5] = 46830
-fireworks[6] = 62074
-fireworks[7] = 62075
-fireworks[8] = 62077
-fireworks[9] = 55420
+Config_fireworks[1] = 66400
+Config_fireworks[2] = 66402
+Config_fireworks[3] = 46847
+Config_fireworks[4] = 46829
+Config_fireworks[5] = 46830
+Config_fireworks[6] = 62074
+Config_fireworks[7] = 62075
+Config_fireworks[8] = 62077
+Config_fireworks[9] = 55420
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -158,7 +157,6 @@ local mapEventStart
 local lastBossSpell1
 local lastBossSpell2
 local lastBossSpell3
-local lastBossSpell4
 local lastBossSpellSelf
 local lastAddSpell1
 local lastAddSpell2
@@ -272,7 +270,7 @@ function eS_onHello(event, player, creature)
     if player == nil then return end
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 0)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything.", Config_npcEntry[eventInProgress], 1)
-    player:GossipSendMenu(Config_npcText[1], creature,0)
+    player:GossipSendMenu(Config_npcText[1], creature, 0)
 end
 
 function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
@@ -408,30 +406,19 @@ end
 -- 24326 HIGH knockback (ZulFarrak beast)
 -- 12421 Mithril Frag Bomb 8y 149-201 damage + stun
 
--- 38846 Forceful Cleave (Target + nearest ally)
--- 69898 Hot
--- 53721 Death and decay (10% hp per second)
--- 45108 CKs Fireball
--- 37279 Rain of Fire
-
 function bossNPC.onEnterCombat(event, creature, target)
-    local timer1 = Config_bossSpellTimer1[eventInProgress]
-    local timer2 = Config_bossSpellTimer2[eventInProgress]
-    local timer3 = Config_bossSpellTimer3[eventInProgress]
-
-    timer1 = timer1 / (1 + ((difficulty - 1) / 5))
-    timer2 = timer2 / (1 + ((difficulty - 1) / 5))
-    timer3 = timer3 / (1 + ((difficulty - 1) / 5))
-
-    creature:RegisterEvent(bossNPC.Cleave, timer1, 0)
-    creature:RegisterEvent(bossNPC.Bolt, timer2, 0)
-    creature:RegisterEvent(bossNPC.HealOrBoom, timer3, 0)
+    creature:RegisterEvent(bossNPC.Event, 100, 0)
     creature:CallAssistance()
     creature:SendUnitYell("You will NOT interrupt this mission!", 0 )
     phase = 1
     addsDownCounter = 0
     creature:CallForHelp(200)
     creature:PlayDirectSound(8645)
+
+    lastBossSpell1 = encounterStartTime
+    lastBossSpell2 = encounterStartTime
+    lastBossSpell3 = encounterStartTime
+    lastBossSpellSelf = encounterStartTime
 end
 
 function bossNPC.reset(event, creature)
@@ -471,59 +458,76 @@ function bossNPC.reset(event, creature)
     creature:DespawnOrUnsummon(0)
 end
 
-function bossNPC.Cleave(event, delay, pCall, creature)
-    creature:CallForHelp(100)
-    creature:CastSpell(creature:GetVictim(), 38846)
-    eS_checkInCombat()
-end
+function bossNPC.Event(event, delay, pCall, creature)
+    if creature:IsCasting() == true then return end
 
-function bossNPC.Bolt(event, delay, pCall, creature)
-    if (math.random(1, 100) <= 50) then
-        local players = creature:GetPlayersInRange(35)
-        local targetPlayer = players[math.random(1, #players)]
-        creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
-        creature:CastSpell(targetPlayer, 45108)
-    elseif phase > 1 then
-        local players = creature:GetPlayersInRange(40)
-        local targetPlayer = players[math.random(1, #players)]
-        creature:CastSpell(targetPlayer, 37279)
+    if eS_getDifficultyTimer(Config_bossSpellEnrageTimer[eventInProgress]) < eS_getTimeSince(encounterStartTime)then
+        if phase == 2 and eS_getTimeSince(encounterStartTime) > Config_bossSpellEnrageTimer[eventInProgress] then
+            creature:SendUnitYell("FEEL MY WRATH!", 0 )
+            phase = 3
+            creature:CastSpell(creature, Config_bossSpellEnrage[eventInProgress])
+            return
+        end
     end
-end
 
-function bossNPC.HealOrBoom(event, delay, pCall, creature)          -- also handles yells/phases
-    local targetPlayer
-    --heal self if adds alive, else random singletarget
-    if addsDownCounter < 3 then
-        creature:CastSpell(creature, 69898)
+    if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < eS_getTimeSince(lastBossSpell3) then
+        if addsDownCounter < 3 then
+            creature:CastSpell(creature, Config_bossSpellSelf[eventInProgress])
+            lastBossSpell3 = GetCurrTime()
+            return
+        elseif phase == 1 then
+            creature:SendUnitYell("You might have handled these creatures. But now I WILL handle YOU!", 0 )
+            phase = 2
+        end
+    end
+
+    if eS_getDifficultyTimer(Config_bossSpellTimer1[eventInProgress]) < eS_getTimeSince(lastBossSpell1) then
+        creature:CastSpell(creature:GetVictim(), Config_bossSpell1[eventInProgress])
+        lastBossSpell1 = GetCurrTime()
         return
-    elseif phase == 1 then
-        --Phase2
-        creature:SendUnitYell("You might have handled these creatures. But now I WILL handle YOU!", 0 )
-        phase = 2
-    elseif phase == 2 and creature:GetHealthPct() < 10 then
-        creature:SendUnitYell("FEEL MY WRATH!", 0 )
-        phase = 3
-        creature:CastSpell(creature, 69166)
-    else
-        --DnD spell on the 2nd nearest player
-        local players = creature:GetPlayersInRange(30)
-        if #players > 1 then
-            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), 53721)
-        else
-            creature:CastSpell(creature:GetVictim(),53721)
+    end
+
+    if eS_getDifficultyTimer(Config_bossSpellTimer2[eventInProgress]) < eS_getTimeSince(lastBossSpell2) then
+        if (math.random(1, 100) <= 50) then
+            local players = creature:GetPlayersInRange(35)
+            local targetPlayer = players[math.random(1, #players)]
+            creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
+            creature:CastSpell(targetPlayer, Config_bossSpell2[eventInProgress])
+            lastBossSpell2 = GetCurrTime()
+            return
+        end
+    end
+
+    if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < eS_getTimeSince(lastBossSpell3) then
+        if phase > 1 then
+            local players = creature:GetPlayersInRange(30)
+            if #players > 1 then
+                if (math.random(1, 100) <= 50) then
+                    creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), Config_bossSpell3[eventInProgress])
+                    lastBossSpell3 = GetCurrTime()
+                    return
+                elseif phase > 1 then
+                    local players = creature:GetPlayersInRange(40)
+                    local targetPlayer = players[math.random(1, #players)]
+                    creature:CastSpell(targetPlayer, Config_bossSpell4[eventInProgress])
+                    lastBossSpell3 = GetCurrTime()
+                    return
+                end
+            else
+                creature:CastSpell(creature:GetVictim(),Config_bossSpell3[eventInProgress])
+                lastBossSpell3 = GetCurrTime()
+                return
+            end
         end
     end
 end
 
 function addNPC.onEnterCombat(event, creature, target)
-    local timer1 = 13000
-    local timer2 = 11000
-    local timer3 = 37000
     local player
 
-    timer1 = timer1 / (1 + ((difficulty - 1) / 5))
-    timer2 = timer2 / (1 + ((difficulty - 1) / 5))
-    timer3 = timer3 / (1 + ((difficulty - 1) / 5))
+    timer1 = Config_addSpellTimer1[eventInProgress] / (1 + ((difficulty - 1) / 5))
+    timer2 = Config_addSpellTimer2[eventInProgress] / (1 + ((difficulty - 1) / 5))
+    timer3 = Config_addSpellTimer3[eventInProgress] / (1 + ((difficulty - 1) / 5))
 
     creature:RegisterEvent(addNPC.Bomb, timer1, 0)
     creature:RegisterEvent(addNPC.Bolt, timer2, 0)
@@ -534,6 +538,10 @@ function addNPC.onEnterCombat(event, creature, target)
         creature:AddThreat(player, 1)
     end
     addphase = 1
+
+    lastAddSpell1 = encounterStartTime
+    lastAddSpell2 = encounterStartTime
+    lastAddSpell3 = encounterStartTime
 end
 
 function addNPC.Bomb(event, delay, pCall, creature)
@@ -633,7 +641,7 @@ function eS_castFireworks(eventId, delay, repeats)
     for n, v in pairs(playersForFireworks) do
         player = GetPlayerByGUID(v)
         if player ~= nil then
-            player:CastSpell(player, fireworks[math.random(1, #fireworks)])
+            player:CastSpell(player, Config_fireworks[math.random(1, #Config_fireworks)])
         end
     end
     if repeats == 1 then
@@ -702,6 +710,11 @@ function eS_has_value (tab, val)
         end
     end
     return false
+end
+
+function eS_getDifficultyTimer(rawTimer)
+    local timer = rawTimer / (1 + ((difficulty - 1) / 5))
+    return timer
 end
 
 RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, eS_command)
