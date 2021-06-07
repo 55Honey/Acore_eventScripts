@@ -141,6 +141,15 @@ local spawnedNPCGuid
 local encounterStartTime
 local mapEventStart
 
+local lastBossSpell1
+local lastBossSpell2
+local lastBossSpell3
+local lastBossSpell4
+local lastBossSpellSelf
+local lastAddSpell1
+local lastAddSpell2
+local lastAddSpell3
+
 --local arrays
 local cancelEventIdHello = {}
 local cancelEventIdStart = {}
@@ -253,10 +262,7 @@ end
 
 function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
     local spawnedBoss
-    local spawnedCreature
-    local spawnedCreature1
-    local spawnedCreature2
-    local spawnedCreature3
+    local spawnedCreature = {}
 
     if player == nil then return end
     if player:IsInGroup() == false then
@@ -280,9 +286,9 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         end
         --start 5man encounter
         bossfightInProgress = 1
-        spawnedCreature = player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
-        spawnedCreature:SetPhaseMask(2)
-        spawnedCreature:SetScale(spawnedCreature:GetScale() * eS_getSize(difficulty))
+        spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
+        spawnedCreature[1]:SetPhaseMask(2)
+        spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
         encounterStartTime = GetCurrTime()
 
         groupPlayers = group:GetMembers()
@@ -291,9 +297,9 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
                 if v:GetDistance(player) < 80 then
                     v:SetPhaseMask(2)
                     playersInRaid[n] = v:GetGUID()
-                    spawnedCreature:SetInCombatWith(v)
+                    spawnedCreature[1]:SetInCombatWith(v)
                     v:SetInCombatWith(spawnedCreature)
-                    spawnedCreature:AddThreat(v, 1)
+                    spawnedCreature[1]:AddThreat(v, 1)
                 end
             else
                 v:SendBroadcastMessage("You were too far away to join the fight.")
@@ -315,17 +321,17 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         bossfightInProgress = 2
 
         spawnedBoss = player:SpawnCreature(Config_bossEntry[eventInProgress], x, y, z+2, o)
-        spawnedCreature1 = player:SpawnCreature(Config_addEntry[eventInProgress], x-10, y, z+2, o)
-        spawnedCreature2 = player:SpawnCreature(Config_addEntry[eventInProgress], x, y-10, z+2, o)
-        spawnedCreature3 = player:SpawnCreature(Config_addEntry[eventInProgress], x, y+10, z+2, o)
+        spawnedCreature[1] = player:SpawnCreature(Config_addEntry[eventInProgress], x-15, y, z+2, o)
+        spawnedCreature[2] = player:SpawnCreature(Config_addEntry[eventInProgress], x, y-15, z+2, o)
+        spawnedCreature[3] = player:SpawnCreature(Config_addEntry[eventInProgress], x, y+15, z+2, o)
         spawnedBoss:SetPhaseMask(2)
-        spawnedCreature1:SetPhaseMask(2)
-        spawnedCreature2:SetPhaseMask(2)
-        spawnedCreature3:SetPhaseMask(2)
+        spawnedCreature[1]:SetPhaseMask(2)
+        spawnedCreature[2]:SetPhaseMask(2)
+        spawnedCreature[3]:SetPhaseMask(2)
         spawnedBoss:SetScale(spawnedBoss:GetScale() * eS_getSize(difficulty))
-        spawnedCreature1:SetScale(spawnedCreature1:GetScale() * eS_getSize(difficulty))
-        spawnedCreature2:SetScale(spawnedCreature2:GetScale() * eS_getSize(difficulty))
-        spawnedCreature3:SetScale(spawnedCreature3:GetScale() * eS_getSize(difficulty))
+        spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
+        spawnedCreature[2]:SetScale(spawnedCreature[2]:GetScale() * eS_getSize(difficulty))
+        spawnedCreature[3]:SetScale(spawnedCreature[3]:GetScale() * eS_getSize(difficulty))
         encounterStartTime = GetCurrTime()
 
         groupPlayers = group:GetMembers()
@@ -335,17 +341,17 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
                     v:SetPhaseMask(2)
                     playersInRaid[n] = v:GetGUID()
                     spawnedBoss:SetInCombatWith(v)
-                    spawnedCreature1:SetInCombatWith(v)
-                    spawnedCreature2:SetInCombatWith(v)
-                    spawnedCreature3:SetInCombatWith(v)
+                    spawnedCreature[1]:SetInCombatWith(v)
+                    spawnedCreature[2]:SetInCombatWith(v)
+                    spawnedCreature[3]:SetInCombatWith(v)
                     v:SetInCombatWith(spawnedBoss)
-                    v:SetInCombatWith(spawnedCreature1)
-                    v:SetInCombatWith(spawnedCreature2)
-                    v:SetInCombatWith(spawnedCreature3)
+                    v:SetInCombatWith(spawnedCreature[1])
+                    v:SetInCombatWith(spawnedCreature[2])
+                    v:SetInCombatWith(spawnedCreature[3])
                     spawnedBoss:AddThreat(v, 1)
-                    spawnedCreature1:AddThreat(v, 1)
-                    spawnedCreature2:AddThreat(v, 1)
-                    spawnedCreature3:AddThreat(v, 1)
+                    spawnedCreature[1]:AddThreat(v, 1)
+                    spawnedCreature[2]:AddThreat(v, 1)
+                    spawnedCreature[3]:AddThreat(v, 1)
                 end
             else
                 v:SendBroadcastMessage("You were too far away to join the fight.")
@@ -353,15 +359,15 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         end
 
         spawnedBossGuid = spawnedBoss:GetGUID()
-        spawnedCreature1Guid = spawnedCreature1:GetGUID()
-        spawnedCreature2Guid = spawnedCreature2:GetGUID()
-        spawnedCreature3Guid = spawnedCreature3:GetGUID()
-        spawnedCreature1:AddAura( 34184, spawnedCreature1 )         -- Arcane
-        spawnedCreature1:AddAura( 7941, spawnedCreature1 )          -- Nature
-        spawnedCreature2:AddAura( 7942, spawnedCreature2 )          -- Fire
-        spawnedCreature2:AddAura( 7940, spawnedCreature2 )          -- Frost
-        spawnedCreature3:AddAura( 34182, spawnedCreature3 )         -- Holy
-        spawnedCreature3:AddAura( 34309, spawnedCreature3 )         -- Shadow
+        spawnedCreature[1]Guid = spawnedCreature[1]:GetGUID()
+        spawnedCreature[2]Guid = spawnedCreature[2]:GetGUID()
+        spawnedCreature[3]Guid = spawnedCreature[3]:GetGUID()
+        spawnedCreature[1]:AddAura( 34184, spawnedCreature[1] )         -- Arcane
+        spawnedCreature[1]:AddAura( 7941, spawnedCreature[1] )          -- Nature
+        spawnedCreature[2]:AddAura( 7942, spawnedCreature[2] )          -- Fire
+        spawnedCreature[2]:AddAura( 7940, spawnedCreature[2] )          -- Frost
+        spawnedCreature[3]:AddAura( 34182, spawnedCreature[3] )         -- Holy
+        spawnedCreature[3]:AddAura( 34309, spawnedCreature[3] )         -- Shadow
     end
     player:GossipComplete()
 end
@@ -651,6 +657,11 @@ end
 function eS_getEncounterDuration()
     local dt = GetTimeDiff(encounterStartTime)
     return string.format("%.2d:%.2d", (dt / 1000 / 60) % 60, (dt / 1000) % 60)
+end
+
+function eS_getTimeSinceEncounterStart()
+    local dt = GetTimeDiff(encounterStartTime)
+    return dt
 end
 
 function eS_has_value (tab, val)
