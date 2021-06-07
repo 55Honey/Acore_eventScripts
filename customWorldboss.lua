@@ -43,11 +43,19 @@ local Config_bossSpellEnrageTimer = {}
 local Config_addSpell1 = {}
 local Config_addSpell2 = {}
 local Config_addSpell3 = {}
-local Config_addSpellEnrage = {}
 
+local Config_addSpellEnrage = {}
 local Config_addSpellTimer1 = {}
 local Config_addSpellTimer2 = {}
 local Config_addSpellTimer3 = {}
+
+local Config_addsAmount = {}                   -- how many adds will spawn
+local Config_aura1Add1 = {}                    -- an aura to add to the 1st add
+local Config_aura2Add1 = {}                    -- another aura to add toe the 1st add
+local Config_aura1Add2 = {}                    -- an aura to add to the 2nd add
+local Config_aura2Add2 = {}                    -- another aura to add toe the 2nd add
+local Config_aura1Add3 = {}                    -- an aura to add to the 3rd add
+local Config_aura2Add3 = {}                    -- another aura to add toe the 3rd add
 
 local fireworks = {}
 
@@ -90,6 +98,15 @@ Config_bossSpellTimer1[1] = 19000   -- This timer applies to Config_bossSpell1
 Config_bossSpellTimer2[1] = 23000   -- This timer applies to Config_bossSpell2
 Config_bossSpellTimer3[1] = 11000   -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 Config_bossSpellEnrageTimer[1] = 180
+
+Config_addsAmount[1] = 3
+
+Config_aura1Add1[1] = 34184         -- Arcane
+Config_aura2Add1[1] = 7941          -- Nature
+Config_aura1Add2[1] = 7942          -- Fire
+Config_aura2Add2[1] = 7940          -- Frost
+Config_aura1Add3[1] = 34182         -- Holy
+Config_aura2Add3[1] = 34309         -- Shadow
 
 fireworks[1] = 66400
 fireworks[2] = 66402
@@ -319,17 +336,18 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         bossfightInProgress = 2
 
         spawnedBoss = player:SpawnCreature(Config_bossEntry[eventInProgress], x, y, z+2, o)
-        spawnedCreature[1] = player:SpawnCreature(Config_addEntry[eventInProgress], x-15, y, z+2, o)
-        spawnedCreature[2] = player:SpawnCreature(Config_addEntry[eventInProgress], x, y-15, z+2, o)
-        spawnedCreature[3] = player:SpawnCreature(Config_addEntry[eventInProgress], x, y+15, z+2, o)
         spawnedBoss:SetPhaseMask(2)
-        spawnedCreature[1]:SetPhaseMask(2)
-        spawnedCreature[2]:SetPhaseMask(2)
-        spawnedCreature[3]:SetPhaseMask(2)
         spawnedBoss:SetScale(spawnedBoss:GetScale() * eS_getSize(difficulty))
-        spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
-        spawnedCreature[2]:SetScale(spawnedCreature[2]:GetScale() * eS_getSize(difficulty))
-        spawnedCreature[3]:SetScale(spawnedCreature[3]:GetScale() * eS_getSize(difficulty))
+        spawnedBossGuid = spawnedBoss:GetGUID()
+
+        for c = 1, Config_addsAmount[eventInProgress] do
+            local randomX = (math.sin(math.random(1,360)) * 20)
+            local randomY = (math.sin(math.random(1,360)) * 20)
+            spawnedCreature[c] = player:SpawnCreature(Config_addEntry[eventInProgress], x + randomX, y + randomY, z+2, o)
+            spawnedCreature[c]:SetPhaseMask(2)
+            spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * eS_getSize(difficulty))
+            spawnedCreatureGuid[c] = spawnedCreature[1]:GetGUID()
+        end
         encounterStartTime = GetCurrTime()
 
         groupPlayers = group:GetMembers()
@@ -339,33 +357,48 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
                     v:SetPhaseMask(2)
                     playersInRaid[n] = v:GetGUID()
                     spawnedBoss:SetInCombatWith(v)
-                    spawnedCreature[1]:SetInCombatWith(v)
-                    spawnedCreature[2]:SetInCombatWith(v)
-                    spawnedCreature[3]:SetInCombatWith(v)
                     v:SetInCombatWith(spawnedBoss)
-                    v:SetInCombatWith(spawnedCreature[1])
-                    v:SetInCombatWith(spawnedCreature[2])
-                    v:SetInCombatWith(spawnedCreature[3])
                     spawnedBoss:AddThreat(v, 1)
-                    spawnedCreature[1]:AddThreat(v, 1)
-                    spawnedCreature[2]:AddThreat(v, 1)
-                    spawnedCreature[3]:AddThreat(v, 1)
+                    for c = 1, Config_addsAmount[eventInProgress] do
+                        spawnedCreature[c]:SetInCombatWith(v)
+                        v:SetInCombatWith(spawnedCreature[c])
+                        spawnedCreature[c]:AddThreat(v, 1)
+                    end
                 end
             else
                 v:SendBroadcastMessage("You were too far away to join the fight.")
             end
         end
 
-        spawnedBossGuid = spawnedBoss:GetGUID()
-        spawnedCreatureGuid[1] = spawnedCreature[1]:GetGUID()
-        spawnedCreatureGuid[2] = spawnedCreature[2]:GetGUID()
-        spawnedCreatureGuid[3] = spawnedCreature[3]:GetGUID()
-        spawnedCreature[1]:AddAura( 34184, spawnedCreature[1] )         -- Arcane
-        spawnedCreature[1]:AddAura( 7941, spawnedCreature[1] )          -- Nature
-        spawnedCreature[2]:AddAura( 7942, spawnedCreature[2] )          -- Fire
-        spawnedCreature[2]:AddAura( 7940, spawnedCreature[2] )          -- Frost
-        spawnedCreature[3]:AddAura( 34182, spawnedCreature[3] )         -- Holy
-        spawnedCreature[3]:AddAura( 34309, spawnedCreature[3] )         -- Shadow
+        --apply auras to adds
+        for c = 1, #spawnedCreature do
+            if spawnedCreature[c] ~= nil then
+                if Config_aura1Add1[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura1Add1[c], spawnedCreature[c])
+                end
+                if Config_aura2Add1[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura2Add1[c], spawnedCreature[c])
+                end
+            end
+
+            if spawnedCreature[c] ~= nil then
+                if Config_aura1Add2[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura1Add2[c], spawnedCreature[c])
+                end
+                if Config_aura2Add2[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura2Add2[c], spawnedCreature[c])
+                end
+            end
+
+            if spawnedCreature[c] ~= nil then
+                if Config_aura1Add3[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura1Add3[c], spawnedCreature[c])
+                end
+                if Config_aura2Add3[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura2Add3[c], spawnedCreature[c])
+                end
+            end
+        end
     end
     player:GossipComplete()
 end
@@ -382,9 +415,9 @@ end
 -- 37279 Rain of Fire
 
 function bossNPC.onEnterCombat(event, creature, target)
-    local timer1 = 19000
-    local timer2 = 23000
-    local timer3 = 11000
+    local timer1 = Config_bossSpellTimer1[eventInProgress]
+    local timer2 = Config_bossSpellTimer2[eventInProgress]
+    local timer3 = Config_bossSpellTimer3[eventInProgress]
 
     timer1 = timer1 / (1 + ((difficulty - 1) / 5))
     timer2 = timer2 / (1 + ((difficulty - 1) / 5))
