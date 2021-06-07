@@ -49,6 +49,12 @@ local Config_addSpellTimer1 = {}
 local Config_addSpellTimer2 = {}
 local Config_addSpellTimer3 = {}
 
+local fireworks = {}
+
+------------------------------------------
+-- Begin of config section
+------------------------------------------
+
 -- Name of Eluna dB scheme
 Config.customDbName = "ac_eluna"
 -- Min GM rank to start an event
@@ -84,6 +90,16 @@ Config_bossSpellTimer1[1] = 19000   -- This timer applies to Config_bossSpell1
 Config_bossSpellTimer2[1] = 23000   -- This timer applies to Config_bossSpell2
 Config_bossSpellTimer3[1] = 11000   -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 Config_bossSpellEnrageTimer[1] = 180
+
+fireworks[1] = 66400
+fireworks[2] = 66402
+fireworks[3] = 46847
+fireworks[4] = 46829
+fireworks[5] = 46830
+fireworks[6] = 62074
+fireworks[7] = 62075
+fireworks[8] = 62077
+fireworks[9] = 55420
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -576,17 +592,7 @@ function addNPC.reset(event, creature)
 end
 
 function eS_castFireworks(eventId, delay, repeats)
-    local fireworks = {}
     local player
-    fireworks[1] = 66400
-    fireworks[2] = 66402
-    fireworks[3] = 46847
-    fireworks[4] = 46829
-    fireworks[5] = 46830
-    fireworks[6] = 62074
-    fireworks[7] = 62075
-    fireworks[8] = 62077
-    fireworks[9] = 55420
     for n, v in pairs(playersForFireworks) do
         player = GetPlayerByGUID(v)
         if player ~= nil then
