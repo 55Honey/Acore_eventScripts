@@ -172,6 +172,9 @@ local groupPlayers = {}
 local playersForFireworks = {}
 local spawnedCreatureGuid = {}
 
+--todo: check and fix phasing
+--todo: move add abilities to a single event
+
 local function eS_command(event, player, command)
     local commandArray = {}
     local eventNPC
