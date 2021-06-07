@@ -134,9 +134,6 @@ local y
 local z
 local o
 local spawnedBossGuid
-local spawnedCreature1Guid
-local spawnedCreature2Guid
-local spawnedCreature3Guid
 local spawnedNPCGuid
 local encounterStartTime
 local mapEventStart
@@ -158,6 +155,7 @@ local bossNPC = {}
 local playersInRaid = {}
 local groupPlayers = {}
 local playersForFireworks = {}
+local spawnedCreatureGuid = {}
 
 local function eS_command(event, player, command)
     local commandArray = {}
@@ -298,7 +296,7 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
                     v:SetPhaseMask(2)
                     playersInRaid[n] = v:GetGUID()
                     spawnedCreature[1]:SetInCombatWith(v)
-                    v:SetInCombatWith(spawnedCreature)
+                    v:SetInCombatWith(spawnedCreature[1])
                     spawnedCreature[1]:AddThreat(v, 1)
                 end
             else
@@ -359,9 +357,9 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
         end
 
         spawnedBossGuid = spawnedBoss:GetGUID()
-        spawnedCreature[1]Guid = spawnedCreature[1]:GetGUID()
-        spawnedCreature[2]Guid = spawnedCreature[2]:GetGUID()
-        spawnedCreature[3]Guid = spawnedCreature[3]:GetGUID()
+        spawnedCreatureGuid[1] = spawnedCreature[1]:GetGUID()
+        spawnedCreatureGuid[2] = spawnedCreature[2]:GetGUID()
+        spawnedCreatureGuid[3] = spawnedCreature[3]:GetGUID()
         spawnedCreature[1]:AddAura( 34184, spawnedCreature[1] )         -- Arcane
         spawnedCreature[1]:AddAura( 7941, spawnedCreature[1] )          -- Nature
         spawnedCreature[2]:AddAura( 7942, spawnedCreature[2] )          -- Fire
