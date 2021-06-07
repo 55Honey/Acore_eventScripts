@@ -220,6 +220,10 @@ local function eS_command(event, player, command)
             return false
         end
     elseif commandArray[1] == "stopevent" then
+        if player == nil then
+            print("Must be used from inside the game.")
+            return false
+        end
         if eventInProgress == nil then
             player:SendBroadcastMessage("There is no event in progress.")
             return false
