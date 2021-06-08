@@ -50,11 +50,11 @@ local Config_addSpellTimer3 = {}
 
 local Config_addsAmount = {}                   -- how many adds will spawn
 local Config_aura1Add1 = {}                    -- an aura to add to the 1st add
-local Config_aura2Add1 = {}                    -- another aura to add toe the 1st add
+local Config_aura2Add1 = {}                    -- another aura to add to the 1st add
 local Config_aura1Add2 = {}                    -- an aura to add to the 2nd add
-local Config_aura2Add2 = {}                    -- another aura to add toe the 2nd add
+local Config_aura2Add2 = {}                    -- another aura to add to the 2nd add
 local Config_aura1Add3 = {}                    -- an aura to add to the 3rd add
-local Config_aura2Add3 = {}                    -- another aura to add toe the 3rd add
+local Config_aura2Add3 = {}                    -- another aura to add to the 3rd add
 
 local Config_fireworks = {}
 
