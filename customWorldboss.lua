@@ -27,11 +27,11 @@ local Config_npcText = {}           --gossip in npc_text to be told by the summo
 local Config_bossEntry = {}         --db entry of the boss creature
 local Config_addEntry = {}          --db entry of the add creature
 
-local Config_bossSpell1 = {}
-local Config_bossSpell2 = {}
-local Config_bossSpell3 = {}            --on the 2nd nearest player
-local Config_bossSpell4 = {}            --on a random player within 30y
-local Config_bossSpellSelf = {}
+local Config_bossSpell1 = {}            --directly applied to the tank
+local Config_bossSpell2 = {}            --randomly applied to a player in 35m range
+local Config_bossSpell3 = {}            --on the 2nd nearest player within 30m
+local Config_bossSpell4 = {}            --on a random player within 40m
+local Config_bossSpellSelf = {}         --cast on boss while adds are still alive
 local Config_bossSpellEnrage = {}
 
 local Config_bossSpellTimer1 = {}       -- This timer applies to Config_bossSpell1
@@ -172,7 +172,6 @@ local groupPlayers = {}
 local playersForFireworks = {}
 local spawnedCreatureGuid = {}
 
---todo: check and fix phasing
 --todo: move add abilities to a single event
 
 local function eS_command(event, player, command)
@@ -468,62 +467,86 @@ end
 function bossNPC.Event(event, delay, pCall, creature)
     if creature:IsCasting() == true then return end
 
-    if eS_getDifficultyTimer(Config_bossSpellEnrageTimer[eventInProgress]) < eS_getTimeSince(encounterStartTime)then
-        if phase == 2 and eS_getTimeSince(encounterStartTime) > Config_bossSpellEnrageTimer[eventInProgress] then
-            creature:SendUnitYell("FEEL MY WRATH!", 0 )
-            phase = 3
-            creature:CastSpell(creature, Config_bossSpellEnrage[eventInProgress])
-            return
-        end
-    end
-
-    if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < eS_getTimeSince(lastBossSpell3) then
-        if addsDownCounter < 3 then
-            creature:CastSpell(creature, Config_bossSpellSelf[eventInProgress])
-            lastBossSpell3 = GetCurrTime()
-            return
-        elseif phase == 1 then
-            creature:SendUnitYell("You might have handled these creatures. But now I WILL handle YOU!", 0 )
-            phase = 2
-        end
-    end
-
-    if eS_getDifficultyTimer(Config_bossSpellTimer1[eventInProgress]) < eS_getTimeSince(lastBossSpell1) then
-        creature:CastSpell(creature:GetVictim(), Config_bossSpell1[eventInProgress])
-        lastBossSpell1 = GetCurrTime()
-        return
-    end
-
-    if eS_getDifficultyTimer(Config_bossSpellTimer2[eventInProgress]) < eS_getTimeSince(lastBossSpell2) then
-        if (math.random(1, 100) <= 50) then
-            local players = creature:GetPlayersInRange(35)
-            local targetPlayer = players[math.random(1, #players)]
-            creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
-            creature:CastSpell(targetPlayer, Config_bossSpell2[eventInProgress])
-            lastBossSpell2 = GetCurrTime()
-            return
-        end
-    end
-
-    if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < eS_getTimeSince(lastBossSpell3) then
-        if phase > 1 then
-            local players = creature:GetPlayersInRange(30)
-            if #players > 1 then
-                if (math.random(1, 100) <= 50) then
-                    creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), Config_bossSpell3[eventInProgress])
-                    lastBossSpell3 = GetCurrTime()
+    if Config_bossSpellEnrageTimer[eventInProgress] ~= nil and Config_bossSpellEnrage[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config_bossSpellEnrageTimer[eventInProgress]) < eS_getTimeSince(encounterStartTime)then
+            if phase == 2 and eS_getTimeSince(encounterStartTime) > Config_bossSpellEnrageTimer[eventInProgress] then
+                phase = 3
+                if Config_bossSpellEnrage[eventInProgress] ~= nil then
+                    creature:SendUnitYell("FEEL MY WRATH!", 0 )
+                    creature:CastSpell(creature, Config_bossSpellEnrage[eventInProgress])
                     return
-                elseif phase > 1 then
-                    local players = creature:GetPlayersInRange(40)
-                    local targetPlayer = players[math.random(1, #players)]
-                    creature:CastSpell(targetPlayer, Config_bossSpell4[eventInProgress])
+                end
+            end
+        end
+    end
+
+    if Config_bossSpellTimer3[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < eS_getTimeSince(lastBossSpell3) then
+            if addsDownCounter < 3 then
+                if Config_bossSpellSelf[eventInProgress] ~= nil then
+                    creature:CastSpell(creature, Config_bossSpellSelf[eventInProgress])
                     lastBossSpell3 = GetCurrTime()
                     return
                 end
-            else
-                creature:CastSpell(creature:GetVictim(),Config_bossSpell3[eventInProgress])
-                lastBossSpell3 = GetCurrTime()
+            elseif phase == 1 then
+                creature:SendUnitYell("You might have handled these creatures. But now I WILL handle YOU!", 0 )
+                phase = 2
+            end
+        end
+    end
+
+    if Config_bossSpellTimer1[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config_bossSpellTimer1[eventInProgress]) < eS_getTimeSince(lastBossSpell1) then
+            if Config_bossSpell1[eventInProgress] ~= nil then
+                creature:CastSpell(creature:GetVictim(), Config_bossSpell1[eventInProgress])
+                lastBossSpell1 = GetCurrTime()
                 return
+            end
+        end
+    end
+
+    if Config_bossSpellTimer2[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config_bossSpellTimer2[eventInProgress]) < eS_getTimeSince(lastBossSpell2) then
+            if Config_bossSpell2[eventInProgress] ~= nil then
+                if (math.random(1, 100) <= 50) then
+                    local players = creature:GetPlayersInRange(35)
+                    local targetPlayer = players[math.random(1, #players)]
+                    creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
+                    creature:CastSpell(targetPlayer, Config_bossSpell2[eventInProgress])
+                    lastBossSpell2 = GetCurrTime()
+                    return
+                end
+            end
+        end
+    end
+
+    if Config_bossSpellTimer3[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < eS_getTimeSince(lastBossSpell3) then
+            if phase > 1 then
+                local players = creature:GetPlayersInRange(30)
+                if #players > 1 then
+                    if (math.random(1, 100) <= 50) then
+                        if Config_bossSpell3[eventInProgress] ~= nil then
+                            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), Config_bossSpell3[eventInProgress])
+                            lastBossSpell3 = GetCurrTime()
+                            return
+                        end
+                    elseif phase > 1 then
+                        if Config_bossSpell4[eventInProgress] ~= nil then
+                            local players = creature:GetPlayersInRange(40)
+                            local targetPlayer = players[math.random(1, #players)]
+                            creature:CastSpell(targetPlayer, Config_bossSpell4[eventInProgress])
+                            lastBossSpell3 = GetCurrTime()
+                            return
+                        end
+                    end
+                else
+                    if Config_bossSpell3[eventInProgress] ~= nil then
+                        creature:CastSpell(creature:GetVictim(),Config_bossSpell3[eventInProgress])
+                        lastBossSpell3 = GetCurrTime()
+                        return
+                    end
+                end
             end
         end
     end
