@@ -20,12 +20,12 @@
 --               -  maybe offer teleports
 --               -  use .stopevent to end the event and despawn the NPC
 ------------------------------------------------------------------------------------------------
-local Config = {}                   --general config flags
+local Config = {}                       --general config flags
 
-local Config_npcEntry = {}          --db entry of the NPC creature to summon the boss
-local Config_npcText = {}           --gossip in npc_text to be told by the summoning NPC
-local Config_bossEntry = {}         --db entry of the boss creature
-local Config_addEntry = {}          --db entry of the add creature
+local Config_npcEntry = {}              --db entry of the NPC creature to summon the boss
+local Config_npcText = {}               --gossip in npc_text to be told by the summoning NPC
+local Config_bossEntry = {}             --db entry of the boss creature
+local Config_addEntry = {}              --db entry of the add creature
 
 local Config_bossSpell1 = {}            --directly applied to the tank
 local Config_bossSpell2 = {}            --randomly applied to a player in 35m range
@@ -48,13 +48,13 @@ local Config_addSpellTimer1 = {}        -- This timer applies to Config_addSpell
 local Config_addSpellTimer2 = {}        -- This timer applies to Config_addSpell1 (in ms)
 local Config_addSpellTimer3 = {}        -- This timer applies to Config_addSpell1 (in ms)
 
-local Config_addsAmount = {}                   -- how many adds will spawn
-local Config_aura1Add1 = {}                    -- an aura to add to the 1st add
-local Config_aura2Add1 = {}                    -- another aura to add to the 1st add
-local Config_aura1Add2 = {}                    -- an aura to add to the 2nd add
-local Config_aura2Add2 = {}                    -- another aura to add to the 2nd add
-local Config_aura1Add3 = {}                    -- an aura to add to the 3rd add
-local Config_aura2Add3 = {}                    -- another aura to add to the 3rd add
+local Config_addsAmount = {}            -- how many adds will spawn
+local Config_aura1Add1 = {}             -- an aura to add to the 1st add
+local Config_aura2Add1 = {}             -- another aura to add to the 1st add
+local Config_aura1Add2 = {}             -- an aura to add to the 2nd add
+local Config_aura2Add2 = {}             -- another aura to add to the 2nd add
+local Config_aura1Add3 = {}             -- an aura to add to the 3rd add
+local Config_aura2Add3 = {}             -- another aura to add to the 3rd add
 
 local Config_fireworks = {}
 
@@ -86,40 +86,41 @@ Config_addEntry[1] = 1112003
 Config_npcText[1] = 91111
 
 -- list of spells:
-Config_addSpell1[1] = 12421         -- min range 30m, 1-3rd farthest target within 30m -- Mithril Frag Bomb 8y 149-201 damage + stun
-Config_addSpell2[1] = 60488         -- min range 45m, cast on tank -- Shadow Bolt (30)
-Config_addSpell3[1] = 24326         -- min range 0m -- HIGH knockback (ZulFarrak beast)
-Config_addSpellEnrage[1] = 69166    -- Soft Enrage
+Config_addSpell1[1] = 12421             -- min range 30m, 1-3rd farthest target within 30m -- Mithril Frag Bomb 8y 149-201 damage + stun
+Config_addSpell2[1] = 60488             -- min range 45m, cast on tank -- Shadow Bolt (30)
+Config_addSpell3[1] = 24326             -- min range 0m -- HIGH knockback (ZulFarrak beast)
+Config_addSpellEnrage[1] = 69166        -- Soft Enrage
 
-Config_bossSpell1[1] = 38846        --directly applied to the tank-- Forceful Cleave (Target + nearest ally)
-Config_bossSpell2[1] = 45108        --randomly applied to a player in 35m range-- CKs Fireball
-Config_bossSpell3[1] = 53721        --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
-Config_bossSpell4[1] = 37279        --on a random player within 40m-- Rain of Fire
-Config_bossSpellSelf[1] = 69898     --cast on boss while adds are still alive-- Hot
-Config_bossSpellEnrage[1] = 69166   --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+Config_bossSpell1[1] = 38846            --directly applied to the tank-- Forceful Cleave (Target + nearest ally)
+Config_bossSpell2[1] = 45108            --randomly applied to a player in 35m range-- CKs Fireball
+Config_bossSpell3[1] = 53721            --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
+Config_bossSpell4[1] = 37279            --on a random player within 40m-- Rain of Fire
+Config_bossSpellSelf[1] = 69898         --cast on boss while adds are still alive-- Hot
+Config_bossSpellEnrage[1] = 69166       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
-Config_addSpellTimer1[1] = 13000    -- This timer applies to Config_addSpell1
-Config_addSpellTimer2[1] = 11000    -- This timer applies to Config_addSpell2
-Config_addSpellTimer3[1] = 37000    -- This timer applies to Config_addSpell3
+Config_addSpellTimer1[1] = 13000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer2[1] = 11000        -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[1] = 37000        -- This timer applies to Config_addSpell3
 
-Config_bossSpellTimer1[1] = 19000   -- This timer applies to Config_bossSpell1
-Config_bossSpellTimer2[1] = 23000   -- This timer applies to Config_bossSpell2
-Config_bossSpellTimer3[1] = 11000   -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer1[1] = 19000       -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[1] = 23000       -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[1] = 11000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 Config_bossSpellEnrageTimer[1] = 180000
 
-Config_addsAmount[1] = 3            -- how many adds will spawn
+Config_addsAmount[1] = 3                -- how many adds will spawn
 
-Config_aura1Add1[1] = 34184         -- an aura to add to the 1st add-- Arcane
-Config_aura2Add1[1] = 7941          -- another aura to add to the 1st add-- Nature
-Config_aura1Add2[1] = 7942          -- an aura to add to the 2nd add-- Fire
-Config_aura2Add2[1] = 7940          -- another aura to add to the 2nd add-- Frost
-Config_aura1Add3[1] = 34182         -- an aura to add to the 3rd add-- Holy
-Config_aura2Add3[1] = 34309         -- another aura to add to the 3rd add-- Shadow
+Config_aura1Add1[1] = 34184             -- an aura to add to the 1st add-- Arcane
+Config_aura2Add1[1] = 7941              -- another aura to add to the 1st add-- Nature
+Config_aura1Add2[1] = 7942              -- an aura to add to the 2nd add-- Fire
+Config_aura2Add2[1] = 7940              -- another aura to add to the 2nd add-- Frost
+Config_aura1Add3[1] = 34182             -- an aura to add to the 3rd add-- Holy
+Config_aura2Add3[1] = 34309             -- another aura to add to the 3rd add-- Shadow
 
 ------------------------------------------
 -- End of example encounter 1
 ------------------------------------------
 
+-- these are the fireworks to be cast randomly for 20s when an encounter was beaten
 Config_fireworks[1] = 66400
 Config_fireworks[2] = 66402
 Config_fireworks[3] = 46847
@@ -188,7 +189,6 @@ local groupPlayers = {}
 local playersForFireworks = {}
 local spawnedCreatureGuid = {}
 
---todo: add more nil checks for config flags
 if Config.addEnoughSpell == nil then print("customWorldboss.lua: Missing flag Config.addEnoughSpell.") end
 if Config.customDbName == nil then print("customWorldboss.lua: Missing flag Config.customDbName.") end
 if Config.GMRankForEventStart == nil then print("customWorldboss.lua: Missing flag Config.GMRankForEventStart.") end
@@ -329,7 +329,7 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
             return
         end
         --start 5man encounter
-        bossfightInProgress = 1
+        bossfightInProgress = PARTY_IN_PROGRESS
         spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
         spawnedCreature[1]:SetPhaseMask(2)
         spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
@@ -362,7 +362,7 @@ function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
             return
         end
         --start raid encounter
-        bossfightInProgress = 2
+        bossfightInProgress = RAID_IN_PROGRESS
 
         spawnedBoss = player:SpawnCreature(Config_bossEntry[eventInProgress], x, y, z+2, o)
         spawnedBoss:SetPhaseMask(2)
@@ -596,7 +596,7 @@ end
 function addNPC.Event(event, delay, pCall, creature)
     if creature:IsCasting() == true then return end
 
-    if bossfightInProgress == 1 and Config_addSpell1[eventInProgress] ~= nil then  -- only for the party version
+    if bossfightInProgress == PARTY_IN_PROGRESS and Config_addSpell1[eventInProgress] ~= nil then  -- only for the party version
         if addphase == 1 and creature:GetHealthPct() < 67 then
             addphase = 2
             creature:SendUnitYell("ENOUGH", 0 )
@@ -676,7 +676,7 @@ function addNPC.reset(event, creature)
     local player
     eS_checkInCombat()
     creature:RemoveEvents()
-    if bossfightInProgress == 1 then
+    if bossfightInProgress == PARTY_IN_PROGRESS then
         if creature:IsDead() == true then
             local playerListString
             CreateLuaEvent(eS_castFireworks, 1000, 20)
