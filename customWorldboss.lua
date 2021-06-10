@@ -32,21 +32,21 @@ local Config_bossSpell2 = {}            --randomly applied to a player in 35m ra
 local Config_bossSpell3 = {}            --on the 2nd nearest player within 30m
 local Config_bossSpell4 = {}            --on a random player within 40m
 local Config_bossSpellSelf = {}         --cast on boss while adds are still alive
-local Config_bossSpellEnrage = {}
+local Config_bossSpellEnrage = {}       --cast on boss once after Config_bossSpellEnrageTimer ms have passed
 
-local Config_bossSpellTimer1 = {}       -- This timer applies to Config_bossSpell1
-local Config_bossSpellTimer2 = {}       -- This timer applies to Config_bossSpell2
-local Config_bossSpellTimer3 = {}       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+local Config_bossSpellTimer1 = {}       -- This timer applies to Config_bossSpell1 (in ms)
+local Config_bossSpellTimer2 = {}       -- This timer applies to Config_bossSpell2 (in ms)
+local Config_bossSpellTimer3 = {}       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later (in ms)
 local Config_bossSpellEnrageTimer = {}
 
 local Config_addSpell1 = {}
 local Config_addSpell2 = {}
 local Config_addSpell3 = {}
 
-local Config_addSpellEnrage = {}
-local Config_addSpellTimer1 = {}
-local Config_addSpellTimer2 = {}
-local Config_addSpellTimer3 = {}
+local Config_addSpellEnrage = {}        -- This spell will be cast on the add in 5man mode only after 300 seconds
+local Config_addSpellTimer1 = {}        -- This timer applies to Config_addSpell1 (in ms)
+local Config_addSpellTimer2 = {}        -- This timer applies to Config_addSpell1 (in ms)
+local Config_addSpellTimer3 = {}        -- This timer applies to Config_addSpell1 (in ms)
 
 local Config_addsAmount = {}                   -- how many adds will spawn
 local Config_aura1Add1 = {}                    -- an aura to add to the 1st add
@@ -71,6 +71,10 @@ Config.GMRankForUpdateDB = 3
 -- set to 1 to print error messages to the console. Any other value including nil turns it off.
 Config.printErrorsToConsole = 1
 
+------------------------------------------
+-- Begin of example encounter 1 config
+------------------------------------------
+
 -- Database NPC entries. Must match the associated .sql file
 Config_bossEntry[1] = 1112001
 Config_npcEntry[1] = 1112002
@@ -89,9 +93,9 @@ Config_bossSpell4[1] = 37279        -- Rain of Fire
 Config_bossSpellSelf[1] = 69898     -- Hot
 Config_bossSpellEnrage[1] = 69166   -- Soft Enrage
 
-Config_addSpellTimer1[1] = 13000
-Config_addSpellTimer2[1] = 11000
-Config_addSpellTimer3[1] = 37000
+Config_addSpellTimer1[1] = 13000    -- This timer applies to Config_addSpell1
+Config_addSpellTimer2[1] = 11000    -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[1] = 37000    -- This timer applies to Config_addSpell3
 
 Config_bossSpellTimer1[1] = 19000   -- This timer applies to Config_bossSpell1
 Config_bossSpellTimer2[1] = 23000   -- This timer applies to Config_bossSpell2
@@ -106,6 +110,10 @@ Config_aura1Add2[1] = 7942          -- Fire
 Config_aura2Add2[1] = 7940          -- Frost
 Config_aura1Add3[1] = 34182         -- Holy
 Config_aura2Add3[1] = 34309         -- Shadow
+
+------------------------------------------
+-- End of example encounter 1
+------------------------------------------
 
 Config_fireworks[1] = 66400
 Config_fireworks[2] = 66402
@@ -482,7 +490,7 @@ function bossNPC.Event(event, delay, pCall, creature)
 
     if Config_bossSpellTimer3[eventInProgress] ~= nil then
         if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < eS_getTimeSince(lastBossSpell3) then
-            if addsDownCounter < 3 then
+            if addsDownCounter < Config_addsAmount[eventInProgress] then
                 if Config_bossSpellSelf[eventInProgress] ~= nil then
                     creature:CastSpell(creature, Config_bossSpellSelf[eventInProgress])
                     lastBossSpell3 = GetCurrTime()
@@ -585,6 +593,7 @@ function addNPC.Bomb(event, delay, pCall, creature)
     end
 end
 
+--todo: add Config_addSpellEnrage
 function addNPC.Bolt(event, delay, pCall, creature)
     if creature:IsCasting() == true then return end
     if addphase == 1 and creature:GetHealthPct() < 68 then
