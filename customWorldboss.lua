@@ -39,9 +39,9 @@ local Config_bossSpellTimer2 = {}       -- This timer applies to Config_bossSpel
 local Config_bossSpellTimer3 = {}       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later (in ms)
 local Config_bossSpellEnrageTimer = {}
 
-local Config_addSpell1 = {}
-local Config_addSpell2 = {}
-local Config_addSpell3 = {}
+local Config_addSpell1 = {}             -- min range 30m, 1-3rd farthest target within 30m
+local Config_addSpell2 = {}             -- min range 45m, cast on tank
+local Config_addSpell3 = {}             -- min range 0m
 
 local Config_addSpellEnrage = {}        -- This spell will be cast on the add in 5man mode only after 300 seconds
 local Config_addSpellTimer1 = {}        -- This timer applies to Config_addSpell1 (in ms)
@@ -70,6 +70,10 @@ Config.GMRankForEventStart = 2
 Config.GMRankForUpdateDB = 3
 -- set to 1 to print error messages to the console. Any other value including nil turns it off.
 Config.printErrorsToConsole = 1
+-- time in ms before adds enrage in 5man mode
+Config.addEnrageTimer = 300000
+-- spell to cast at 33 and 66%hp in party mode
+Config.addEnoughSpell = 19471
 
 ------------------------------------------
 -- Begin of example encounter 1 config
@@ -82,16 +86,17 @@ Config_addEntry[1] = 1112003
 Config_npcText[1] = 91111
 
 -- list of spells:
-Config_addSpell1[1] = 60488         -- Mithril Frag Bomb 8y 149-201 damage + stun
-Config_addSpell2[1] = 24326         -- Shadow Bolt (30)
-Config_addSpell3[1] = 12421         -- HIGH knockback (ZulFarrak beast)
+Config_addSpell1[1] = 12421         -- min range 30m, 1-3rd farthest target within 30m -- Mithril Frag Bomb 8y 149-201 damage + stun
+Config_addSpell2[1] = 60488         -- min range 45m, cast on tank -- Shadow Bolt (30)
+Config_addSpell3[1] = 24326         -- min range 0m -- HIGH knockback (ZulFarrak beast)
+Config_addSpellEnrage[1] = 69166    -- Soft Enrage
 
-Config_bossSpell1[1] = 38846        -- Forceful Cleave (Target + nearest ally)
-Config_bossSpell2[1] = 45108        -- CKs Fireball
-Config_bossSpell3[1] = 53721        -- Death and decay (10% hp per second)
-Config_bossSpell4[1] = 37279        -- Rain of Fire
-Config_bossSpellSelf[1] = 69898     -- Hot
-Config_bossSpellEnrage[1] = 69166   -- Soft Enrage
+Config_bossSpell1[1] = 38846        --directly applied to the tank-- Forceful Cleave (Target + nearest ally)
+Config_bossSpell2[1] = 45108        --randomly applied to a player in 35m range-- CKs Fireball
+Config_bossSpell3[1] = 53721        --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
+Config_bossSpell4[1] = 37279        --on a random player within 40m-- Rain of Fire
+Config_bossSpellSelf[1] = 69898     --cast on boss while adds are still alive-- Hot
+Config_bossSpellEnrage[1] = 69166   --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
 Config_addSpellTimer1[1] = 13000    -- This timer applies to Config_addSpell1
 Config_addSpellTimer2[1] = 11000    -- This timer applies to Config_addSpell2
@@ -145,6 +150,9 @@ local SELECT_TARGET_BOTTOMAGGRO = 2         -- Selects targets from bottom aggro
 local SELECT_TARGET_NEAREST = 3
 local SELECT_TARGET_FARTHEST = 4
 
+local PARTY_IN_PROGRESS = 1
+local RAID_IN_PROGRESS = 2
+
 --local variables
 local cancelGossipEvent
 local eventInProgress
@@ -180,7 +188,13 @@ local groupPlayers = {}
 local playersForFireworks = {}
 local spawnedCreatureGuid = {}
 
---todo: move add abilities to a single event
+--todo: add more nil checks for config flags
+if Config.addEnoughSpell == nil then print("customWorldboss.lua: Missing flag Config.addEnoughSpell.") end
+if Config.customDbName == nil then print("customWorldboss.lua: Missing flag Config.customDbName.") end
+if Config.GMRankForEventStart == nil then print("customWorldboss.lua: Missing flag Config.GMRankForEventStart.") end
+if Config.GMRankForUpdateDB == nil then print("customWorldboss.lua: Missing flag Config.GMRankForUpdateDB.") end
+if Config.printErrorsToConsole == nil then print("customWorldboss.lua: Missing flag Config.printErrorsToConsole.") end
+if Config.addEnrageTimer == nil then print("customWorldboss.lua: Missing flag Config.addEnrageTimer.") end
 
 local function eS_command(event, player, command)
     local commandArray = {}
@@ -279,7 +293,10 @@ function eS_summonEventNPC(playerGuid)
 end
 
 function eS_onHello(event, player, creature)
-    if bossfightInProgress ~= nil then return end
+    if bossfightInProgress ~= nil then
+        creature:SendUnitSay("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration(), 0 )
+        return
+    end
 
     if player == nil then return end
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 0)
@@ -479,11 +496,9 @@ function bossNPC.Event(event, delay, pCall, creature)
         if eS_getDifficultyTimer(Config_bossSpellEnrageTimer[eventInProgress]) < eS_getTimeSince(encounterStartTime)then
             if phase == 2 and eS_getTimeSince(encounterStartTime) > Config_bossSpellEnrageTimer[eventInProgress] then
                 phase = 3
-                if Config_bossSpellEnrage[eventInProgress] ~= nil then
-                    creature:SendUnitYell("FEEL MY WRATH!", 0 )
-                    creature:CastSpell(creature, Config_bossSpellEnrage[eventInProgress])
-                    return
-                end
+                creature:SendUnitYell("FEEL MY WRATH!", 0 )
+                creature:CastSpell(creature, Config_bossSpellEnrage[eventInProgress])
+                return
             end
         end
     end
@@ -563,14 +578,10 @@ end
 function addNPC.onEnterCombat(event, creature, target)
     local player
 
-    timer1 = Config_addSpellTimer1[eventInProgress] / (1 + ((difficulty - 1) / 5))
-    timer2 = Config_addSpellTimer2[eventInProgress] / (1 + ((difficulty - 1) / 5))
-    timer3 = Config_addSpellTimer3[eventInProgress] / (1 + ((difficulty - 1) / 5))
+    creature:RegisterEvent(addNPC.Event, 100, 0)
 
-    creature:RegisterEvent(addNPC.Bomb, timer1, 0)
-    creature:RegisterEvent(addNPC.Bolt, timer2, 0)
-    creature:RegisterEvent(addNPC.Knockback, timer3, 0)
     creature:CallAssistance()
+    creature:CallForHelp(200)
     for _, v in pairs(playersInRaid) do
         player = GetPlayerByGUID(v)
         creature:AddThreat(player, 1)
@@ -582,56 +593,88 @@ function addNPC.onEnterCombat(event, creature, target)
     lastAddSpell3 = encounterStartTime
 end
 
-function addNPC.Bomb(event, delay, pCall, creature)
+function addNPC.Event(event, delay, pCall, creature)
     if creature:IsCasting() == true then return end
-    local random = math.random(0, 2)
-    local players = creature:GetPlayersInRange(30)
-    if #players > 1 then
-        creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, random, 30), 12421)
-    else
-        creature:CastSpell(creature:GetVictim(),12421)
-    end
-end
 
---todo: add Config_addSpellEnrage
-function addNPC.Bolt(event, delay, pCall, creature)
-    if creature:IsCasting() == true then return end
-    if addphase == 1 and creature:GetHealthPct() < 68 then
-        addphase = 2
-        creature:SendUnitYell("ENOUGH", 0 )
-        creature:PlayDirectSound(412)
-        local players = creature:GetPlayersInRange(30)
-        if #players > 1 then
-            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 19471)
-        else
-            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 60488)
+    if bossfightInProgress == 1 and Config_addSpell1[eventInProgress] ~= nil then  -- only for the party version
+        if addphase == 1 and creature:GetHealthPct() < 67 then
+            addphase = 2
+            creature:SendUnitYell("ENOUGH", 0 )
+            creature:PlayDirectSound(412)
+            local players = creature:GetPlayersInRange(30)
+            if #players > 1 then
+                creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), Config.addEnoughSpell)
+                return
+            else
+                creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), Config_addSpell1[eventInProgress])
+                return
+            end
+        elseif addphase == 2 and creature:GetHealthPct() < 34 then
+            addphase = 3
+            creature:SendUnitYell("ENOUGH", 0 )
+            creature:PlayDirectSound(412)
+            local players = creature:GetPlayersInRange(30)
+            if #players > 1 then
+                creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), Config.addEnoughSpell)
+                return
+            else
+                creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), Config_addSpell1[eventInProgress])
+                return
+            end
         end
-    elseif addphase == 2 and creature:GetHealthPct() < 35 then
-        addphase = 3
-        creature:SendUnitYell("ENOUGH", 0 )
-        creature:PlayDirectSound(412)
-        local players = creature:GetPlayersInRange(30)
-        if #players > 1 then
-            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 19471)
-        else
-            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), 60488)
+    end
+
+
+    if Config_addSpellEnrage[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config.addEnrageTimer) < eS_getTimeSince(encounterStartTime)then
+            if phase == 2 and eS_getTimeSince(encounterStartTime) > Config_addSpellEnrage[eventInProgress] then
+                phase = 3
+                creature:SendUnitYell("FEEL MY WRATH!", 0 )
+                creature:CastSpell(creature, Config_addSpellEnrage[eventInProgress])
+                return
+            end
         end
-    else
-        if (math.random(1, 100) <= 25) then
+    end
+
+    if Config_addSpellTimer1[eventInProgress] ~= nil and Config_addSpell1[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config_addSpellTimer1[eventInProgress]) < eS_getTimeSince(lastAddSpell1) then
+            local random = math.random(0, 2)
+            local players = creature:GetPlayersInRange(30)
+            if #players > 1 then
+                creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, random, 30), Config_addSpell1[eventInProgress])
+                lastAddSpell1 = GetCurrTime()
+                return
+            else
+                creature:CastSpell(creature:GetVictim(),Config_addSpell1[eventInProgress])
+                lastAddSpell1 = GetCurrTime()
+                return
+            end
+        end
+    end
+
+    if Config_addSpellTimer2[eventInProgress] ~= nil and Config_addSpell2[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config_addSpellTimer2[eventInProgress]) < eS_getTimeSince(lastAddSpell2) then
             creature:PlayDirectSound(6436)
-            creature:CastSpell(creature:GetVictim(), 60488)
+            creature:CastSpell(creature:GetVictim(), Config_addSpell2[eventInProgress])
+            lastAddSpell2 = GetCurrTime()
+            return
         end
     end
-end
 
-function addNPC.Knockback(event, delay, pCall, creature)
-    creature:SendUnitYell("Me smash.", 0 )
-    creature:CastSpell(creature, 24326)
-    eS_checkInCombat()
+    if Config_addSpellTimer3[eventInProgress] ~= nil and Config_addSpell3[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config_addSpellTimer3[eventInProgress]) < eS_getTimeSince(lastAddSpell3) then
+            creature:SendUnitYell("Me smash.", 0 )
+            creature:CastSpell(creature, 24326)
+            lastAddSpell3 = GetCurrTime()
+            eS_checkInCombat()
+            return
+        end
+    end
 end
 
 function addNPC.reset(event, creature)
     local player
+    eS_checkInCombat()
     creature:RemoveEvents()
     if bossfightInProgress == 1 then
         if creature:IsDead() == true then
