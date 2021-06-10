@@ -107,14 +107,14 @@ Config_bossSpellTimer2[1] = 23000   -- This timer applies to Config_bossSpell2
 Config_bossSpellTimer3[1] = 11000   -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 Config_bossSpellEnrageTimer[1] = 180000
 
-Config_addsAmount[1] = 3
+Config_addsAmount[1] = 3            -- how many adds will spawn
 
-Config_aura1Add1[1] = 34184         -- Arcane
-Config_aura2Add1[1] = 7941          -- Nature
-Config_aura1Add2[1] = 7942          -- Fire
-Config_aura2Add2[1] = 7940          -- Frost
-Config_aura1Add3[1] = 34182         -- Holy
-Config_aura2Add3[1] = 34309         -- Shadow
+Config_aura1Add1[1] = 34184         -- an aura to add to the 1st add-- Arcane
+Config_aura2Add1[1] = 7941          -- another aura to add to the 1st add-- Nature
+Config_aura1Add2[1] = 7942          -- an aura to add to the 2nd add-- Fire
+Config_aura2Add2[1] = 7940          -- another aura to add to the 2nd add-- Frost
+Config_aura1Add3[1] = 34182         -- an aura to add to the 3rd add-- Holy
+Config_aura2Add3[1] = 34309         -- another aura to add to the 3rd add-- Shadow
 
 ------------------------------------------
 -- End of example encounter 1
