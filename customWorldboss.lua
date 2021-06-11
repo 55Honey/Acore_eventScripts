@@ -80,8 +80,8 @@ Config.addEnoughSpell = 19471
 ------------------------------------------
 
 -- Database NPC entries. Must match the associated .sql file
-Config_bossEntry[1] = 1112001           --db entry of the NPC creature to summon the boss
-Config_npcEntry[1] = 1112002            --db entry of the boss creature
+Config_bossEntry[1] = 1112001           --db entry of the boss creature
+Config_npcEntry[1] = 1112002            --db entry of the NPC creature to summon the boss
 Config_addEntry[1] = 1112003            --db entry of the add creature
 Config_npcText[1] = 91111               --gossip in npc_text to be told by the summoning NPC
 
