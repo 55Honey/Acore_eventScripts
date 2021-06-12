@@ -188,6 +188,7 @@ local playersInRaid = {}
 local groupPlayers = {}
 local playersForFireworks = {}
 local spawnedCreatureGuid = {}
+local scoreEarned = {}
 
 if Config.addEnoughSpell == nil then print("customWorldboss.lua: Missing flag Config.addEnoughSpell.") end
 if Config.customDbName == nil then print("customWorldboss.lua: Missing flag Config.customDbName.") end
@@ -195,6 +196,263 @@ if Config.GMRankForEventStart == nil then print("customWorldboss.lua: Missing fl
 if Config.GMRankForUpdateDB == nil then print("customWorldboss.lua: Missing flag Config.GMRankForUpdateDB.") end
 if Config.printErrorsToConsole == nil then print("customWorldboss.lua: Missing flag Config.printErrorsToConsole.") end
 if Config.addEnrageTimer == nil then print("customWorldboss.lua: Missing flag Config.addEnrageTimer.") end
+
+--todo: add a storage system for beaten encounters.
+--todo: add a score system
+
+local function newAutotable(dim)
+    local MT = {};
+    for i=1, dim do
+        MT[i] = {__index = function(t, k)
+            if i < dim then
+                t[k] = setmetatable({}, MT[i+1])
+                return t[k];
+            end
+        end}
+    end
+
+    return setmetatable({}, MT[1]);
+end
+
+local function eS_castFireworks(eventId, delay, repeats)
+    local player
+    for n, v in pairs(playersForFireworks) do
+        player = GetPlayerByGUID(v)
+        if player ~= nil then
+            player:CastSpell(player, Config_fireworks[math.random(1, #Config_fireworks)])
+        end
+    end
+    if repeats == 1 then
+        playersForFireworks = {}
+    end
+end
+
+local function eS_resetPlayers(event, player)
+    if eS_has_value(playersInRaid, player:GetGUID()) and player:GetPhaseMask() ~= 1 then
+        if player ~= nil then
+            player:SetPhaseMask(1)
+            player:SendBroadcastMessage("You left the event.")
+        end
+    end
+end
+
+local function eS_getSize(difficulty)
+    local value
+    if difficulty == 1 then
+        value = 1
+    else
+        value = 1 + (difficulty - 1) / 4
+    end
+    return value
+end
+
+local function eS_splitString(inputstr, seperator)
+    if seperator == nil then
+        seperator = "%s"
+    end
+    local t={}
+    for str in string.gmatch(inputstr, "([^"..seperator.."]+)") do
+        table.insert(t, str)
+    end
+    return t
+end
+
+local function eS_checkInCombat()
+    --check if all players are in combat
+    local player
+    for n, v in pairs(playersInRaid) do
+        player = GetPlayerByGUID(v)
+        if player ~= nil then
+            if player:IsInCombat() == false and player:GetPhaseMask() == 2 then
+                player:SetPhaseMask(1)
+                player:SendBroadcastMessage("You were returned to the real time because you did not participate.")
+            end
+        end
+    end
+end
+
+local function eS_getEncounterDuration()
+    local dt = GetTimeDiff(encounterStartTime)
+    return string.format("%.2d:%.2d", (dt / 1000 / 60) % 60, (dt / 1000) % 60)
+end
+
+local function eS_getTimeSince(time)
+    local dt = GetTimeDiff(time)
+    return dt
+end
+
+local function eS_has_value (tab, val)
+    for index, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+    return false
+end
+
+local function eS_getDifficultyTimer(rawTimer)
+    local timer = rawTimer / (1 + ((difficulty - 1) / 5))
+    return timer
+end
+
+local function eS_onHello(event, player, creature)
+    if bossfightInProgress ~= nil then
+        creature:SendUnitSay("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration(), 0 )
+        return
+    end
+
+    if player == nil then return end
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 0)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything.", Config_npcEntry[eventInProgress], 1)
+    player:GossipSendMenu(Config_npcText[1], creature, 0)
+end
+
+local function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
+    local spawnedBoss
+    local spawnedCreature = {}
+
+    if player == nil then return end
+    if player:IsInGroup() == false then
+        player:SendBroadcastMessage("You need to be in a party.")
+        player:GossipComplete()
+        return
+    end
+
+    local group = player:GetGroup()
+
+    if intid == 0 then
+        if group:IsRaidGroup() == true then
+            player:SendBroadcastMessage("You can not accept that task while in a raid group.")
+            player:GossipComplete()
+            return
+        end
+        if not group:IsLeader(player:GetGUID()) then
+            player:SendBroadcastMessage("You are not the leader of your group.")
+            player:GossipComplete()
+            return
+        end
+        --start 5man encounter
+        bossfightInProgress = PARTY_IN_PROGRESS
+        spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
+        spawnedCreature[1]:SetPhaseMask(2)
+        spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
+        encounterStartTime = GetCurrTime()
+
+        groupPlayers = group:GetMembers()
+        for n, v in pairs(groupPlayers) do
+            if v:GetDistance(player) ~= nil then
+                if v:GetDistance(player) < 80 then
+                    v:SetPhaseMask(2)
+                    playersInRaid[n] = v:GetGUID()
+                    spawnedCreature[1]:SetInCombatWith(v)
+                    v:SetInCombatWith(spawnedCreature[1])
+                    spawnedCreature[1]:AddThreat(v, 1)
+                end
+            else
+                v:SendBroadcastMessage("You were too far away to join the fight.")
+            end
+        end
+
+    elseif intid == 1 then
+        if group:IsRaidGroup() == false then
+            player:SendBroadcastMessage("You can not accept that task without being in a raid group.")
+            player:GossipComplete()
+            return
+        end
+        if not group:IsLeader(player:GetGUID()) then
+            player:SendBroadcastMessage("You are not the leader of your group.")
+            player:GossipComplete()
+            return
+        end
+        --start raid encounter
+        bossfightInProgress = RAID_IN_PROGRESS
+
+        spawnedBoss = player:SpawnCreature(Config_bossEntry[eventInProgress], x, y, z+2, o)
+        spawnedBoss:SetPhaseMask(2)
+        spawnedBoss:SetScale(spawnedBoss:GetScale() * eS_getSize(difficulty))
+        spawnedBossGuid = spawnedBoss:GetGUID()
+
+        if Config_addsAmount[eventInProgress] == nil then Config_addsAmount[eventInProgress] = 1 end
+
+        for c = 1, Config_addsAmount[eventInProgress] do
+            local randomX = (math.sin(math.random(1,360)) * 20)
+            local randomY = (math.sin(math.random(1,360)) * 20)
+            spawnedCreature[c] = player:SpawnCreature(Config_addEntry[eventInProgress], x + randomX, y + randomY, z+2, o)
+            spawnedCreature[c]:SetPhaseMask(2)
+            spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * eS_getSize(difficulty))
+            spawnedCreatureGuid[c] = spawnedCreature[1]:GetGUID()
+        end
+        encounterStartTime = GetCurrTime()
+
+        groupPlayers = group:GetMembers()
+        for n, v in pairs(groupPlayers) do
+            if v:GetDistance(player) ~= nil then
+                if v:GetDistance(player) < 80 then
+                    v:SetPhaseMask(2)
+                    playersInRaid[n] = v:GetGUID()
+                    spawnedBoss:SetInCombatWith(v)
+                    v:SetInCombatWith(spawnedBoss)
+                    spawnedBoss:AddThreat(v, 1)
+                    for c = 1, Config_addsAmount[eventInProgress] do
+                        spawnedCreature[c]:SetInCombatWith(v)
+                        v:SetInCombatWith(spawnedCreature[c])
+                        spawnedCreature[c]:AddThreat(v, 1)
+                    end
+                end
+            else
+                v:SendBroadcastMessage("You were too far away to join the fight.")
+            end
+        end
+
+        --apply auras to adds
+        for c = 1, #spawnedCreature do
+            if spawnedCreature[c] ~= nil then
+                if Config_aura1Add1[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura1Add1[c], spawnedCreature[c])
+                end
+                if Config_aura2Add1[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura2Add1[c], spawnedCreature[c])
+                end
+            end
+
+            if spawnedCreature[c] ~= nil then
+                if Config_aura1Add2[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura1Add2[c], spawnedCreature[c])
+                end
+                if Config_aura2Add2[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura2Add2[c], spawnedCreature[c])
+                end
+            end
+
+            if spawnedCreature[c] ~= nil then
+                if Config_aura1Add3[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura1Add3[c], spawnedCreature[c])
+                end
+                if Config_aura2Add3[c] ~= nil then
+                    spawnedCreature[c]:AddAura(Config_aura2Add3[c], spawnedCreature[c])
+                end
+            end
+        end
+    end
+    player:GossipComplete()
+end
+
+local function eS_summonEventNPC(playerGuid)
+    local player
+    -- tempSummon an NPC with a dialouge option to start the encounter, store the guid for later unsummon
+    player = GetPlayerByGUID(playerGuid)
+    if player == nil then return end
+    x = player:GetX()
+    y = player:GetY()
+    z = player:GetZ()
+    o = player:GetO()
+    local spawnedNPC = player:SpawnCreature(Config_npcEntry[eventInProgress], x, y, z, o)
+    spawnedNPCGuid = spawnedNPC:GetGUID()
+
+    -- add an event to spawn the Boss in a phase when gossip is clicked
+    cancelEventIdHello[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_HELLO, eS_onHello)
+    cancelEventIdStart[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_SELECT, eS_spawnBoss)
+end
 
 local function eS_command(event, player, command)
     local commandArray = {}
@@ -273,163 +531,6 @@ local function eS_command(event, player, command)
         end  
     end
     --nothing here yet
-end
-    
-function eS_summonEventNPC(playerGuid)
-    local player
-    -- tempSummon an NPC with a dialouge option to start the encounter, store the guid for later unsummon
-    player = GetPlayerByGUID(playerGuid)
-    if player == nil then return end
-    x = player:GetX()
-    y = player:GetY()
-    z = player:GetZ()
-    o = player:GetO()
-    local spawnedNPC = player:SpawnCreature(Config_npcEntry[eventInProgress], x, y, z, o)
-    spawnedNPCGuid = spawnedNPC:GetGUID()
-
-    -- add an event to spawn the Boss in a phase when gossip is clicked
-    cancelEventIdHello[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_HELLO, eS_onHello)
-    cancelEventIdStart[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_SELECT, eS_spawnBoss)
-end
-
-function eS_onHello(event, player, creature)
-    if bossfightInProgress ~= nil then
-        creature:SendUnitSay("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration(), 0 )
-        return
-    end
-
-    if player == nil then return end
-    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 0)
-    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything.", Config_npcEntry[eventInProgress], 1)
-    player:GossipSendMenu(Config_npcText[1], creature, 0)
-end
-
-function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
-    local spawnedBoss
-    local spawnedCreature = {}
-
-    if player == nil then return end
-    if player:IsInGroup() == false then
-        player:SendBroadcastMessage("You need to be in a party.")
-        player:GossipComplete()
-        return
-    end
-
-    local group = player:GetGroup()
-
-    if intid == 0 then
-        if group:IsRaidGroup() == true then
-            player:SendBroadcastMessage("You can not accept that task while in a raid group.")
-            player:GossipComplete()
-            return
-        end
-        if not group:IsLeader(player:GetGUID()) then
-            player:SendBroadcastMessage("You are not the leader of your group.")
-            player:GossipComplete()
-            return
-        end
-        --start 5man encounter
-        bossfightInProgress = PARTY_IN_PROGRESS
-        spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
-        spawnedCreature[1]:SetPhaseMask(2)
-        spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
-        encounterStartTime = GetCurrTime()
-
-        groupPlayers = group:GetMembers()
-        for n, v in pairs(groupPlayers) do
-            if v:GetDistance(player) ~= nil then
-                if v:GetDistance(player) < 80 then
-                    v:SetPhaseMask(2)
-                    playersInRaid[n] = v:GetGUID()
-                    spawnedCreature[1]:SetInCombatWith(v)
-                    v:SetInCombatWith(spawnedCreature[1])
-                    spawnedCreature[1]:AddThreat(v, 1)
-                end
-            else
-                v:SendBroadcastMessage("You were too far away to join the fight.")
-            end
-        end
-
-    elseif intid == 1 then
-        if group:IsRaidGroup() == false then
-            player:SendBroadcastMessage("You can not accept that task without being in a raid group.")
-            player:GossipComplete()
-            return
-        end
-        if not group:IsLeader(player:GetGUID()) then
-            player:SendBroadcastMessage("You are not the leader of your group.")
-            player:GossipComplete()
-            return
-        end
-        --start raid encounter
-        bossfightInProgress = RAID_IN_PROGRESS
-
-        spawnedBoss = player:SpawnCreature(Config_bossEntry[eventInProgress], x, y, z+2, o)
-        spawnedBoss:SetPhaseMask(2)
-        spawnedBoss:SetScale(spawnedBoss:GetScale() * eS_getSize(difficulty))
-        spawnedBossGuid = spawnedBoss:GetGUID()
-
-        for c = 1, Config_addsAmount[eventInProgress] do
-            local randomX = (math.sin(math.random(1,360)) * 20)
-            local randomY = (math.sin(math.random(1,360)) * 20)
-            spawnedCreature[c] = player:SpawnCreature(Config_addEntry[eventInProgress], x + randomX, y + randomY, z+2, o)
-            spawnedCreature[c]:SetPhaseMask(2)
-            spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * eS_getSize(difficulty))
-            spawnedCreatureGuid[c] = spawnedCreature[1]:GetGUID()
-        end
-        encounterStartTime = GetCurrTime()
-
-        groupPlayers = group:GetMembers()
-        for n, v in pairs(groupPlayers) do
-            if v:GetDistance(player) ~= nil then
-                if v:GetDistance(player) < 80 then
-                    v:SetPhaseMask(2)
-                    playersInRaid[n] = v:GetGUID()
-                    spawnedBoss:SetInCombatWith(v)
-                    v:SetInCombatWith(spawnedBoss)
-                    spawnedBoss:AddThreat(v, 1)
-                    for c = 1, Config_addsAmount[eventInProgress] do
-                        spawnedCreature[c]:SetInCombatWith(v)
-                        v:SetInCombatWith(spawnedCreature[c])
-                        spawnedCreature[c]:AddThreat(v, 1)
-                    end
-                end
-            else
-                v:SendBroadcastMessage("You were too far away to join the fight.")
-            end
-        end
-
-        --apply auras to adds
-        for c = 1, #spawnedCreature do
-            if spawnedCreature[c] ~= nil then
-                if Config_aura1Add1[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura1Add1[c], spawnedCreature[c])
-                end
-                if Config_aura2Add1[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura2Add1[c], spawnedCreature[c])
-                end
-            end
-
-            if spawnedCreature[c] ~= nil then
-                if Config_aura1Add2[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura1Add2[c], spawnedCreature[c])
-                end
-                if Config_aura2Add2[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura2Add2[c], spawnedCreature[c])
-                end
-            end
-
-            if spawnedCreature[c] ~= nil then
-                if Config_aura1Add3[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura1Add3[c], spawnedCreature[c])
-                end
-                if Config_aura2Add3[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura2Add3[c], spawnedCreature[c])
-                end
-            end
-        end
-    end
-    player:GossipComplete()
 end
 
 -- list of spells:
@@ -718,87 +819,6 @@ function addNPC.reset(event, creature)
     creature:DespawnOrUnsummon(0)
 end
 
-function eS_castFireworks(eventId, delay, repeats)
-    local player
-    for n, v in pairs(playersForFireworks) do
-        player = GetPlayerByGUID(v)
-        if player ~= nil then
-            player:CastSpell(player, Config_fireworks[math.random(1, #Config_fireworks)])
-        end
-    end
-    if repeats == 1 then
-        playersForFireworks = {}
-    end
-end
-
-function eS_resetPlayers(event, player)
-    if eS_has_value(playersInRaid, player:GetGUID()) and player:GetPhaseMask() ~= 1 then
-        if player ~= nil then
-            player:SetPhaseMask(1)
-            player:SendBroadcastMessage("You left the event.")
-        end
-    end
-end
-
-function eS_getSize(difficulty)
-    local value
-    if difficulty == 1 then
-        value = 1
-    else
-        value = 1 + (difficulty - 1) / 4
-    end
-    return value
-end
-
-function eS_splitString(inputstr, seperator)
-    if seperator == nil then
-        seperator = "%s"
-    end
-    local t={}
-    for str in string.gmatch(inputstr, "([^"..seperator.."]+)") do
-        table.insert(t, str)
-    end
-    return t
-end
-
-function eS_checkInCombat()
-    --check if all players are in combat
-    local player
-    for n, v in pairs(playersInRaid) do
-        player = GetPlayerByGUID(v)
-        if player ~= nil then
-            if player:IsInCombat() == false and player:GetPhaseMask() == 2 then
-                player:SetPhaseMask(1)
-                player:SendBroadcastMessage("You were returned to the real time because you did not participate.")
-            end
-        end
-    end
-end
-
-function eS_getEncounterDuration()
-    local dt = GetTimeDiff(encounterStartTime)
-    return string.format("%.2d:%.2d", (dt / 1000 / 60) % 60, (dt / 1000) % 60)
-end
-
-function eS_getTimeSince(time)
-    local dt = GetTimeDiff(time)
-    return dt
-end
-
-function eS_has_value (tab, val)
-    for index, value in ipairs(tab) do
-        if value == val then
-            return true
-        end
-    end
-    return false
-end
-
-function eS_getDifficultyTimer(rawTimer)
-    local timer = rawTimer / (1 + ((difficulty - 1) / 5))
-    return timer
-end
-
 RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, eS_command)
 RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, eS_resetPlayers)
 
@@ -810,3 +830,34 @@ RegisterCreatureEvent(1112003, 4, addNPC.reset) -- OnDied
 RegisterCreatureEvent(1112001, 1, bossNPC.onEnterCombat)
 RegisterCreatureEvent(1112001, 2, bossNPC.reset) -- OnLeaveCombat
 RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
+
+--on ReloadEluna / Startup
+CharDBQuery('CREATE DATABASE IF NOT EXISTS `'..Config.customDbName..'`;');
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`encounters_beaten` (`account_id` INT(11) NOT NULL, `encounter` INT(11) DEFAULT 1, `difficulty` INT(3) DEFAULT 1, `group_type` INT(3) DEFAULT 0, `time_stamp` INT(11) DEFAULT 0);');
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`encounters_score` (`account_id` INT(11) NOT NULL, `score_earned` INT(11) DEFAULT 0, PRIMARY KEY (`account_id`);')
+
+local encountersBeaten = newAutotable(4)
+local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`encounters_beaten`;')
+if Data_SQL ~= nil then
+    local account
+    local encounter
+    local difficulty
+    local groupType
+    repeat
+        account = Data_SQL:GetUInt32(0)
+        encounter = Data_SQL:GetUInt32(1)
+        difficulty = Data_SQL:GetUInt8(2)
+        groupType = Data_SQL:GetUInt8(3)
+        encountersBeaten[account][encounter][difficulty][groupType] = Data_SQL:GetUInt32(1)
+    until not Data_SQL:NextRow()
+end
+Data_SQL = nil
+
+local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`encounters_score`;')
+if Data_SQL ~= nil then
+    local account
+    repeat
+        account = Data_SQL:GetUInt32(0)
+        scoreEarned[account] = Data_SQL:GetUInt32(1)
+    until not Data_SQL:NextRow()
+end
