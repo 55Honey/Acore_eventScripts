@@ -74,6 +74,10 @@ Config.printErrorsToConsole = 1
 Config.addEnrageTimer = 300000
 -- spell to cast at 33 and 66%hp in party mode
 Config.addEnoughSpell = 19471
+-- base score per encounter
+Config.baseScore = 90
+-- additional score per difficulty level
+Config.additionalScore = 10
 
 ------------------------------------------
 -- Begin of example encounter 1 config
@@ -834,21 +838,23 @@ RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 --on ReloadEluna / Startup
 CharDBQuery('CREATE DATABASE IF NOT EXISTS `'..Config.customDbName..'`;');
 CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`encounters_beaten` (`account_id` INT(11) NOT NULL, `encounter` INT(11) DEFAULT 1, `difficulty` INT(3) DEFAULT 1, `group_type` INT(3) DEFAULT 0, `time_stamp` INT(11) DEFAULT 0);');
-CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`encounters_score` (`account_id` INT(11) NOT NULL, `score_earned` INT(11) DEFAULT 0, PRIMARY KEY (`account_id`);')
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`encounters_score` (`account_id` INT(11) NOT NULL, `score_earned` INT(11) DEFAULT 0, PRIMARY KEY (`account_id`));')
 
-local encountersBeaten = newAutotable(4)
+local encountersBeaten = newAutotable(5)
 local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`encounters_beaten`;')
 if Data_SQL ~= nil then
-    local account
+    local accountId
+    local characterGuid
     local encounter
     local difficulty
     local groupType
     repeat
-        account = Data_SQL:GetUInt32(0)
-        encounter = Data_SQL:GetUInt32(1)
-        difficulty = Data_SQL:GetUInt8(2)
-        groupType = Data_SQL:GetUInt8(3)
-        encountersBeaten[account][encounter][difficulty][groupType] = Data_SQL:GetUInt32(1)
+        accountId = Data_SQL:GetUInt32(0)
+        characterGuid = Data_SQL:GetUInt32(1)
+        encounter = Data_SQL:GetUInt32(2)
+        difficulty = Data_SQL:GetUInt8(3)
+        groupType = Data_SQL:GetUInt8(4)
+        encountersBeaten[accountId][characterGuid][encounter][difficulty][groupType] = Data_SQL:GetUInt32(5)
     until not Data_SQL:NextRow()
 end
 Data_SQL = nil
