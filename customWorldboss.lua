@@ -75,7 +75,7 @@ Config.addEnrageTimer = 300000
 -- spell to cast at 33 and 66%hp in party mode
 Config.addEnoughSpell = 19471
 -- base score per encounter
-Config.baseScore = 90
+Config.baseScore = 40
 -- additional score per difficulty level
 Config.additionalScore = 10
 
@@ -302,16 +302,28 @@ end
 local function eS_onHello(event, player, creature)
     if bossfightInProgress ~= nil then
         creature:SendUnitSay("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration(), 0 )
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config_npcEntry[eventInProgress], 0)
         return
     end
 
     if player == nil then return end
-    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 0)
-    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything.", Config_npcEntry[eventInProgress], 1)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config_npcEntry[eventInProgress], 0)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 1)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything.", Config_npcEntry[eventInProgress], 2)
     player:GossipSendMenu(Config_npcText[1], creature, 0)
 end
 
-local function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
+local function awardScore()
+    local score = Config.baseScore + (Config.additionalScore * difficulty)
+    for n, playerGuid in pairs(playersInRaid) do
+        local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
+        if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
+        scoreEarned[accountId] = scoreEarned[accountId] + score
+        CharDBExecute('REPLACE INTO `'..Config.customDbName..'`.`encounters_score` VALUES ('..accountId..', '..scoreEarned[accountId]..');')
+    end
+end
+
+local function eS_chromieGossip(event, player, object, sender, intid, code, menu_id)
     local spawnedBoss
     local spawnedCreature = {}
 
@@ -325,6 +337,11 @@ local function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
     local group = player:GetGroup()
 
     if intid == 0 then
+        local accountId = player:GetAccountId()
+        if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
+        player:SendBroadcastMessage("Your current event score is: "..scoreEarned[accountId])
+        player:GossipComplete()
+    elseif intid == 1 then
         if group:IsRaidGroup() == true then
             player:SendBroadcastMessage("You can not accept that task while in a raid group.")
             player:GossipComplete()
@@ -357,7 +374,7 @@ local function eS_spawnBoss(event, player, object, sender, intid, code, menu_id)
             end
         end
 
-    elseif intid == 1 then
+    elseif intid == 2 then
         if group:IsRaidGroup() == false then
             player:SendBroadcastMessage("You can not accept that task without being in a raid group.")
             player:GossipComplete()
@@ -455,7 +472,7 @@ local function eS_summonEventNPC(playerGuid)
 
     -- add an event to spawn the Boss in a phase when gossip is clicked
     cancelEventIdHello[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_HELLO, eS_onHello)
-    cancelEventIdStart[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_SELECT, eS_spawnBoss)
+    cancelEventIdStart[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_SELECT, eS_chromieGossip)
 end
 
 local function eS_command(event, player, command)
@@ -577,6 +594,7 @@ function bossNPC.reset(event, creature)
                 end
             end
         end
+        awardScore()
         SendWorldMessage("The raid encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
         CreateLuaEvent(eS_castFireworks, 1000, 20)
         playersForFireworks = playersInRaid
@@ -797,6 +815,7 @@ function addNPC.reset(event, creature)
                     end
                 end
             end
+            awardScore()
             SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
             playersForFireworks = playersInRaid
             playersInRaid = {}
