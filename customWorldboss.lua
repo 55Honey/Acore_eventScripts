@@ -78,6 +78,14 @@ Config.addEnoughSpell = 19471
 Config.baseScore = 40
 -- additional score per difficulty level
 Config.additionalScore = 10
+-- set to award score for beating raids. Any other value including nil turns it off.
+Config.rewardRaid = 1
+-- set to 1 to store succesful raid attempts in the db. Any other value including nil turns it off.
+Config.storeRaid = 1
+-- set to award score for beating party encounter. Any other value including nil turns it off.
+Config.rewardParty = 0
+-- set to 1 to store succesful party attempts in the db. Any other value including nil turns it off.
+Config.storeParty = 1
 
 ------------------------------------------
 -- Begin of example encounter 1 config
@@ -621,7 +629,13 @@ function bossNPC.reset(event, creature)
                 end
             end
         end
-        awardScore()
+        if Config.rewardRaid == 1 then
+            awardScore()
+        elseif Config.storeRaid == 1 then
+            storeEncounter()
+        else
+            bossfightInProgress = nil
+        end
         SendWorldMessage("The raid encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
         CreateLuaEvent(eS_castFireworks, 1000, 20)
         playersForFireworks = playersInRaid
@@ -844,7 +858,13 @@ function addNPC.reset(event, creature)
                     end
                 end
             end
-            storeEncounter()
+            if Config.rewardParty == 1 then
+                awardScore()
+            elseif Config.storeParty == 1 then
+                storeEncounter()
+            else
+                bossfightInProgress = nil
+            end
             SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
             playersForFireworks = playersInRaid
             playersInRaid = {}
