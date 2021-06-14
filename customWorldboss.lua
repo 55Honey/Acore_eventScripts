@@ -385,7 +385,14 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
             player:GossipComplete()
             return
         end
-        --todo:add limitation/cooldown here
+        groupPlayers = group:GetMembers()
+        for n, v in pairs(groupPlayers) do
+            if eS_has_value(playersForFireworks, v:GetGUID()) then
+                object:SendUnitSay("Please, just a little break. I need to breathe, "..player:GetName()..". How about watching the fireworks?", 0 )
+                player:GossipComplete()
+                return
+            end
+        end
         --start raid encounter
         bossfightInProgress = RAID_IN_PROGRESS
 
@@ -406,7 +413,6 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         end
         encounterStartTime = GetCurrTime()
 
-        groupPlayers = group:GetMembers()
         for n, v in pairs(groupPlayers) do
             if v:GetDistance(player) ~= nil then
                 if v:GetDistance(player) < 80 then
