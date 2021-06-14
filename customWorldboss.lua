@@ -385,6 +385,7 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
             player:GossipComplete()
             return
         end
+        --todo:add limitation/cooldown here
         --start raid encounter
         bossfightInProgress = RAID_IN_PROGRESS
 
@@ -815,7 +816,6 @@ function addNPC.reset(event, creature)
                     end
                 end
             end
-            awardScore()
             SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
             playersForFireworks = playersInRaid
             playersInRaid = {}
