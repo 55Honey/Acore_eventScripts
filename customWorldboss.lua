@@ -434,8 +434,8 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         if Config_addsAmount[eventInProgress] == nil then Config_addsAmount[eventInProgress] = 1 end
 
         for c = 1, Config_addsAmount[eventInProgress] do
-            local randomX = (math.sin(math.random(1,360)) * 20)
-            local randomY = (math.sin(math.random(1,360)) * 20)
+            local randomX = (math.sin(math.random(1,360)) * 15)
+            local randomY = (math.sin(math.random(1,360)) * 15)
             spawnedCreature[c] = player:SpawnCreature(Config_addEntry[eventInProgress], x + randomX, y + randomY, z+2, o)
             spawnedCreature[c]:SetPhaseMask(2)
             spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * eS_getSize(difficulty))

@@ -9,13 +9,16 @@ Requires at least commit b824e9d18683ecfa498279de8ed1e49c1bfd887d of the Eluna E
 The ElunaLua module itself usually doesn't require much setup/config. Just specify the subfolder where to put your lua_scripts in its .conf file.
 
 If the directory was not changed in the ElunaLua config, add the .lua script to your `../lua_scripts/` directory as a subfolder of the worldserver.
-Adjust the top part of the .lua file with the config flags.
 
 ## Admin Usage:
-Adjust the config flags and IDs in the .lua and .sql in case of conflicts and run the associated SQL to add the required NPCs.
+Adjust the config flags and IDs in the .lua and .sql in case of conflicts and run the associated SQL to add the required NPCs. You can add more encounters by just adding more config flags.
+
+It is possible to reward players for participating in events. There is a config flag each to award score for playing 5man and for raid encounters. The amouont of score is configurable too.
+Another config flag allows to store any and all events in the db and visualize them, e.g. with a module for acore_cms.
 
 ## GM Usage:
 Use .startevent $event $difficulty to start and spawn the NPC players can interact with. Use .stopevent to despawn it. Possibly offer teleports.
+It is advised to not leave the event NPC unattended. In case a player bugs out, they can be returned to the game with `.modify phase 1`.
 
 ## Player Usage:
 Be in a party or raid respectively. As the party/raid leader: Talk to the NPC. 
