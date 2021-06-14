@@ -193,6 +193,7 @@ local groupPlayers = {}
 local playersForFireworks = {}
 local spawnedCreatureGuid = {}
 local scoreEarned = {}
+local scoreTotal = {}
 
 if Config.addEnoughSpell == nil then print("customWorldboss.lua: Missing flag Config.addEnoughSpell.") end
 if Config.customDbName == nil then print("customWorldboss.lua: Missing flag Config.customDbName.") end
@@ -201,8 +202,14 @@ if Config.GMRankForUpdateDB == nil then print("customWorldboss.lua: Missing flag
 if Config.printErrorsToConsole == nil then print("customWorldboss.lua: Missing flag Config.printErrorsToConsole.") end
 if Config.addEnrageTimer == nil then print("customWorldboss.lua: Missing flag Config.addEnrageTimer.") end
 
---todo: add a storage system for beaten encounters.
---todo: add a score system
+local function eS_has_value (tab, val)
+    for index, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+    return false
+end
 
 local function newAutotable(dim)
     local MT = {};
@@ -285,15 +292,6 @@ local function eS_getTimeSince(time)
     return dt
 end
 
-local function eS_has_value (tab, val)
-    for index, value in ipairs(tab) do
-        if value == val then
-            return true
-        end
-    end
-    return false
-end
-
 local function eS_getDifficultyTimer(rawTimer)
     local timer = rawTimer / (1 + ((difficulty - 1) / 5))
     return timer
@@ -318,9 +316,25 @@ local function awardScore()
     for n, playerGuid in pairs(playersInRaid) do
         local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
         if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
+        if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
         scoreEarned[accountId] = scoreEarned[accountId] + score
-        CharDBExecute('REPLACE INTO `'..Config.customDbName..'`.`encounters_score` VALUES ('..accountId..', '..scoreEarned[accountId]..');')
+        scoreTotal[accountId] = scoreTotal[accountId] + score
+        CharDBExecute('REPLACE INTO `'..Config.customDbName..'`.`eventscript_score` VALUES ('..accountId..', '..scoreEarned[accountId]..', '..scoreTotal[accountId]..');');
+        local gameTime = (tonumber(tostring(GetGameTime())))
+        local playerLowGuid = GetGUIDLow(playerGuid)
+        CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..bossfightInProgress..', '..eS_getTimeSince(encounterStartTime)..');');
     end
+    bossfightInProgress = nil
+end
+
+local function storeEncounter()
+    for n, playerGuid in pairs(playersInRaid) do
+        local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
+        local gameTime = (tonumber(tostring(GetGameTime())))
+        local playerLowGuid = GetGUIDLow(playerGuid)
+        CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..bossfightInProgress..', '..eS_getTimeSince(encounterStartTime)..');');
+    end
+    bossfightInProgress = nil
 end
 
 local function eS_chromieGossip(event, player, object, sender, intid, code, menu_id)
@@ -339,7 +353,8 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
     if intid == 0 then
         local accountId = player:GetAccountId()
         if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
-        player:SendBroadcastMessage("Your current event score is: "..scoreEarned[accountId])
+        if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
+        player:SendBroadcastMessage("Your current event score is: "..scoreEarned[accountId].." and your all-time event score is: "..scoreTotal[accountId])
         player:GossipComplete()
     elseif intid == 1 then
         if group:IsRaidGroup() == true then
@@ -352,6 +367,14 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
             player:GossipComplete()
             return
         end
+        groupPlayers = group:GetMembers()
+        for n, v in pairs(groupPlayers) do
+            if eS_has_value(playersForFireworks, v:GetGUID()) then
+                object:SendUnitSay("Please, just a little break. I need to breathe, "..player:GetName()..". How about watching the fireworks?", 0 )
+                player:GossipComplete()
+                return
+            end
+        end
         --start 5man encounter
         bossfightInProgress = PARTY_IN_PROGRESS
         spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
@@ -359,7 +382,6 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
         encounterStartTime = GetCurrTime()
 
-        groupPlayers = group:GetMembers()
         for n, v in pairs(groupPlayers) do
             if v:GetDistance(player) ~= nil then
                 if v:GetDistance(player) < 80 then
@@ -467,7 +489,7 @@ end
 
 local function eS_summonEventNPC(playerGuid)
     local player
-    -- tempSummon an NPC with a dialouge option to start the encounter, store the guid for later unsummon
+    -- tempSummon an NPC with a dialogue option to start the encounter, store the guid for later unsummon
     player = GetPlayerByGUID(playerGuid)
     if player == nil then return end
     x = player:GetX()
@@ -584,8 +606,6 @@ end
 function bossNPC.reset(event, creature)
     local player
     creature:RemoveEvents()
-    bossfightInProgress = nil
-    addsDownCounter = nil
     if creature:IsDead() == true then
         creature:SendUnitYell("Master, save me!", 0 )
         creature:PlayDirectSound(8865)
@@ -615,15 +635,17 @@ function bossNPC.reset(event, creature)
             end
         end
         playersInRaid = {}
+        bossfightInProgress = nil
     end
     creature:DespawnOrUnsummon(0)
+    addsDownCounter = nil
 end
 
 function bossNPC.Event(event, delay, pCall, creature)
     if creature:IsCasting() == true then return end
 
     if Config_bossSpellEnrageTimer[eventInProgress] ~= nil and Config_bossSpellEnrage[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_bossSpellEnrageTimer[eventInProgress]) < eS_getTimeSince(encounterStartTime)then
+        if eS_getDifficultyTimer(Config_bossSpellEnrageTimer[eventInProgress]) < eS_getTimeSince(encounterStartTime) then
             if phase == 2 and eS_getTimeSince(encounterStartTime) > Config_bossSpellEnrageTimer[eventInProgress] then
                 phase = 3
                 creature:SendUnitYell("FEEL MY WRATH!", 0 )
@@ -822,6 +844,7 @@ function addNPC.reset(event, creature)
                     end
                 end
             end
+            storeEncounter()
             SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
             playersForFireworks = playersInRaid
             playersInRaid = {}
@@ -834,6 +857,7 @@ function addNPC.reset(event, creature)
                 end
             end
             playersInRaid = {}
+            bossfightInProgress = nil
         end
     else
         if creature:IsDead() == true then
@@ -844,10 +868,10 @@ function addNPC.reset(event, creature)
             end
         end
     end
-    bossfightInProgress = nil
     creature:DespawnOrUnsummon(0)
 end
 
+--on ReloadEluna / Startup
 RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, eS_command)
 RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, eS_resetPlayers)
 
@@ -860,35 +884,16 @@ RegisterCreatureEvent(1112001, 1, bossNPC.onEnterCombat)
 RegisterCreatureEvent(1112001, 2, bossNPC.reset) -- OnLeaveCombat
 RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 
---on ReloadEluna / Startup
 CharDBQuery('CREATE DATABASE IF NOT EXISTS `'..Config.customDbName..'`;');
-CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`encounters_beaten` (`account_id` INT(11) NOT NULL, `encounter` INT(11) DEFAULT 1, `difficulty` INT(3) DEFAULT 1, `group_type` INT(3) DEFAULT 0, `time_stamp` INT(11) DEFAULT 0);');
-CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`encounters_score` (`account_id` INT(11) NOT NULL, `score_earned` INT(11) DEFAULT 0, PRIMARY KEY (`account_id`));')
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`eventscript_encounters` (`time_stamp` INT(11) NOT NULL, `playerGuid` INT(11) NOT NULL, `encounter` INT(11) DEFAULT 0, `difficulty` INT(3) DEFAULT 0, `group_type` INT(3) DEFAULT 0, `duration` INT(11) NOT NULL, PRIMARY KEY (`time_stamp`, `playerGuid`));');
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`eventscript_score` (`account_id` INT(11) NOT NULL, `score_earned_current` INT(11) DEFAULT 0, `score_earned_total` INT(11) DEFAULT 0, PRIMARY KEY (`account_id`));')
 
-local encountersBeaten = newAutotable(5)
-local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`encounters_beaten`;')
-if Data_SQL ~= nil then
-    local accountId
-    local characterGuid
-    local encounter
-    local difficulty
-    local groupType
-    repeat
-        accountId = Data_SQL:GetUInt32(0)
-        characterGuid = Data_SQL:GetUInt32(1)
-        encounter = Data_SQL:GetUInt32(2)
-        difficulty = Data_SQL:GetUInt8(3)
-        groupType = Data_SQL:GetUInt8(4)
-        encountersBeaten[accountId][characterGuid][encounter][difficulty][groupType] = Data_SQL:GetUInt32(5)
-    until not Data_SQL:NextRow()
-end
-Data_SQL = nil
-
-local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`encounters_score`;')
+local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`eventscript_score`;')
 if Data_SQL ~= nil then
     local account
     repeat
         account = Data_SQL:GetUInt32(0)
         scoreEarned[account] = Data_SQL:GetUInt32(1)
+        scoreTotal[account] = Data_SQL:GetUInt32(1)
     until not Data_SQL:NextRow()
 end
