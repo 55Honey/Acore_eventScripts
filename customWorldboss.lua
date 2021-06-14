@@ -905,8 +905,8 @@ RegisterCreatureEvent(1112001, 2, bossNPC.reset) -- OnLeaveCombat
 RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
 
 CharDBQuery('CREATE DATABASE IF NOT EXISTS `'..Config.customDbName..'`;');
-CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`eventscript_encounters` (`time_stamp` INT(11) NOT NULL, `playerGuid` INT(11) NOT NULL, `encounter` INT(11) DEFAULT 0, `difficulty` INT(3) DEFAULT 0, `group_type` INT(3) DEFAULT 0, `duration` INT(11) NOT NULL, PRIMARY KEY (`time_stamp`, `playerGuid`));');
-CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`eventscript_score` (`account_id` INT(11) NOT NULL, `score_earned_current` INT(11) DEFAULT 0, `score_earned_total` INT(11) DEFAULT 0, PRIMARY KEY (`account_id`));')
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`eventscript_encounters` (`time_stamp` INT NOT NULL, `playerGuid` INT NOT NULL, `encounter` INT DEFAULT 0, `difficulty` TINYINT DEFAULT 0, `group_type` TINYINT DEFAULT 0, `duration` INT NOT NULL, PRIMARY KEY (`time_stamp`, `playerGuid`));');
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`eventscript_score` (`account_id` INT NOT NULL, `score_earned_current` INT DEFAULT 0, `score_earned_total` INT DEFAULT 0, PRIMARY KEY (`account_id`));')
 
 local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`eventscript_score`;')
 if Data_SQL ~= nil then
