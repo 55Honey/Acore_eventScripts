@@ -15,6 +15,8 @@
 --               -  adjust config in this file
 --               -  add this script to ../lua_scripts/
 --               -  adjust the IDs and config flags in case of conflicts and run the associated SQL to add the required NPCs
+--               -  the acore_cms module assumes that 1112001 is the boss of encounter 1 and adding +10 for each subsequent encounter
+--                  (1112011 = boss for encounter 2 / 1112021 = boss for encounter 3, etc.)
 ------------------------------------------------------------------------------------------------
 -- GM GUIDE:     -  use .startevent $event $difficulty to start and spawn 
 --               -  maybe offer teleports
@@ -31,22 +33,28 @@ local Config_bossSpell1 = {}            --directly applied to the tank
 local Config_bossSpell2 = {}            --randomly applied to a player in 35m range
 local Config_bossSpell3 = {}            --on the 2nd nearest player within 30m
 local Config_bossSpell4 = {}            --on a random player within 40m
+local Config_bossSpell5 = {}            --directly applied to the tank with adds alive
+local Config_bossSpell6 = {}            --directly applied to the tank when adds are dead
 local Config_bossSpellSelf = {}         --cast on boss while adds are still alive
 local Config_bossSpellEnrage = {}       --cast on boss once after Config_bossSpellEnrageTimer ms have passed
 
 local Config_bossSpellTimer1 = {}       -- This timer applies to Config_bossSpell1 (in ms)
 local Config_bossSpellTimer2 = {}       -- This timer applies to Config_bossSpell2 (in ms)
 local Config_bossSpellTimer3 = {}       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later (in ms)
+-- local Config_bossSpellTimer4 = {}    -- Not used. Timer3 covers BossSpells 3+4
+local Config_bossSpellTimer5 = {}       -- This timer applies to Config_bossSpell5+6 (in ms)
 local Config_bossSpellEnrageTimer = {}
 
 local Config_addSpell1 = {}             -- min range 30m, 1-3rd farthest target within 30m
 local Config_addSpell2 = {}             -- min range 45m, cast on tank
 local Config_addSpell3 = {}             -- min range 0m
+local Config_addSpell4 = {}             -- cast on the boss
 
 local Config_addSpellEnrage = {}        -- This spell will be cast on the add in 5man mode only after 300 seconds
 local Config_addSpellTimer1 = {}        -- This timer applies to Config_addSpell1 (in ms)
-local Config_addSpellTimer2 = {}        -- This timer applies to Config_addSpell1 (in ms)
-local Config_addSpellTimer3 = {}        -- This timer applies to Config_addSpell1 (in ms)
+local Config_addSpellTimer2 = {}        -- This timer applies to Config_addSpell2 (in ms)
+local Config_addSpellTimer3 = {}        -- This timer applies to Config_addSpell3 (in ms)
+local Config_addSpellTimer4 = {}        -- This timer applies to Config_addSpell4 (in ms)
 
 local Config_addsAmount = {}            -- how many adds will spawn
 local Config_aura1Add1 = {}             -- an aura to add to the 1st add
@@ -55,6 +63,9 @@ local Config_aura1Add2 = {}             -- an aura to add to the 2nd add
 local Config_aura2Add2 = {}             -- another aura to add to the 2nd add
 local Config_aura1Add3 = {}             -- an aura to add to the 3rd add
 local Config_aura2Add3 = {}             -- another aura to add to the 3rd add
+
+local Config_addSpell3Yell = {}         -- yell for the add when Spell 3 is cast
+local Config_bossYellPhase2 = {}        -- yell for the boss when phase 2 starts
 
 local Config_fireworks = {}
 
@@ -88,7 +99,7 @@ Config.rewardParty = 0
 Config.storeParty = 1
 
 ------------------------------------------
--- Begin of example encounter 1 config
+-- Begin of encounter 1 config
 ------------------------------------------
 
 -- Database NPC entries. Must match the associated .sql file
@@ -101,22 +112,27 @@ Config_npcText[1] = 91111               --gossip in npc_text to be told by the s
 Config_addSpell1[1] = 12421             -- min range 30m, 1-3rd farthest target within 30m -- Mithril Frag Bomb 8y 149-201 damage + stun
 Config_addSpell2[1] = 60488             -- min range 45m, cast on tank -- Shadow Bolt (30)
 Config_addSpell3[1] = 24326             -- min range 0m -- HIGH knockback (ZulFarrak beast)
+Config_addSpell4[1] = nil               -- this line is not neccesary. If a spell is missing it will just be skipped
 Config_addSpellEnrage[1] = 69166        -- Soft Enrage
 
 Config_bossSpell1[1] = 38846            --directly applied to the tank-- Forceful Cleave (Target + nearest ally)
 Config_bossSpell2[1] = 45108            --randomly applied to a player in 35m range-- CKs Fireball
 Config_bossSpell3[1] = 53721            --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
 Config_bossSpell4[1] = 37279            --on a random player within 40m-- Rain of Fire
+Config_bossSpell5[1] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
+Config_bossSpell6[1] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
 Config_bossSpellSelf[1] = 69898         --cast on boss while adds are still alive-- Hot
 Config_bossSpellEnrage[1] = 69166       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
 Config_addSpellTimer1[1] = 13000        -- This timer applies to Config_addSpell1
 Config_addSpellTimer2[1] = 11000        -- This timer applies to Config_addSpell2
 Config_addSpellTimer3[1] = 37000        -- This timer applies to Config_addSpell3
+Config_addSpellTimer4[1] = nil          -- This timer applies to Config_addSpell4
 
 Config_bossSpellTimer1[1] = 19000       -- This timer applies to Config_bossSpell1
 Config_bossSpellTimer2[1] = 23000       -- This timer applies to Config_bossSpell2
 Config_bossSpellTimer3[1] = 11000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer5[1] = nil         -- This timer applies to Config_bossSpell5+6
 Config_bossSpellEnrageTimer[1] = 180000
 
 Config_addsAmount[1] = 3                -- how many adds will spawn
@@ -128,8 +144,60 @@ Config_aura2Add2[1] = 7940              -- another aura to add to the 2nd add-- 
 Config_aura1Add3[1] = 34182             -- an aura to add to the 3rd add-- Holy
 Config_aura2Add3[1] = 34309             -- another aura to add to the 3rd add-- Shadow
 
+Config_addSpell3Yell[1] = "Me smash."   -- yell for the add when Spell 3 is cast
+Config_bossYellPhase2[1] = "You might have handled these creatures. But now I WILL handle YOU!"
+
 ------------------------------------------
--- End of example encounter 1
+-- Begin of encounter 2 config
+------------------------------------------
+
+-- Database NPC entries. Must match the associated .sql file
+Config_bossEntry[2] = 1112011           --db entry of the boss creature
+Config_npcEntry[2] = 1112002            --db entry of the NPC creature to summon the boss
+Config_addEntry[2] = 1112013            --db entry of the add creature
+Config_npcText[2] = 91111               --gossip in npc_text to be told by the summoning NPC
+
+-- list of spells:
+Config_addSpell1[2] = 10150             -- min range 30m, 1-3rd farthest target within 30m
+Config_addSpell2[2] = nil               -- min range 45m, cast on tank
+Config_addSpell3[2] = 68958             -- min range 0m -- Blast Nova
+Config_addSpell4[2] = 69389             -- cast on the boss
+Config_addSpellEnrage[2] = nil          -- Soft Enrage
+
+Config_bossSpell1[2] = 33661            --directly applied to the tank-- Crush Armor: 10% reduction, stacks
+Config_bossSpell2[2] = nil              --randomly applied to a player in 35m range-- CKs Fireball
+Config_bossSpell3[2] = nil              --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
+Config_bossSpell4[2] = nil              --on a random player within 40m-- Rain of Fire
+Config_bossSpell5[2] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
+Config_bossSpell6[2] = 31436            --directly applied to the tank when adds are dead
+Config_bossSpellSelf[2] = nil           --cast on boss while adds are still alive-- Hot
+Config_bossSpellEnrage[2] = nil         --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+
+Config_addSpellTimer1[2] = 13000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer2[2] = 11000        -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[2] = 37000        -- This timer applies to Config_addSpell3
+Config_addSpellTimer4[2] = 23000        -- This timer applies to Config_addSpell4
+
+Config_bossSpellTimer1[2] = 10000       -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[2] = 23000       -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[2] = 11000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer5[2] = 19000       -- This timer applies to Config_bossSpell5+6
+Config_bossSpellEnrageTimer[2] = 180000
+
+Config_addsAmount[2] = 2                -- how many adds will spawn
+
+Config_aura1Add1[2] = nil               -- an aura to add to the 1st add-- Arcane
+Config_aura2Add1[2] = nil               -- another aura to add to the 1st add-- Nature
+Config_aura1Add2[2] = nil               -- an aura to add to the 2nd add-- Fire
+Config_aura2Add2[2] = nil               -- another aura to add to the 2nd add-- Frost
+Config_aura1Add3[2] = nil               -- an aura to add to all ads from the 3rd on-- Holy
+Config_aura2Add3[2] = nil               -- another aura to add to all add from the 3rd on-- Shadow
+
+Config_addSpell3Yell[2] = "Thissss."    -- yell for the add when Spell 3 is cast
+Config_bossYellPhase2[2] = "Now. You. Die."
+
+------------------------------------------
+-- End of encounter 2
 ------------------------------------------
 
 -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
@@ -186,10 +254,12 @@ local mapEventStart
 local lastBossSpell1
 local lastBossSpell2
 local lastBossSpell3
+local lastBossSpell5
 local lastBossSpellSelf
-local lastAddSpell1
-local lastAddSpell2
-local lastAddSpell3
+local lastAddSpell1 = {}
+local lastAddSpell2 = {}
+local lastAddSpell3 = {}
+local lastAddSpell4 = {}
 
 --local arrays
 local cancelEventIdHello = {}
@@ -214,6 +284,15 @@ local function eS_has_value (tab, val)
     for index, value in ipairs(tab) do
         if value == val then
             return true
+        end
+    end
+    return false
+end
+
+local function eS_returnIndex (tab, val)
+    for index, value in ipairs(tab) do
+        if value == val then
+            return index
         end
     end
     return false
@@ -249,6 +328,9 @@ end
 local function eS_resetPlayers(event, player)
     if eS_has_value(playersInRaid, player:GetGUID()) and player:GetPhaseMask() ~= 1 then
         if player ~= nil then
+            if player:GetCorpse() ~= nil then
+                player:GetCorpse():SetPhaseMask(1)
+            end
             player:SetPhaseMask(1)
             player:SendBroadcastMessage("You left the event.")
         end
@@ -283,6 +365,9 @@ local function eS_checkInCombat()
         player = GetPlayerByGUID(v)
         if player ~= nil then
             if player:IsInCombat() == false and player:GetPhaseMask() == 2 then
+                if player:GetCorpse() ~= nil then
+                    player:GetCorpse():SetPhaseMask(1)
+                end
                 player:SetPhaseMask(1)
                 player:SendBroadcastMessage("You were returned to the real time because you did not participate.")
             end
@@ -439,7 +524,7 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
             spawnedCreature[c] = player:SpawnCreature(Config_addEntry[eventInProgress], x + randomX, y + randomY, z+2, o)
             spawnedCreature[c]:SetPhaseMask(2)
             spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * eS_getSize(difficulty))
-            spawnedCreatureGuid[c] = spawnedCreature[1]:GetGUID()
+            spawnedCreatureGuid[c] = spawnedCreature[c]:GetGUID()
         end
         encounterStartTime = GetCurrTime()
 
@@ -463,31 +548,32 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         end
 
         --apply auras to adds
-        for c = 1, #spawnedCreature do
-            if spawnedCreature[c] ~= nil then
-                if Config_aura1Add1[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura1Add1[c], spawnedCreature[c])
-                end
-                if Config_aura2Add1[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura2Add1[c], spawnedCreature[c])
-                end
+        if spawnedCreature[1] ~= nil then
+            if Config_aura1Add1[1] ~= nil then
+                spawnedCreature[1]:AddAura(Config_aura1Add1[1], spawnedCreature[1])
             end
-
-            if spawnedCreature[c] ~= nil then
-                if Config_aura1Add2[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura1Add2[c], spawnedCreature[c])
-                end
-                if Config_aura2Add2[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura2Add2[c], spawnedCreature[c])
-                end
+            if Config_aura2Add1[1] ~= nil then
+                spawnedCreature[1]:AddAura(Config_aura2Add1[1], spawnedCreature[1])
             end
+        end
 
-            if spawnedCreature[c] ~= nil then
-                if Config_aura1Add3[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura1Add3[c], spawnedCreature[c])
-                end
-                if Config_aura2Add3[c] ~= nil then
-                    spawnedCreature[c]:AddAura(Config_aura2Add3[c], spawnedCreature[c])
+        if spawnedCreature[2] ~= nil then
+            if Config_aura1Add2[2] ~= nil then
+                spawnedCreature[2]:AddAura(Config_aura1Add2[2], spawnedCreature[2])
+            end
+            if Config_aura2Add2[2] ~= nil then
+                spawnedCreature[2]:AddAura(Config_aura2Add2[2], spawnedCreature[2])
+            end
+        end
+        if #spawnedCreature > 2 then
+            for c = 3, #spawnedCreature do
+                if spawnedCreature[c] ~= nil then
+                    if Config_aura1Add3[c] ~= nil then
+                        spawnedCreature[c]:AddAura(Config_aura1Add3[c], spawnedCreature[c])
+                    end
+                    if Config_aura2Add3[c] ~= nil then
+                        spawnedCreature[c]:AddAura(Config_aura2Add3[c], spawnedCreature[c])
+                    end
                 end
             end
         end
@@ -608,11 +694,13 @@ function bossNPC.onEnterCombat(event, creature, target)
     lastBossSpell1 = encounterStartTime
     lastBossSpell2 = encounterStartTime
     lastBossSpell3 = encounterStartTime
+    lastBossSpell5 = encounterStartTime
     lastBossSpellSelf = encounterStartTime
 end
 
 function bossNPC.reset(event, creature)
     local player
+    eS_checkInCombat()
     creature:RemoveEvents()
     if creature:IsDead() == true then
         creature:SendUnitYell("Master, save me!", 0 )
@@ -621,6 +709,9 @@ function bossNPC.reset(event, creature)
         for _, v in pairs(playersInRaid) do
             player = GetPlayerByGUID(v)
             if player ~= nil then
+                if player:GetCorpse() ~= nil then
+                    player:GetCorpse():SetPhaseMask(1)
+                end
                 player:SetPhaseMask(1)
                 if playerListString == nil then
                     playerListString = player:GetName()
@@ -645,6 +736,9 @@ function bossNPC.reset(event, creature)
         for _, v in pairs(playersInRaid) do
             player = GetPlayerByGUID(v)
             if player ~= nil then
+                if player:GetCorpse() ~= nil then
+                    player:GetCorpse():SetPhaseMask(1)
+                end
                 player:SetPhaseMask(1)
             end
         end
@@ -678,7 +772,9 @@ function bossNPC.Event(event, delay, pCall, creature)
                     return
                 end
             elseif phase == 1 then
-                creature:SendUnitYell("You might have handled these creatures. But now I WILL handle YOU!", 0 )
+                if Config_bossYellPhase2[eventInProgress] ~= nil then
+                    creature:SendUnitYell(Config_bossYellPhase2[eventInProgress], 0 )
+                end
                 phase = 2
             end
         end
@@ -739,6 +835,24 @@ function bossNPC.Event(event, delay, pCall, creature)
             end
         end
     end
+
+    if Config_bossSpellTimer5[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config_bossSpellTimer5[eventInProgress]) < eS_getTimeSince(lastBossSpell5) then
+            if phase == 1 then
+                if Config_bossSpell5[eventInProgress] ~= nil then
+                    creature:CastSpell(creature:GetVictim(), Config_bossSpell5[eventInProgress])
+                    lastBossSpell5 = GetCurrTime()
+                    return
+                end
+            else
+                if Config_bossSpell6[eventInProgress] ~= nil then
+                    creature:CastSpell(creature:GetVictim(), Config_bossSpell6[eventInProgress])
+                    lastBossSpell5 = GetCurrTime()
+                    return
+                end
+            end
+        end
+    end
 end
 
 function addNPC.onEnterCombat(event, creature, target)
@@ -754,9 +868,12 @@ function addNPC.onEnterCombat(event, creature, target)
     end
     addphase = 1
 
-    lastAddSpell1 = encounterStartTime
-    lastAddSpell2 = encounterStartTime
-    lastAddSpell3 = encounterStartTime
+    for n, _ in pairs(spawnedCreatureGuid) do
+        lastAddSpell1[n] = encounterStartTime
+        lastAddSpell2[n] = encounterStartTime
+        lastAddSpell3[n] = encounterStartTime
+        lastAddSpell4[n] = encounterStartTime
+    end
 end
 
 function addNPC.Event(event, delay, pCall, creature)
@@ -790,6 +907,8 @@ function addNPC.Event(event, delay, pCall, creature)
         end
     end
 
+    local n = eS_returnIndex(spawnedCreatureGuid, creature:GetGUID())
+
 
     if Config_addSpellEnrage[eventInProgress] ~= nil then
         if eS_getDifficultyTimer(Config.addEnrageTimer) < eS_getTimeSince(encounterStartTime)then
@@ -802,38 +921,55 @@ function addNPC.Event(event, delay, pCall, creature)
         end
     end
 
+    local randomTimer = math.random(0,500)
+
     if Config_addSpellTimer1[eventInProgress] ~= nil and Config_addSpell1[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_addSpellTimer1[eventInProgress]) < eS_getTimeSince(lastAddSpell1) then
+        if eS_getDifficultyTimer(Config_addSpellTimer1[eventInProgress]) < randomTimer + eS_getTimeSince(lastAddSpell1[n]) then
             local random = math.random(0, 2)
             local players = creature:GetPlayersInRange(30)
             if #players > 1 then
                 creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, random, 30), Config_addSpell1[eventInProgress])
-                lastAddSpell1 = GetCurrTime()
+                lastAddSpell1[n] = GetCurrTime()
                 return
             else
                 creature:CastSpell(creature:GetVictim(),Config_addSpell1[eventInProgress])
-                lastAddSpell1 = GetCurrTime()
+                lastAddSpell1[n] = GetCurrTime()
                 return
             end
         end
     end
 
     if Config_addSpellTimer2[eventInProgress] ~= nil and Config_addSpell2[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_addSpellTimer2[eventInProgress]) < eS_getTimeSince(lastAddSpell2) then
+        if eS_getDifficultyTimer(Config_addSpellTimer2[eventInProgress]) < randomTimer + (eS_getTimeSince(lastAddSpell2[n])) then
             creature:PlayDirectSound(6436)
             creature:CastSpell(creature:GetVictim(), Config_addSpell2[eventInProgress])
-            lastAddSpell2 = GetCurrTime()
+            lastAddSpell2[n] = GetCurrTime()
             return
         end
     end
 
     if Config_addSpellTimer3[eventInProgress] ~= nil and Config_addSpell3[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_addSpellTimer3[eventInProgress]) < eS_getTimeSince(lastAddSpell3) then
-            creature:SendUnitYell("Me smash.", 0 )
-            creature:CastSpell(creature, 24326)
-            lastAddSpell3 = GetCurrTime()
-            eS_checkInCombat()
+        if eS_getDifficultyTimer(Config_addSpellTimer3[eventInProgress]) < randomTimer + eS_getTimeSince(lastAddSpell3[n]) then
+            if Config_addSpell3Yell[eventInProgress] ~= nil then
+                creature:SendUnitYell(Config_addSpell3Yell[eventInProgress], 0 )
+            end
+            creature:CastSpell(creature, Config_addSpell3[eventInProgress])
+            lastAddSpell3[n] = GetCurrTime()
             return
+        end
+    end
+
+    if Config_addSpellTimer4[eventInProgress] ~= nil and Config_addSpell4[eventInProgress] ~= nil then
+        if eS_getDifficultyTimer(Config_addSpellTimer4[eventInProgress]) < randomTimer + eS_getTimeSince(lastAddSpell4[n]) then
+            local map = creature:GetMap()
+            if map ~= nil then
+                if  map:GetWorldObject(spawnedBossGuid) ~= nil then
+                    local bossNPC = map:GetWorldObject(spawnedBossGuid):ToCreature()
+                    creature:CastSpell(bossNPC, Config_addSpell4[eventInProgress])
+                    lastAddSpell4[n] = GetCurrTime()
+                    return
+                end
+            end
         end
     end
 end
@@ -850,6 +986,9 @@ function addNPC.reset(event, creature)
             for _, v in pairs(playersInRaid) do
                 player = GetPlayerByGUID(v)
                 if player ~= nil then
+                    if player:GetCorpse() ~= nil then
+                        player:GetCorpse():SetPhaseMask(1)
+                    end
                     player:SetPhaseMask(1)
                     if playerListString == nil then
                         playerListString = player:GetName()
@@ -873,6 +1012,9 @@ function addNPC.reset(event, creature)
             for _, v in pairs(playersInRaid) do
                 player = GetPlayerByGUID(v)
                 if player ~= nil then
+                    if player:GetCorpse() ~= nil then
+                        player:GetCorpse():SetPhaseMask(1)
+                    end
                     player:SetPhaseMask(1)
                 end
             end
@@ -891,18 +1033,35 @@ function addNPC.reset(event, creature)
     creature:DespawnOrUnsummon(0)
 end
 
+local function initBossEvents()
+    for n = Config_bossEntry[1], Config_bossEntry[1] + 990, 10 do
+        if eS_has_value(Config_bossEntry,n) then
+            RegisterCreatureEvent(n, 1, bossNPC.onEnterCombat)
+            RegisterCreatureEvent(n, 2, bossNPC.reset) -- OnLeaveCombat
+            RegisterCreatureEvent(n, 4, bossNPC.reset) -- OnDied
+        else
+            return
+        end
+    end
+end
+local function initAddEvents()
+    for n = Config_addEntry[1], Config_addEntry[1] + 990, 10 do
+        if eS_has_value(Config_addEntry,n) then
+            RegisterCreatureEvent(n, 1, addNPC.onEnterCombat)
+            RegisterCreatureEvent(n, 2, addNPC.reset) -- OnLeaveCombat
+            RegisterCreatureEvent(n, 4, addNPC.reset) -- OnDied
+        else
+            return
+        end
+    end
+end
+
 --on ReloadEluna / Startup
 RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, eS_command)
 RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, eS_resetPlayers)
 
---init combat events
-RegisterCreatureEvent(1112003, 1, addNPC.onEnterCombat)
-RegisterCreatureEvent(1112003, 2, addNPC.reset) -- OnLeaveCombat
-RegisterCreatureEvent(1112003, 4, addNPC.reset) -- OnDied
-
-RegisterCreatureEvent(1112001, 1, bossNPC.onEnterCombat)
-RegisterCreatureEvent(1112001, 2, bossNPC.reset) -- OnLeaveCombat
-RegisterCreatureEvent(1112001, 4, bossNPC.reset) -- OnDied
+initBossEvents()
+initAddEvents()
 
 CharDBQuery('CREATE DATABASE IF NOT EXISTS `'..Config.customDbName..'`;');
 CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`eventscript_encounters` (`time_stamp` INT NOT NULL, `playerGuid` INT NOT NULL, `encounter` INT DEFAULT 0, `difficulty` TINYINT DEFAULT 0, `group_type` TINYINT DEFAULT 0, `duration` INT NOT NULL, PRIMARY KEY (`time_stamp`, `playerGuid`));');
