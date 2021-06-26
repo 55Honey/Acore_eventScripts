@@ -166,12 +166,12 @@ Config_addSpellEnrage[2] = nil          -- Soft Enrage
 
 Config_bossSpell1[2] = 33661            --directly applied to the tank-- Crush Armor: 10% reduction, stacks
 Config_bossSpell2[2] = nil              --randomly applied to a player in 35m range-- CKs Fireball
-Config_bossSpell3[2] = nil              --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
-Config_bossSpell4[2] = nil              --on a random player within 40m-- Rain of Fire
+Config_bossSpell3[2] = 37704            --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
+Config_bossSpell4[2] = 37704            --on a random player within 40m-- Rain of Fire
 Config_bossSpell5[2] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
 Config_bossSpell6[2] = 31436            --directly applied to the tank when adds are dead
-Config_bossSpellSelf[2] = nil           --cast on boss while adds are still alive-- Hot
-Config_bossSpellEnrage[2] = nil         --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+Config_bossSpellSelf[2] = nil           --cast on boss while adds are still alive
+Config_bossSpellEnrage[2] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
 Config_addSpellTimer1[2] = 13000        -- This timer applies to Config_addSpell1
 Config_addSpellTimer2[2] = 11000        -- This timer applies to Config_addSpell2
@@ -180,7 +180,7 @@ Config_addSpellTimer4[2] = 23000        -- This timer applies to Config_addSpell
 
 Config_bossSpellTimer1[2] = 10000       -- This timer applies to Config_bossSpell1
 Config_bossSpellTimer2[2] = 23000       -- This timer applies to Config_bossSpell2
-Config_bossSpellTimer3[2] = 11000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer3[2] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 Config_bossSpellTimer5[2] = 19000       -- This timer applies to Config_bossSpell5+6
 Config_bossSpellEnrageTimer[2] = 180000
 
@@ -868,11 +868,18 @@ function addNPC.onEnterCombat(event, creature, target)
     end
     addphase = 1
 
-    for n, _ in pairs(spawnedCreatureGuid) do
-        lastAddSpell1[n] = encounterStartTime
-        lastAddSpell2[n] = encounterStartTime
-        lastAddSpell3[n] = encounterStartTime
-        lastAddSpell4[n] = encounterStartTime
+    if bossfightInProgress == PARTY_IN_PROGRESS then
+        lastAddSpell1[1] = encounterStartTime
+        lastAddSpell2[1] = encounterStartTime
+        lastAddSpell3[1] = encounterStartTime
+        lastAddSpell4[1] = encounterStartTime
+    else
+        for n, _ in pairs(spawnedCreatureGuid) do
+            lastAddSpell1[n] = encounterStartTime
+            lastAddSpell2[n] = encounterStartTime
+            lastAddSpell3[n] = encounterStartTime
+            lastAddSpell4[n] = encounterStartTime
+        end
     end
 end
 
@@ -907,7 +914,8 @@ function addNPC.Event(event, delay, pCall, creature)
         end
     end
 
-    local n = eS_returnIndex(spawnedCreatureGuid, creature:GetGUID())
+    local n = eS_returnIndex(spawnedCreatureGuid, creature:GetGUID())   -- tell multiple adds apart in raid mode
+    if n == false then n = 1 end                                        -- no need to set this in party mode
 
 
     if Config_addSpellEnrage[eventInProgress] ~= nil then
@@ -959,15 +967,17 @@ function addNPC.Event(event, delay, pCall, creature)
         end
     end
 
-    if Config_addSpellTimer4[eventInProgress] ~= nil and Config_addSpell4[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_addSpellTimer4[eventInProgress]) < randomTimer + eS_getTimeSince(lastAddSpell4[n]) then
-            local map = creature:GetMap()
-            if map ~= nil then
-                if  map:GetWorldObject(spawnedBossGuid) ~= nil then
-                    local bossNPC = map:GetWorldObject(spawnedBossGuid):ToCreature()
-                    creature:CastSpell(bossNPC, Config_addSpell4[eventInProgress])
-                    lastAddSpell4[n] = GetCurrTime()
-                    return
+    if bossfightInProgress == RAID_IN_PROGRESS then
+        if Config_addSpellTimer4[eventInProgress] ~= nil and Config_addSpell4[eventInProgress] ~= nil then
+            if eS_getDifficultyTimer(Config_addSpellTimer4[eventInProgress]) < randomTimer + eS_getTimeSince(lastAddSpell4[n]) then
+                local map = creature:GetMap()
+                if map ~= nil then
+                    if  map:GetWorldObject(spawnedBossGuid) ~= nil then
+                        local bossNPC = map:GetWorldObject(spawnedBossGuid):ToCreature()
+                        creature:CastSpell(bossNPC, Config_addSpell4[eventInProgress])
+                        lastAddSpell4[n] = GetCurrTime()
+                        return
+                    end
                 end
             end
         end
