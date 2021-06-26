@@ -166,8 +166,8 @@ Config_addSpellEnrage[2] = nil          -- Soft Enrage
 
 Config_bossSpell1[2] = 33661            --directly applied to the tank-- Crush Armor: 10% reduction, stacks
 Config_bossSpell2[2] = nil              --randomly applied to a player in 35m range-- CKs Fireball
-Config_bossSpell3[2] = 37704            --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
-Config_bossSpell4[2] = 37704            --on a random player within 40m-- Rain of Fire
+Config_bossSpell3[2] = 26084            --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
+Config_bossSpell4[2] = 26084            --on a random player within 40m-- Rain of Fire
 Config_bossSpell5[2] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
 Config_bossSpell6[2] = 31436            --directly applied to the tank when adds are dead
 Config_bossSpellSelf[2] = nil           --cast on boss while adds are still alive
@@ -435,11 +435,6 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
     local spawnedCreature = {}
 
     if player == nil then return end
-    if player:IsInGroup() == false then
-        player:SendBroadcastMessage("You need to be in a party.")
-        player:GossipComplete()
-        return
-    end
 
     local group = player:GetGroup()
 
@@ -450,6 +445,13 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         player:SendBroadcastMessage("Your current event score is: "..scoreEarned[accountId].." and your all-time event score is: "..scoreTotal[accountId])
         player:GossipComplete()
     elseif intid == 1 then
+
+        if player:IsInGroup() == false then
+            player:SendBroadcastMessage("You need to be in a party.")
+            player:GossipComplete()
+            return
+        end
+
         if group:IsRaidGroup() == true then
             player:SendBroadcastMessage("You can not accept that task while in a raid group.")
             player:GossipComplete()
@@ -490,6 +492,13 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         end
 
     elseif intid == 2 then
+
+        if player:IsInGroup() == false then
+            player:SendBroadcastMessage("You need to be in a party.")
+            player:GossipComplete()
+            return
+        end
+
         if group:IsRaidGroup() == false then
             player:SendBroadcastMessage("You can not accept that task without being in a raid group.")
             player:GossipComplete()
