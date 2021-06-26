@@ -159,7 +159,7 @@ Config_npcText[2] = 91111               --gossip in npc_text to be told by the s
 
 -- list of spells:
 Config_addSpell1[2] = 10150             -- min range 30m, 1-3rd farthest target within 30m
-Config_addSpell2[2] = nil               -- min range 45m, cast on tank
+Config_addSpell2[2] = 37704             -- min range 45m, cast on tank
 Config_addSpell3[2] = 68958             -- min range 0m -- Blast Nova
 Config_addSpell4[2] = 69389             -- cast on the boss
 Config_addSpellEnrage[2] = nil          -- Soft Enrage
