@@ -165,9 +165,9 @@ Config_addSpell4[2] = 69389             -- cast on the boss
 Config_addSpellEnrage[2] = nil          -- Soft Enrage
 
 Config_bossSpell1[2] = 33661            --directly applied to the tank-- Crush Armor: 10% reduction, stacks
-Config_bossSpell2[2] = nil              --randomly applied to a player in 35m range-- CKs Fireball
-Config_bossSpell3[2] = 26084            --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
-Config_bossSpell4[2] = 26084            --on a random player within 40m-- Rain of Fire
+Config_bossSpell2[2] = 51503            --randomly applied to a player in 35m range-- Domination
+Config_bossSpell3[2] = 35198            --on the 2nd nearest player within 30m-- AE fear
+Config_bossSpell4[2] = 35198            --on a random player within 40m-- AE Fear
 Config_bossSpell5[2] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
 Config_bossSpell6[2] = 31436            --directly applied to the tank when adds are dead
 Config_bossSpellSelf[2] = nil           --cast on boss while adds are still alive
