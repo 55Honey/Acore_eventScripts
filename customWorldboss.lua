@@ -99,6 +99,12 @@ Config.rewardParty = 0
 Config.storeParty = 1
 
 ------------------------------------------
+-- List of encounters:
+-- 1: Level 42, Glorifrir Flintshoulder / Zombie Captain
+-- 2: Level 40, Pondulum of Deem / Seawitch
+------------------------------------------
+
+------------------------------------------
 -- Begin of encounter 1 config
 ------------------------------------------
 
@@ -153,7 +159,7 @@ Config_bossYellPhase2[1] = "You might have handled these creatures. But now I WI
 
 -- Database NPC entries. Must match the associated .sql file
 Config_bossEntry[2] = 1112011           --db entry of the boss creature
-Config_npcEntry[2] = 1112002            --db entry of the NPC creature to summon the boss
+Config_npcEntry[2] = 1112012            --db entry of the NPC creature to summon the boss
 Config_addEntry[2] = 1112013            --db entry of the add creature
 Config_npcText[2] = 91111               --gossip in npc_text to be told by the summoning NPC
 
