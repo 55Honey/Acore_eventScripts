@@ -61,10 +61,10 @@ local Config_aura1Add1 = {}             -- an aura to add to the 1st add
 local Config_aura2Add1 = {}             -- another aura to add to the 1st add
 local Config_aura1Add2 = {}             -- an aura to add to the 2nd add
 local Config_aura2Add2 = {}             -- another aura to add to the 2nd add
-local Config_aura1Add3 = {}             -- an aura to add to the 3rd add
-local Config_aura2Add3 = {}             -- another aura to add to the 3rd add
+local Config_aura1Add3 = {}             -- an aura to add to all adds from the 3rd on
+local Config_aura2Add3 = {}             -- another aura to add to all adds from the 3rd on
 
-local Config_addSpell3Yell = {}         -- yell for the add when Spell 3 is cast
+local Config_addSpell3Yell = {}         -- yell for the adds when Spell 3 is cast
 local Config_bossYellPhase2 = {}        -- yell for the boss when phase 2 starts
 
 local Config_fireworks = {}
@@ -83,7 +83,7 @@ Config.GMRankForUpdateDB = 3
 Config.printErrorsToConsole = 1
 -- time in ms before adds enrage in 5man mode
 Config.addEnrageTimer = 300000
--- spell to cast at 33 and 66%hp in party mode
+-- spell to cast at 33 and 66%hp in party mode (charge with a knockback = 19471)
 Config.addEnoughSpell = 19471
 -- base score per encounter
 Config.baseScore = 40
@@ -119,7 +119,7 @@ Config_addSpell1[1] = 12421             -- min range 30m, 1-3rd farthest target 
 Config_addSpell2[1] = 60488             -- min range 45m, cast on tank -- Shadow Bolt (30)
 Config_addSpell3[1] = 24326             -- min range 0m -- HIGH knockback (ZulFarrak beast)
 Config_addSpell4[1] = nil               -- this line is not neccesary. If a spell is missing it will just be skipped
-Config_addSpellEnrage[1] = 69166        -- Soft Enrage
+Config_addSpellEnrage[1] = 69166        -- Enrage after 300 seconds
 
 Config_bossSpell1[1] = 38846            --directly applied to the tank-- Forceful Cleave (Target + nearest ally)
 Config_bossSpell2[1] = 45108            --randomly applied to a player in 35m range-- CKs Fireball
@@ -150,7 +150,7 @@ Config_aura2Add2[1] = 7940              -- another aura to add to the 2nd add-- 
 Config_aura1Add3[1] = 34182             -- an aura to add to the 3rd add-- Holy
 Config_aura2Add3[1] = 34309             -- another aura to add to the 3rd add-- Shadow
 
-Config_addSpell3Yell[1] = "Me smash."   -- yell for the add when Spell 3 is cast
+Config_addSpell3Yell[1] = "Me smash."   -- yell for the adds when Spell 3 is cast
 Config_bossYellPhase2[1] = "You might have handled these creatures. But now I WILL handle YOU!"
 
 ------------------------------------------
@@ -161,14 +161,14 @@ Config_bossYellPhase2[1] = "You might have handled these creatures. But now I WI
 Config_bossEntry[2] = 1112011           --db entry of the boss creature
 Config_npcEntry[2] = 1112012            --db entry of the NPC creature to summon the boss
 Config_addEntry[2] = 1112013            --db entry of the add creature
-Config_npcText[2] = 91111               --gossip in npc_text to be told by the summoning NPC
+Config_npcText[2] = 91112               --gossip in npc_text to be told by the summoning NPC
 
 -- list of spells:
 Config_addSpell1[2] = 10150             -- min range 30m, 1-3rd farthest target within 30m
 Config_addSpell2[2] = 37704             -- min range 45m, cast on tank
 Config_addSpell3[2] = 68958             -- min range 0m -- Blast Nova
 Config_addSpell4[2] = 69389             -- cast on the boss
-Config_addSpellEnrage[2] = nil          -- Soft Enrage
+Config_addSpellEnrage[2] = nil          -- Enrage after 300 seconds
 
 Config_bossSpell1[2] = 33661            --directly applied to the tank-- Crush Armor: 10% reduction, stacks
 Config_bossSpell2[2] = 51503            --randomly applied to a player in 35m range-- Domination
@@ -199,11 +199,60 @@ Config_aura2Add2[2] = nil               -- another aura to add to the 2nd add-- 
 Config_aura1Add3[2] = nil               -- an aura to add to all ads from the 3rd on-- Holy
 Config_aura2Add3[2] = nil               -- another aura to add to all add from the 3rd on-- Shadow
 
-Config_addSpell3Yell[2] = "Thissss."    -- yell for the add when Spell 3 is cast
+Config_addSpell3Yell[2] = "Thissss."    -- yell for the adds when Spell 3 is cast
 Config_bossYellPhase2[2] = "Now. You. Die."
 
 ------------------------------------------
--- End of encounter 2
+-- Begin of encounter 3 config
+------------------------------------------
+
+-- Database NPC entries. Must match the associated .sql file
+Config_bossEntry[3] = 1112021           --db entry of the boss creature
+Config_npcEntry[3] = 1112022            --db entry of the NPC creature to summon the boss
+Config_addEntry[3] = 1112023            --db entry of the add creature
+Config_npcText[3] = 91113               --gossip in npc_text to be told by the summoning NPC
+
+-- list of spells:
+Config_addSpell1[3] = nil               -- min range 30m, 1-3rd farthest target within 30m
+Config_addSpell2[3] = nil               -- min range 45m, cast on tank
+Config_addSpell3[3] = nil               -- min range 0m -- Blast Nova
+Config_addSpell4[3] = nil               -- cast on the boss
+Config_addSpellEnrage[3] = nil          -- Enrage after 300 seconds
+
+Config_bossSpell1[3] = nil              --directly applied to the tank-- Crush Armor: 10% reduction, stacks
+Config_bossSpell2[3] = nil              --randomly applied to a player in 35m range-- Domination
+Config_bossSpell3[3] = nil              --on the 2nd nearest player within 30m-- AE fear
+Config_bossSpell4[3] = nil              --on a random player within 40m-- AE Fear
+Config_bossSpell5[3] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
+Config_bossSpell6[3] = nil              --directly applied to the tank when adds are dead
+Config_bossSpellSelf[3] = nil           --cast on boss while adds are still alive
+Config_bossSpellEnrage[3] = nil         --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+
+Config_addSpellTimer1[3] = 13000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer2[3] = 11000        -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[3] = 37000        -- This timer applies to Config_addSpell3
+Config_addSpellTimer4[3] = 23000        -- This timer applies to Config_addSpell4
+
+Config_bossSpellTimer1[3] = 10000       -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[3] = 23000       -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[3] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer5[3] = 19000       -- This timer applies to Config_bossSpell5+6
+Config_bossSpellEnrageTimer[3] = 180000
+
+Config_addsAmount[3] = 2                -- how many adds will spawn
+
+Config_aura1Add1[3] = nil               -- an aura to add to the 1st add-- Arcane
+Config_aura2Add1[3] = nil               -- another aura to add to the 1st add-- Nature
+Config_aura1Add2[3] = nil               -- an aura to add to the 2nd add-- Fire
+Config_aura2Add2[3] = nil               -- another aura to add to the 2nd add-- Frost
+Config_aura1Add3[3] = nil               -- an aura to add to all ads from the 3rd on-- Holy
+Config_aura2Add3[3] = nil               -- another aura to add to all add from the 3rd on-- Shadow
+
+Config_addSpell3Yell[3] = "Rooooaaar."    -- yell for the adds when Spell 3 is cast
+Config_bossYellPhase2[3] = " I'll git ye!"
+
+------------------------------------------
+-- End of encounter 3
 ------------------------------------------
 
 -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
