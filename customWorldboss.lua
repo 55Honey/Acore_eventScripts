@@ -161,7 +161,7 @@ Config_bossYellPhase2[1] = "You might have handled these creatures. But now I WI
 Config_bossEntry[2] = 1112011           --db entry of the boss creature
 Config_npcEntry[2] = 1112012            --db entry of the NPC creature to summon the boss
 Config_addEntry[2] = 1112013            --db entry of the add creature
-Config_npcText[2] = 91111               --gossip in npc_text to be told by the summoning NPC
+Config_npcText[2] = 91112               --gossip in npc_text to be told by the summoning NPC
 
 -- list of spells:
 Config_addSpell1[2] = 10150             -- min range 30m, 1-3rd farthest target within 30m
