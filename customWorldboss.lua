@@ -188,7 +188,7 @@ Config_bossSpellTimer1[2] = 10000       -- This timer applies to Config_bossSpel
 Config_bossSpellTimer2[2] = 23000       -- This timer applies to Config_bossSpell2
 Config_bossSpellTimer3[2] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 Config_bossSpellTimer5[2] = 19000       -- This timer applies to Config_bossSpell5+6
-Config_bossSpellEnrageTimer[2] = 180000
+Config_bossSpellEnrageTimer[2] = 300000
 
 Config_addsAmount[2] = 2                -- how many adds will spawn
 
