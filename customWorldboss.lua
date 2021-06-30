@@ -67,6 +67,8 @@ local Config_aura1Add3 = {}             -- an aura to add to all adds from the 3
 local Config_aura2Add3 = {}             -- another aura to add to all adds from the 3rd on
 
 local Config_addSpell3Yell = {}         -- yell for the adds when Spell 3 is cast
+local Config_addEnoughYell = {}         -- yell for the add at 33% and 66% hp
+local Config_addEnoughSound = {}        -- sound to play when the add is at 33% and 66%
 local Config_bossYellPhase2 = {}        -- yell for the boss when phase 2 starts
 
 local Config_fireworks = {}
@@ -104,6 +106,8 @@ Config.storeParty = 1
 -- List of encounters:
 -- 1: Level 42, Glorifrir Flintshoulder / Zombie Captain
 -- 2: Level 40, Pondulum of Deem / Seawitch
+-- 3: Level 50, Crocolisk Dundee / Aligator
+-- 4: Level 50: One-Three-Three-Seven / 
 ------------------------------------------
 
 ------------------------------------------
@@ -155,6 +159,7 @@ Config_aura2Add3[1] = 34309             -- another aura to add to the 3rd add-- 
 
 Config_addSpell3Yell[1] = "Me smash."   -- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[1] = "ENOUGH"      -- yell for the add at 33% and 66% hp
+Config_addEnoughSound[1] = 412          -- sound to play when the add is at 33% and 66%
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[1] = "You might have handled these creatures. But now I WILL handle YOU!"
 
@@ -207,6 +212,7 @@ Config_aura2Add3[2] = nil               -- another aura to add to all add from t
 
 Config_addSpell3Yell[2] = "Thissss."    -- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[2] = "Ssssssuffer!"-- yell for the add at 33% and 66% hp
+Config_addEnoughSound[2] = 412          -- sound to play when the add is at 33% and 66%
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[2] = "Now. You. Die."
 
@@ -259,6 +265,7 @@ Config_aura2Add3[3] = nil               -- another aura to add to all add from t
 
 Config_addSpell3Yell[3] = "Rooooaaar."    -- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[3] = "Ssssssuffer!"-- yell for the add at 33% and 66% hp
+Config_addEnoughSound[3] = nil          -- sound to play when the add is at 33% and 66%
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[3] = " I'll git ye!"
 
@@ -970,20 +977,16 @@ function addNPC.Event(event, delay, pCall, creature)
     if bossfightInProgress == PARTY_IN_PROGRESS and Config_addSpell1[eventInProgress] ~= nil then  -- only for the party version
         if addphase == 1 and creature:GetHealthPct() < 67 then
             addphase = 2
-            creature:SendUnitYell(Config_addEnoughYell[eventInProgress], 0 )
-            creature:PlayDirectSound(412)
-            local players = creature:GetPlayersInRange(30)
-            if #players > 1 then
-                creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), Config.addEnoughSpell)
-                return
-            else
-                creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), Config_addSpell1[eventInProgress])
-                return
-            end
         elseif addphase == 2 and creature:GetHealthPct() < 34 then
             addphase = 3
-            creature:SendUnitYell(Config_addEnoughYell[eventInProgress], 0 )
-            creature:PlayDirectSound(412)
+        end
+        if addphase == 1 and creature:GetHealthPct() < 67 or addphase == 2 and creature:GetHealthPct() < 34 then
+            if Config_Yell[eventInProgress] ~= nil then
+                creature:SendUnitYell(Config_addEnoughYell[eventInProgress], 0 )
+            end
+            if Config_addEnoughSound[eventInProgress] ~= nil then
+                creature:PlayDirectSound(Config_addEnoughSound[eventInProgress])
+            end
             local players = creature:GetPlayersInRange(30)
             if #players > 1 then
                 creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, 0, 30), Config.addEnoughSpell)
