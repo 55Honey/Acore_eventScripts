@@ -69,6 +69,7 @@ local Config_aura2Add3 = {}             -- another aura to add to all adds from 
 local Config_addSpell3Yell = {}         -- yell for the adds when Spell 3 is cast
 local Config_addEnoughYell = {}         -- yell for the add at 33% and 66% hp
 local Config_addEnoughSound = {}        -- sound to play when the add is at 33% and 66%
+local Config_addSpell2Sound = {}        -- sound to play when add casts spell 2
 local Config_bossYellPhase2 = {}        -- yell for the boss when phase 2 starts
 
 local Config_fireworks = {}
@@ -160,6 +161,7 @@ Config_aura2Add3[1] = 34309             -- another aura to add to the 3rd add-- 
 Config_addSpell3Yell[1] = "Me smash."   -- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[1] = "ENOUGH"      -- yell for the add at 33% and 66% hp
 Config_addEnoughSound[1] = 412          -- sound to play when the add is at 33% and 66%
+Config_addSpell2Sound[1] = 6436         -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[1] = "You might have handled these creatures. But now I WILL handle YOU!"
 
@@ -187,7 +189,7 @@ Config_bossSpellTimer1[2] = 10000       -- This timer applies to Config_bossSpel
 Config_bossSpellTimer2[2] = 23000       -- This timer applies to Config_bossSpell2
 Config_bossSpellTimer3[2] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 Config_bossSpellTimer5[2] = 19000       -- This timer applies to Config_bossSpell5+6
-Config_bossSpellEnrageTimer[2] = 180000
+Config_bossSpellEnrageTimer[2] = 300000
 
 Config_addHealthModifierParty[2] = 1    -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[2] = 2                -- how many adds will spawn
@@ -213,6 +215,7 @@ Config_aura2Add3[2] = nil               -- another aura to add to all add from t
 Config_addSpell3Yell[2] = "Thissss."    -- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[2] = "Ssssssuffer!"-- yell for the add at 33% and 66% hp
 Config_addEnoughSound[2] = 412          -- sound to play when the add is at 33% and 66%
+Config_addSpell2Sound[2] = 6436         -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[2] = "Now. You. Die."
 
@@ -227,11 +230,11 @@ Config_addEntry[3] = 1112023            --db entry of the add creature
 Config_npcText[3] = 91113               --gossip in npc_text to be told by the summoning NPC
 
 -- list of spells:
-Config_bossSpell1[3] = nil              --directly applied to the tank-- Crush Armor: 10% reduction, stacks
-Config_bossSpell2[3] = nil              --randomly applied to a player in 35m range-- Domination
-Config_bossSpell3[3] = nil              --on the 2nd nearest player within 30m-- AE fear
-Config_bossSpell4[3] = nil              --on a random player within 40m-- AE Fear
-Config_bossSpell5[3] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
+Config_bossSpell1[3] = nil              --directly applied to the tank--
+Config_bossSpell2[3] = nil              --randomly applied to a player in 35m range--
+Config_bossSpell3[3] = nil              --on the 2nd nearest player within 30m--
+Config_bossSpell4[3] = nil              --on a random player within 40m--
+Config_bossSpell5[3] = nil              --directly applied to the tank with adds alive
 Config_bossSpell6[3] = nil              --directly applied to the tank when adds are dead
 Config_bossSpellSelf[3] = nil           --cast on boss while adds are still alive
 Config_bossSpellEnrage[3] = nil         --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
@@ -240,7 +243,7 @@ Config_bossSpellTimer1[3] = 10000       -- This timer applies to Config_bossSpel
 Config_bossSpellTimer2[3] = 23000       -- This timer applies to Config_bossSpell2
 Config_bossSpellTimer3[3] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 Config_bossSpellTimer5[3] = 19000       -- This timer applies to Config_bossSpell5+6
-Config_bossSpellEnrageTimer[3] = 180000
+Config_bossSpellEnrageTimer[3] = 300000
 
 Config_addHealthModifierParty[3] = 3    -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[3] = 8                -- how many adds will spawn
@@ -263,9 +266,10 @@ Config_aura2Add2[3] = nil               -- another aura to add to the 2nd add-- 
 Config_aura1Add3[3] = nil               -- an aura to add to all ads from the 3rd on-- Holy
 Config_aura2Add3[3] = nil               -- another aura to add to all add from the 3rd on-- Shadow
 
-Config_addSpell3Yell[3] = "Rooooaaar."    -- yell for the adds when Spell 3 is cast
-Config_addEnoughYell[3] = "Ssssssuffer!"-- yell for the add at 33% and 66% hp
+Config_addSpell3Yell[3] = "Rooooaaar."  -- yell for the adds when Spell 3 is cast
+Config_addEnoughYell[3] = "The dev forgot the text here!"-- yell for the add at 33% and 66% hp
 Config_addEnoughSound[3] = nil          -- sound to play when the add is at 33% and 66%
+Config_addSpell2Sound[3] = nil         -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[3] = " I'll git ye!"
 
@@ -434,7 +438,7 @@ end
 local function eS_checkInCombat()
     --check if all players are in combat
     local player
-    for n, v in pairs(playersInRaid) do
+    for _, v in pairs(playersInRaid) do
         player = GetPlayerByGUID(v)
         if player ~= nil then
             if player:IsInCombat() == false and player:GetPhaseMask() == 2 then
@@ -464,13 +468,13 @@ local function eS_getDifficultyTimer(rawTimer)
 end
 
 local function eS_onHello(event, player, creature)
+    if player == nil then return end
     if bossfightInProgress ~= nil then
         creature:SendUnitSay("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration(), 0 )
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config_npcEntry[eventInProgress], 0)
         return
     end
 
-    if player == nil then return end
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config_npcEntry[eventInProgress], 0)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 1)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything.", Config_npcEntry[eventInProgress], 2)
@@ -479,26 +483,30 @@ end
 
 local function awardScore()
     local score = Config.baseScore + (Config.additionalScore * difficulty)
-    for n, playerGuid in pairs(playersInRaid) do
-        local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
-        if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
-        if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
-        scoreEarned[accountId] = scoreEarned[accountId] + score
-        scoreTotal[accountId] = scoreTotal[accountId] + score
-        CharDBExecute('REPLACE INTO `'..Config.customDbName..'`.`eventscript_score` VALUES ('..accountId..', '..scoreEarned[accountId]..', '..scoreTotal[accountId]..');');
-        local gameTime = (tonumber(tostring(GetGameTime())))
-        local playerLowGuid = GetGUIDLow(playerGuid)
-        CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..bossfightInProgress..', '..eS_getTimeSince(encounterStartTime)..');');
+    for _, playerGuid in pairs(playersInRaid) do
+        if  GetPlayerByGUID(playerGuid) ~= nil then
+            local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
+            if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
+            if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
+            scoreEarned[accountId] = scoreEarned[accountId] + score
+                scoreTotal[accountId] = scoreTotal[accountId] + score
+            CharDBExecute('REPLACE INTO `'..Config.customDbName..'`.`eventscript_score` VALUES ('..accountId..', '..scoreEarned[accountId]..', '..scoreTotal[accountId]..');');
+            local gameTime = (tonumber(tostring(GetGameTime())))
+            local playerLowGuid = GetGUIDLow(playerGuid)
+            CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..bossfightInProgress..', '..eS_getTimeSince(encounterStartTime)..');');
+        end        
     end
     bossfightInProgress = nil
 end
 
 local function storeEncounter()
-    for n, playerGuid in pairs(playersInRaid) do
-        local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
-        local gameTime = (tonumber(tostring(GetGameTime())))
-        local playerLowGuid = GetGUIDLow(playerGuid)
-        CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..bossfightInProgress..', '..eS_getTimeSince(encounterStartTime)..');');
+    for _, playerGuid in pairs(playersInRaid) do
+        if  GetPlayerByGUID(playerGuid) ~= nil then
+            local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
+            local gameTime = (tonumber(tostring(GetGameTime())))
+            local playerLowGuid = GetGUIDLow(playerGuid)
+            CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..bossfightInProgress..', '..eS_getTimeSince(encounterStartTime)..');');
+        end
     end
     bossfightInProgress = nil
 end
@@ -691,7 +699,10 @@ local function eS_command(event, player, command)
     local eventNPC
 
     --prevent players from using this  
-    if player ~= nil then
+    if player == nil then
+        print("Can not start an event from the console.")
+        return
+    else
         if player:GetGMRank() < Config.GMRankForEventStart then
             return
         end  
@@ -952,7 +963,9 @@ function addNPC.onEnterCombat(event, creature, target)
     creature:CallForHelp(200)
     for _, v in pairs(playersInRaid) do
         player = GetPlayerByGUID(v)
-        creature:AddThreat(player, 1)
+        if player ~= nil then
+            creature:AddThreat(player, 1)
+        end
     end
     addphase = 1
 
@@ -1033,7 +1046,9 @@ function addNPC.Event(event, delay, pCall, creature)
 
     if Config_addSpellTimer2[eventInProgress] ~= nil and Config_addSpell2[eventInProgress] ~= nil then
         if eS_getDifficultyTimer(Config_addSpellTimer2[eventInProgress]) < randomTimer + (eS_getTimeSince(lastAddSpell2[n])) then
-            creature:PlayDirectSound(6436)
+            if Config_addSpell2Sound[eventInProgress] ~= nil then
+                creature:PlayDirectSound(Config_addSpell2Sound[eventInProgress])
+            end
             creature:CastSpell(creature:GetVictim(), Config_addSpell2[eventInProgress])
             lastAddSpell2[n] = GetCurrTime()
             return
