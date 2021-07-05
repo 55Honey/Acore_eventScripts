@@ -486,7 +486,7 @@ local function eS_onHello(event, player, creature)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config_npcEntry[eventInProgress], 0)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 1)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything.", Config_npcEntry[eventInProgress], 2)
-    player:GossipSendMenu(Config_npcText[1], creature, 0)
+    player:GossipSendMenu(Config_npcText[eventInProgress], creature, 0)
 end
 
 local function awardScore()
