@@ -971,7 +971,8 @@ end
 function addNPC.onEnterCombat(event, creature, target)
     local player
 
-    creature:RegisterEvent(addNPC.Event, 100, 0)
+    
+    creature:RegisterEvent(addNPC.Event, math.random(100,150), 0)
 
     creature:CallAssistance()
     creature:CallForHelp(200)
