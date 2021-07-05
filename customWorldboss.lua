@@ -30,9 +30,10 @@ local Config_bossEntry = {}             --db entry of the boss creature
 local Config_addEntry = {}              --db entry of the add creature
 
 local Config_bossSpell1 = {}            --directly applied to the tank
-local Config_bossSpell2 = {}            --randomly applied to a player in 35m range
-local Config_bossSpell3 = {}            --on the 2nd nearest player within 30m
-local Config_bossSpell4 = {}            --on a random player within 40m
+local Config_bossSpell2 = {}            --randomly applied to a player in 35m(configurable) range
+local Config_bossSpell2MaxRange = {}    --max range im m to check for targets for boss spell 2 (default 35)
+local Config_bossSpell3 = {}            --on the 2nd nearest player within 30m (only when adds are dead)
+local Config_bossSpell4 = {}            --on a random player within 40m (only when adds are dead)
 local Config_bossSpell5 = {}            --directly applied to the tank with adds alive
 local Config_bossSpell6 = {}            --directly applied to the tank when adds are dead
 local Config_bossSpellSelf = {}         --cast on boss while adds are still alive
@@ -124,6 +125,7 @@ Config_npcText[1] = 91111               --gossip in npc_text to be told by the s
 -- list of spells:
 Config_bossSpell1[1] = 38846            --directly applied to the tank-- Forceful Cleave (Target + nearest ally)
 Config_bossSpell2[1] = 45108            --randomly applied to a player in 35m range-- CKs Fireball
+Config_bossSpell2MaxRange[1] = 35       --max range im m/y to check for targets for boss spell 2 (default 35)
 Config_bossSpell3[1] = 53721            --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
 Config_bossSpell4[1] = 37279            --on a random player within 40m-- Rain of Fire
 Config_bossSpell5[1] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
@@ -178,6 +180,7 @@ Config_npcText[2] = 91112               --gossip in npc_text to be told by the s
 -- list of spells:
 Config_bossSpell1[2] = 33661            --directly applied to the tank-- Crush Armor: 10% reduction, stacks
 Config_bossSpell2[2] = 51503            --randomly applied to a player in 35m range-- Domination
+Config_bossSpell2MaxRange[2] = 35       --max range im m/y to check for targets for boss spell 2 (default 35)
 Config_bossSpell3[2] = 35198            --on the 2nd nearest player within 30m-- AE fear
 Config_bossSpell4[2] = 35198            --on a random player within 40m-- AE Fear
 Config_bossSpell5[2] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
@@ -232,6 +235,7 @@ Config_npcText[3] = 91113               --gossip in npc_text to be told by the s
 -- list of spells:
 Config_bossSpell1[3] = nil              --directly applied to the tank--
 Config_bossSpell2[3] = nil              --randomly applied to a player in 35m range--
+Config_bossSpell2MaxRange[3] = 35       --max range im m/y to check for targets for boss spell 2 (default 35)
 Config_bossSpell3[3] = nil              --on the 2nd nearest player within 30m--
 Config_bossSpell4[3] = nil              --on a random player within 40m--
 Config_bossSpell5[3] = nil              --directly applied to the tank with adds alive
@@ -893,7 +897,10 @@ function bossNPC.Event(event, delay, pCall, creature)
         if eS_getDifficultyTimer(Config_bossSpellTimer2[eventInProgress]) < eS_getTimeSince(lastBossSpell2) then
             if Config_bossSpell2[eventInProgress] ~= nil then
                 if (math.random(1, 100) <= 50) then
-                    local players = creature:GetPlayersInRange(35)
+                    if Config_bossSpell2MaxRange[eventInProgress] == nil then
+                        Config_bossSpell2MaxRange[eventInProgress] = 35
+                    end
+                    local players = creature:GetPlayersInRange(Config_bossSpell2MaxRange[eventInProgress])
                     local targetPlayer = players[math.random(1, #players)]
                     creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
                     creature:CastSpell(targetPlayer, Config_bossSpell2[eventInProgress])
