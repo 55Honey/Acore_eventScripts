@@ -261,9 +261,9 @@ Config_bossSpellEnrageTimer[3] = 300000
 Config_addHealthModifierParty[3] = 3    -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[3] = 8                -- how many adds will spawn
 
-Config_addSpell1[3] = 23105             -- min range 30m, 1-3rd farthest target within 30m --Lightning cloud
+Config_addSpell1[3] = 29320             -- min range 30m, 1-3rd farthest target within 30m --Lightning cloud
 Config_addSpell2[3] = nil               -- min range 45m, cast on tank
-Config_addSpell3[3] = 29320             -- min range 0m -- charge
+Config_addSpell3[3] = 23105             -- min range 0m -- charge
 Config_addSpell4[3] = nil               -- cast on the boss
 Config_addSpellEnrage[3] = nil          -- Enrage after 300 seconds
 
