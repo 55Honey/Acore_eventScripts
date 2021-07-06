@@ -73,6 +73,7 @@ local Config_addEnoughYell = {}         -- yell for the add at 33% and 66% hp
 local Config_addEnoughSound = {}        -- sound to play when the add is at 33% and 66%
 local Config_addSpell2Sound = {}        -- sound to play when add casts spell 2
 local Config_bossYellPhase2 = {}        -- yell for the boss when phase 2 starts
+local Config_bossSpellSelfYell = {}     -- yell for the boss when they cast on themself
 
 local Config_fireworks = {}
 
@@ -168,6 +169,8 @@ Config_addEnoughSound[1] = 412          -- sound to play when the add is at 33% 
 Config_addSpell2Sound[1] = 6436         -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[1] = "You might have handled these creatures. But now I WILL handle YOU!"
+-- yell for the boss when they cast on themself
+Config_bossSpellSelfYell[1] = nil
 
 ------------------------------------------
 -- Begin of encounter 2 config
@@ -224,6 +227,8 @@ Config_addEnoughSound[2] = 412          -- sound to play when the add is at 33% 
 Config_addSpell2Sound[2] = 6436         -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[2] = "Now. You. Die."
+-- yell for the boss when they cast on themself
+Config_bossSpellSelfYell[2] = nil
 
 ------------------------------------------
 -- Begin of encounter 3 config
@@ -244,7 +249,7 @@ Config_bossSpell4[3] = nil              --on a random player within 40m--
 Config_bossSpell4MaxRange[3] = 40       --max range im m to check for targets for boss spell 4 (default 40)
 Config_bossSpell5[3] = nil              --directly applied to the tank with adds alive
 Config_bossSpell6[3] = nil              --directly applied to the tank when adds are dead
-Config_bossSpellSelf[3] = nil           --cast on boss while adds are still alive
+Config_bossSpellSelf[3] = 55948         --cast on boss while adds are still alive
 Config_bossSpellEnrage[3] = nil         --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
 Config_bossSpellTimer1[3] = 10000       -- This timer applies to Config_bossSpell1
@@ -277,9 +282,11 @@ Config_aura2Add3[3] = nil               -- another aura to add to all add from t
 Config_addSpell3Yell[3] = "Rooooaaar."  -- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[3] = "The dev forgot the text here!"-- yell for the add at 33% and 66% hp
 Config_addEnoughSound[3] = nil          -- sound to play when the add is at 33% and 66%
-Config_addSpell2Sound[3] = nil         -- sound to play when add casts spell 2
+Config_addSpell2Sound[3] = nil          -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[3] = " I'll git ye!"
+-- yell for the boss when they cast on themself
+Config_bossSpellSelfYell[3] = "Feed me with your strength, minions!"
 
 ------------------------------------------
 -- End of encounter 3
@@ -874,6 +881,9 @@ function bossNPC.Event(event, delay, pCall, creature)
         if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < eS_getTimeSince(lastBossSpell3) then
             if addsDownCounter < Config_addsAmount[eventInProgress] then
                 if Config_bossSpellSelf[eventInProgress] ~= nil then
+                    if Config_bossSpellSelfYell[eventInProgress] ~= nil then
+                        creature:SendUnitYell(Config_bossSpellSelfYell[eventInProgress], 0 )
+                    end
                     creature:CastSpell(creature, Config_bossSpellSelf[eventInProgress])
                     lastBossSpell3 = GetCurrTime()
                     return
