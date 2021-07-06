@@ -22,7 +22,7 @@ INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entr
 -- Custom Chromie 3:
 (1112022, 0, 0, 0, 0, 0, 10008, 0, 0, 0, 'Chromie', '', 62003, 63, 63, 0, 35, 1, 1, 1.14286, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 33536, 2048, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1.35, 1, 1, 0, 0, 1, 0, 0, 2, '', 12340),
 -- Event 3 Add:
-(1112023, 0, 0, 0, 0, 0, 17952, 0, 0, 0, 'Aligator Minion', '', 0, 50, 50, 0, 63, 0, 1, 2, 1, 1, 0, 10, 2000, 2000, 1, 1, 8, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 50, 100, 1, 0, 0, 1, 667631231, 0, 256, '', 12340);
+(1112023, 0, 0, 0, 0, 0, 17952, 0, 0, 0, 'Aligator Minion', '', 0, 50, 50, 0, 63, 0, 1, 2, 1, 1, 0, 10, 2000, 2000, 1, 1, 8, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 50, 100, 1, 0, 0, 1, 667631227, 0, 256, '', 12340);
 
 -- Npc_text
 SET @NPC_TEXT = 'Greetings, $n. One of the invaders of the timeline is in a nearby timenode. I might be able to make them visible for your eyes and vulnerable to your magic and weapons, but i can not aid you in this fight while i am maintaining the spell. Are you ready to face the worst this timeline has to deal with?\n';
