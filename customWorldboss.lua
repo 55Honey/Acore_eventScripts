@@ -504,12 +504,12 @@ local function awardScore()
             if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
             if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
             scoreEarned[accountId] = scoreEarned[accountId] + score
-                scoreTotal[accountId] = scoreTotal[accountId] + score
+            scoreTotal[accountId] = scoreTotal[accountId] + score
             CharDBExecute('REPLACE INTO `'..Config.customDbName..'`.`eventscript_score` VALUES ('..accountId..', '..scoreEarned[accountId]..', '..scoreTotal[accountId]..');');
             local gameTime = (tonumber(tostring(GetGameTime())))
             local playerLowGuid = GetGUIDLow(playerGuid)
             CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..bossfightInProgress..', '..eS_getTimeSince(encounterStartTime)..');');
-        end        
+        end
     end
     bossfightInProgress = nil
 end
@@ -571,12 +571,12 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
         spawnedCreature[1]:SetPhaseMask(2)
         spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
-        
+
         local maxHealth = Config_addHealthModifierParty[eventInProgress] * spawnedCreature[1]:GetMaxHealth()
         local health = Config_addHealthModifierParty[eventInProgress] * spawnedCreature[1]:GetHealth()
         spawnedCreature[1]:SetMaxHealth(maxHealth)
         spawnedCreature[1]:SetHealth(health)
-        
+
         encounterStartTime = GetCurrTime()
 
         for n, v in pairs(groupPlayers) do
@@ -720,9 +720,9 @@ local function eS_command(event, player, command)
     else
         if player:GetGMRank() < Config.GMRankForEventStart then
             return
-        end  
+        end
     end
-  
+
     -- split the command variable into several strings which can be compared individually
     commandArray = eS_splitString(command)
 
@@ -732,10 +732,10 @@ local function eS_command(event, player, command)
             commandArray[3] = commandArray[3]:gsub("[';\\, ]", "")
         end
     end
-  
+
     if commandArray[2] == nil then commandArray[2] = 1 end
     if commandArray[3] == nil then commandArray[3] = 1 end
-  
+
     if commandArray[1] == "startevent" then
         eventNPC = tonumber(commandArray[2])
         difficulty = tonumber(commandArray[3])
@@ -781,12 +781,12 @@ local function eS_command(event, player, command)
         eventInProgress = nil
         return false
     end
-    
+
     --prevent non-Admins from using the rest
-    if player ~= nil then  
+    if player ~= nil then
         if player:GetGMRank() < Config.GMRankForUpdateDB then
             return
-        end  
+        end
     end
     --nothing here yet
 end
@@ -981,7 +981,7 @@ end
 function addNPC.onEnterCombat(event, creature, target)
     local player
 
-    
+
     creature:RegisterEvent(addNPC.Event, math.random(100,150), 0)
 
     creature:CallAssistance()
