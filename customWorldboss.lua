@@ -242,15 +242,15 @@ Config_npcText[3] = 91113               --gossip in npc_text to be told by the s
 
 -- list of spells:
 Config_bossSpell1[3] = nil              --directly applied to the tank--
-Config_bossSpell2[3] = nil              --randomly applied to a player in 35m range--
-Config_bossSpell2MaxRange[3] = 35       --max range im m/y to check for targets for boss spell 2 (default 35)
+Config_bossSpell2[3] = 56909            --randomly applied to a player in 35m range-- Cleave, up to 10 targets
+Config_bossSpell2MaxRange[3] = 5        --max range im m/y to check for targets for boss spell 2 (default 35)
 Config_bossSpell3[3] = nil              --on the 2nd nearest player within 30m--
-Config_bossSpell4[3] = nil              --on a random player within 40m--
+Config_bossSpell4[3] = 18173            --on a random player within 40m-- Burning adrenaline
 Config_bossSpell4MaxRange[3] = 40       --max range im m to check for targets for boss spell 4 (default 40)
-Config_bossSpell5[3] = nil              --directly applied to the tank with adds alive
-Config_bossSpell6[3] = nil              --directly applied to the tank when adds are dead
+Config_bossSpell5[3] = 36741            --directly applied to the tank with adds alive --volley
+Config_bossSpell6[3] = 36741            --directly applied to the tank when adds are dead --volley
 Config_bossSpellSelf[3] = 55948         --cast on boss while adds are still alive
-Config_bossSpellEnrage[3] = nil         --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+Config_bossSpellEnrage[3] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
 Config_bossSpellTimer1[3] = 10000       -- This timer applies to Config_bossSpell1
 Config_bossSpellTimer2[3] = 23000       -- This timer applies to Config_bossSpell2
@@ -261,13 +261,13 @@ Config_bossSpellEnrageTimer[3] = 300000
 Config_addHealthModifierParty[3] = 3    -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[3] = 8                -- how many adds will spawn
 
-Config_addSpell1[3] = nil               -- min range 30m, 1-3rd farthest target within 30m
+Config_addSpell1[3] = 23105             -- min range 30m, 1-3rd farthest target within 30m --Lightning cloud
 Config_addSpell2[3] = nil               -- min range 45m, cast on tank
-Config_addSpell3[3] = nil               -- min range 0m -- Blast Nova
+Config_addSpell3[3] = 29320             -- min range 0m -- charge
 Config_addSpell4[3] = nil               -- cast on the boss
 Config_addSpellEnrage[3] = nil          -- Enrage after 300 seconds
 
-Config_addSpellTimer1[3] = 13000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer1[3] = 37000        -- This timer applies to Config_addSpell1
 Config_addSpellTimer2[3] = 11000        -- This timer applies to Config_addSpell2
 Config_addSpellTimer3[3] = 37000        -- This timer applies to Config_addSpell3
 Config_addSpellTimer4[3] = 23000        -- This timer applies to Config_addSpell4
@@ -279,14 +279,14 @@ Config_aura2Add2[3] = nil               -- another aura to add to the 2nd add-- 
 Config_aura1Add3[3] = nil               -- an aura to add to all ads from the 3rd on-- Holy
 Config_aura2Add3[3] = nil               -- another aura to add to all add from the 3rd on-- Shadow
 
-Config_addSpell3Yell[3] = "Rooooaaar."  -- yell for the adds when Spell 3 is cast
-Config_addEnoughYell[3] = "The dev forgot the text here!"-- yell for the add at 33% and 66% hp
+Config_addSpell3Yell[3] = "Mmmrrrrrrrr."  -- yell for the adds when Spell 3 is cast
+Config_addEnoughYell[3] = "Rooooaaar"-- yell for the add at 33% and 66% hp
 Config_addEnoughSound[3] = nil          -- sound to play when the add is at 33% and 66%
 Config_addSpell2Sound[3] = nil          -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[3] = " I'll git ye!"
 -- yell for the boss when they cast on themself
-Config_bossSpellSelfYell[3] = "Feed me with your strength, minions!"
+Config_bossSpellSelfYell[3] = "Yous Minions be feeding me all ya Strength!"
 
 ------------------------------------------
 -- End of encounter 3
