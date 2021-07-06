@@ -2,7 +2,7 @@ DELETE FROM `creature_template` WHERE `entry` IN (1112001,1112002,1112003,111201
 DELETE FROM `npc_text` WHERE `ID` IN (91111,91112,91113);
 DELETE FROM `gossip_menu` WHERE `MenuID` IN (62001,62002,62003);
 
-DELETE FROM `creature_equip_template` WHERE `CreatureID` = '1112011';
+DELETE FROM `creature_equip_template` WHERE `CreatureID` IN (1112011,1112021);
 
 INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `DamageModifier`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES
 -- Event 1 Boss:
@@ -18,11 +18,11 @@ INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entr
 -- Event 2 Add:
 (1112013, 0, 0, 0, 0, 0, 17953, 0, 0, 0, 'Seawitch', '', 0, 40, 40, 0, 63, 0, 1, 2, 1, 1, 0, 10, 2000, 2000, 1, 1, 8, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 80, 100, 1, 0, 0, 1, 634077055, 0, 256, '', 12340),
 -- Event 3 Boss:
-(1112021, 0, 0, 0, 0, 0, 17557, 0, 0, 0, 'Crocolisk Dundee', '', 0, 50, 50, 0, 63, 0, 1, 2, 2, 3, 0, 30, 2000, 2000, 1, 1, 1, 32832, 2048, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 50000, 60000, 'SmartAI', 1, 3, 1, 300, 100, 1, 0, 0, 1, 667631231, 0, 0, '', 12340),
+(1112021, 0, 0, 0, 0, 0, 17557, 0, 0, 0, 'Crocolisk Dundee', '', 0, 50, 50, 0, 63, 0, 1, 2, 2, 3, 0, 15, 2000, 2000, 1, 1, 1, 32832, 2048, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 50000, 60000, 'SmartAI', 1, 3, 1, 300, 100, 1, 0, 0, 1, 667631231, 0, 0, '', 12340),
 -- Custom Chromie 3:
 (1112022, 0, 0, 0, 0, 0, 10008, 0, 0, 0, 'Chromie', '', 62003, 63, 63, 0, 35, 1, 1, 1.14286, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 33536, 2048, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1.35, 1, 1, 0, 0, 1, 0, 0, 2, '', 12340),
 -- Event 3 Add:
-(1112023, 0, 0, 0, 0, 0, 1034, 0, 0, 0, 'Aligator Minion', '', 0, 50, 50, 0, 63, 0, 1, 2, 1, 1, 0, 10, 2000, 2000, 1, 1, 8, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 50, 100, 1, 0, 0, 1, 667631227, 0, 256, '', 12340);
+(1112023, 0, 0, 0, 0, 0, 1034, 0, 0, 0, 'Aligator Minion', '', 0, 50, 50, 0, 63, 0, 1, 2, 1, 1, 0, 5, 2000, 2000, 1, 1, 8, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 50, 100, 1, 0, 0, 1, 667631227, 0, 256, '', 12340);
 
 -- Npc_text
 SET @NPC_TEXT = 'Greetings, $n. One of the invaders of the timeline is in a nearby timenode. I might be able to make them visible for your eyes and vulnerable to your magic and weapons, but i can not aid you in this fight while i am maintaining the spell. Are you ready to face the worst this timeline has to deal with?\n';
@@ -37,4 +37,5 @@ INSERT INTO `gossip_menu` (`MenuID`, `TextID`) VALUES
 (62003, 91113);
 
 INSERT INTO `creature_equip_template` (`CreatureID`, `ID`, `ItemID1`, `ItemID2`, `ItemID3`, `VerifiedBuild`) VALUES 
-('1112011', '1', '41175', '0', '0', '18019');
+(1112011, 1, 41175, 0, 0, 18019),
+(1112021, 1, 7682, 0, 0, 18019);

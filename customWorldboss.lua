@@ -245,10 +245,10 @@ Config_bossSpell1[3] = nil              --directly applied to the tank--
 Config_bossSpell2[3] = 56909            --randomly applied to a player in 35m range-- Cleave, up to 10 targets
 Config_bossSpell2MaxRange[3] = 5        --max range im m/y to check for targets for boss spell 2 (default 35)
 Config_bossSpell3[3] = nil              --on the 2nd nearest player within 30m--
-Config_bossSpell4[3] = 18173            --on a random player within 40m-- Burning adrenaline
+Config_bossSpell4[3] = 11446            --on a random player within 40m-- 5min domination
 Config_bossSpell4MaxRange[3] = 40       --max range im m to check for targets for boss spell 4 (default 40)
-Config_bossSpell5[3] = 36741            --directly applied to the tank with adds alive --volley
-Config_bossSpell6[3] = 36741            --directly applied to the tank when adds are dead --volley
+Config_bossSpell5[3] = 8398            --directly applied to the tank with adds alive --volley
+Config_bossSpell6[3] = 8398            --directly applied to the tank when adds are dead --volley
 Config_bossSpellSelf[3] = 55948         --cast on boss while adds are still alive
 Config_bossSpellEnrage[3] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
