@@ -34,6 +34,7 @@ local Config_bossSpell2 = {}            --randomly applied to a player in 35m(co
 local Config_bossSpell2MaxRange = {}    --max range im m to check for targets for boss spell 2 (default 35)
 local Config_bossSpell3 = {}            --on the 2nd nearest player within 30m (only when adds are dead)
 local Config_bossSpell4 = {}            --on a random player within 40m (only when adds are dead)
+local Config_bossSpell4Counter = {}     --amount of casts to perform for spell 4. defaults to 1
 local Config_bossSpell4MaxRange = {}    --max range im m to check for targets for boss spell 4 (default 40)
 local Config_bossSpell5 = {}            --directly applied to the tank with adds alive
 local Config_bossSpell6 = {}            --directly applied to the tank when adds are dead
@@ -130,6 +131,7 @@ Config_bossSpell2[1] = 45108            --randomly applied to a player in 35m ra
 Config_bossSpell2MaxRange[1] = 35       --max range im m/y to check for targets for boss spell 2 (default 35)
 Config_bossSpell3[1] = 53721            --on the 2nd nearest player within 30m-- Death and decay (10% hp per second)
 Config_bossSpell4[1] = 37279            --on a random player within 40m-- Rain of Fire
+Config_bossSpell4Counter[1] = 1         --amount of casts to perform for spell 4. defaults to 1
 Config_bossSpell4MaxRange[1] = 40       --max range im m to check for targets for boss spell 4 (default 40)
 Config_bossSpell5[1] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
 Config_bossSpell6[1] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
@@ -188,6 +190,7 @@ Config_bossSpell2[2] = 51503            --randomly applied to a player in 35m ra
 Config_bossSpell2MaxRange[2] = 35       --max range im m/y to check for targets for boss spell 2 (default 35)
 Config_bossSpell3[2] = 35198            --on the 2nd nearest player within 30m-- AE fear
 Config_bossSpell4[2] = 35198            --on a random player within 40m-- AE Fear
+Config_bossSpell4Counter[2] = 1         --amount of casts to perform for spell 4. defaults to 1
 Config_bossSpell4MaxRange[2] = 40       --max range im m to check for targets for boss spell 4 (default 40)
 Config_bossSpell5[2] = nil              --this line is not neccesary. If a spell is missing it will just be skipped
 Config_bossSpell6[2] = 31436            --directly applied to the tank when adds are dead
@@ -246,9 +249,10 @@ Config_bossSpell2[3] = 56909            --randomly applied to a player in 35m ra
 Config_bossSpell2MaxRange[3] = 5        --max range im m/y to check for targets for boss spell 2 (default 35)
 Config_bossSpell3[3] = nil              --on the 2nd nearest player within 30m--
 Config_bossSpell4[3] = 11446            --on a random player within 40m-- 5min domination
+Config_bossSpell4Counter[3] = 1         --amount of casts to perform for spell 4. defaults to 1
 Config_bossSpell4MaxRange[3] = 40       --max range im m to check for targets for boss spell 4 (default 40)
-Config_bossSpell5[3] = 8398            --directly applied to the tank with adds alive --volley
-Config_bossSpell6[3] = 8398            --directly applied to the tank when adds are dead --volley
+Config_bossSpell5[3] = 8398             --directly applied to the tank with adds alive --volley
+Config_bossSpell6[3] = 8398             --directly applied to the tank when adds are dead --volley
 Config_bossSpellSelf[3] = 55948         --cast on boss while adds are still alive
 Config_bossSpellEnrage[3] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
@@ -791,11 +795,6 @@ local function eS_command(event, player, command)
     --nothing here yet
 end
 
--- list of spells:
--- 60488 Shadow Bolt (30)
--- 24326 HIGH knockback (ZulFarrak beast)
--- 12421 Mithril Frag Bomb 8y 149-201 damage + stun
-
 function bossNPC.onEnterCombat(event, creature, target)
     creature:RegisterEvent(bossNPC.Event, 100, 0)
     creature:CallAssistance()
@@ -942,8 +941,19 @@ function bossNPC.Event(event, delay, pCall, creature)
                                 Config_bossSpell4MaxRange[eventInProgress] = 40
                             end
                             local players = creature:GetPlayersInRange(Config_bossSpell4MaxRange[eventInProgress])
-                            local targetPlayer = players[math.random(1, #players)]
-                            creature:CastSpell(targetPlayer, Config_bossSpell4[eventInProgress])
+                            local nextPlayerIndex = math.random(1, #players)
+                            if Config_bossSpell4Counter[eventInProgress] == nil then
+                                Config_bossSpell4Counter[eventInProgress] = 1
+                            end
+                            for m = 1, Config_bossSpell4Counter[eventInProgress] do
+                                local targetPlayer = players[nextPlayerIndex]    
+                                creature:CastSpell(targetPlayer, Config_bossSpell4[eventInProgress])
+                                if nextPlayerIndex >= #players then
+                                    nextPlayerIndex = 1
+                                else
+                                    nextPlayerIndex = nextPlayerIndex + 1
+                                end
+                            end
                             lastBossSpell3 = GetCurrTime()
                             return
                         end
