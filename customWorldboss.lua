@@ -272,9 +272,9 @@ Config_addSpell4[3] = nil               -- cast on the boss
 Config_addSpellEnrage[3] = nil          -- Enrage after 300 seconds
 
 Config_addSpellTimer1[3] = 37000        -- This timer applies to Config_addSpell1
-Config_addSpellTimer2[3] = 11000        -- This timer applies to Config_addSpell2
+Config_addSpellTimer2[3] = nil          -- This timer applies to Config_addSpell2
 Config_addSpellTimer3[3] = 37000        -- This timer applies to Config_addSpell3
-Config_addSpellTimer4[3] = 23000        -- This timer applies to Config_addSpell4
+Config_addSpellTimer4[3] = nil          -- This timer applies to Config_addSpell4
 
 Config_aura1Add1[3] = nil               -- an aura to add to the 1st add-- Arcane
 Config_aura2Add1[3] = nil               -- another aura to add to the 1st add-- Nature
