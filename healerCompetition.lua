@@ -37,6 +37,12 @@ Config.printErrorsToConsole = 1
 Config.npcEntry = 1114001
 -- Text to display when talking to the npc
 Config.npcText = 92111
+-- Phase to send palyers to while they're doing the event
+Config.Phase = 4
+
+------------------------------------------
+-- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
+------------------------------------------
 
 --constants
 local PLAYER_EVENT_ON_COMMAND = 42          -- (event, player, command) - player is nil if command used from console. Can return false
@@ -44,12 +50,15 @@ local GOSSIP_EVENT_ON_HELLO = 1             -- (event, player, object) - Object 
 local GOSSIP_EVENT_ON_SELECT = 2            -- (event, player, object, sender, intid, code, menu_id)
 local OPTION_ICON_CHAT = 0
 
+-- local variables
 local encounterStartTime
-local triageInProgress
-local variables
+local activePlayerGuid
+local activeLevel
+local playerClass
 
 --local arrays
 local spawnedCreatureGuid = {}
+local beatenLevel = {}
 
 local function eS_has_value (tab, val)
     for index, value in ipairs(tab) do
@@ -69,6 +78,11 @@ local function eS_returnIndex (tab, val)
     return false
 end
 
+local function eS_getTimeSince(time)
+    local dt = GetTimeDiff(time)
+    return dt
+end
+
 local function eS_getEncounterDuration()
     local dt = GetTimeDiff(encounterStartTime)
     return string.format("%.2d:%.2d", (dt / 1000 / 60) % 60, (dt / 1000) % 60)
@@ -86,9 +100,9 @@ local function eS_splitString(inputstr, seperator)
 end
 
 local function eS_onHello(event, player, creature)
-    if triageInProgress ~= nil then
+    if activeLevel ~= nil then
         creature:SendUnitSay("A hero is still trying to rescue the victims of the past since "..eS_getEncounterDuration(), 0 )
-        player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config_npcEntry[eventInProgress], 0)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.npcEntry, 0)
         return
     end
 
@@ -96,4 +110,44 @@ local function eS_onHello(event, player, creature)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.npcEntry, 0)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "I want to try a new challenge!", Config.npcEntry, 1)
     player:GossipSendMenu(Config.npcText, creature, 0)
+end
+
+local function storeEncounter()
+    local gameTime = (tonumber(tostring(GetGameTime())))
+    local playerLowGuid = GetGUIDLow(activePlayerGuid)
+    CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_healer_challenge` VALUES ('..gameTime..', '..playerClass..', '..playerLowGuid..', '..activeLevel..', '..eS_getTimeSince(encounterStartTime)..');');
+    activeLevel = nil
+end
+
+--todo: create a table for this
+
+local function eS_healerGossip(event, player, object, sender, intid, code, menu_id)
+    if player == nil then return end
+    local playerLowGuid = GetGUIDLow(activePlayerGuid)
+    if intid == 0 then
+        if beatenLevel[playerLowGuid] == nil then
+            player:SendBroadcastMessage("You haven't beaten a level in this competition yet.")
+        else
+            player:SendBroadcastMessage("Your highest beaten level is: "..beatenLevel[playerLowGuid])
+        end
+        player:GossipComplete()
+    elseif intid == 1 then
+        local playerClass = player:GetClass()
+
+        if beatenLevel[playerLowGuid] == nil then
+            beatenLevel[playerLowGuid] = 0
+        end
+
+        activeLevel = beatenLevel[playerLowGuid] + 1
+
+        encounterStartTime = GetCurrTime()
+
+        player:SetPhaseMask(Config.Phase)
+        activePlayerGuid = player:GetGUID()
+
+        --todo: add an event to spawn things to heal
+        --todo: add an event to check if things die or are full
+        --todo: make full things despawn and make the player loose if something dies
+    end
+    player:GossipComplete()
 end
