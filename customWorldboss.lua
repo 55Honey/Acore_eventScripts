@@ -1217,6 +1217,6 @@ if Data_SQL ~= nil then
     repeat
         account = Data_SQL:GetUInt32(0)
         scoreEarned[account] = Data_SQL:GetUInt32(1)
-        scoreTotal[account] = Data_SQL:GetUInt32(1)
+        scoreTotal[account] = Data_SQL:GetUInt32(2)
     until not Data_SQL:NextRow()
 end
