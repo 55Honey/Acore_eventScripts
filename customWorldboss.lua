@@ -283,10 +283,10 @@ Config_aura2Add2[3] = nil               -- another aura to add to the 2nd add-- 
 Config_aura1Add3[3] = nil               -- an aura to add to all ads from the 3rd on-- Holy
 Config_aura2Add3[3] = nil               -- another aura to add to all add from the 3rd on-- Shadow
 
-Config_addSpell3Yell[3] = "Mmmrrrrrrrr."  -- yell for the adds when Spell 3 is cast
-Config_addEnoughYell[3] = "Rooooaaar"-- yell for the add at 33% and 66% hp
-Config_addEnoughSound[3] = nil          -- sound to play when the add is at 33% and 66%
-Config_addSpell2Sound[3] = nil          -- sound to play when add casts spell 2
+Config_addSpell3Yell[3] = "Mmmrrrrrrrr."-- yell for the adds when Spell 3 is cast
+Config_addEnoughYell[3] = "Rooooaaar"   -- yell for the add at 33% and 66% hp
+Config_addEnoughSound[3] = 412          -- sound to play when the add is at 33% and 66%
+Config_addSpell2Sound[3] = 6436         -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[3] = " I'll git ye!"
 -- yell for the boss when they cast on themself
