@@ -34,10 +34,12 @@ Config.GMRankForUpdateDB = 3
 -- Set to 1 to print error messages to the console. Any other value including nil turns it off.
 Config.printErrorsToConsole = 1
 -- Npc to talk to when starting the competition
-Config.npcEntry = 1114001
+Config.npcEntry = 1114100
+-- Starting entry for the woudned NPCs. Default 1114001 will result in 1114001-1114012 being used
+Config.woundedEntry = 1114001
 -- Text to display when talking to the npc
 Config.npcText = 92111
--- Phase to send players to while they're doing the event. Phases 1+2 are left out by default.
+-- Phase to send players to while they're doing the event. Phases 1+2 are left out by defaull
 Config.Phase = 4
 
 ------------------------------------------
@@ -67,8 +69,12 @@ local activeLevel
 local playerClass
 
 --local arrays
-local spawnedCreatureGuid = {}
-local beatenLevel = {}
+local spawnedCreatureGuid = {}              -- currently spawned creature
+local beatenLevel = {}                      -- highest beaten level per characterGuid
+local beatenLevelTime = {}                  -- duration for highest beaten level per characterGuid
+local recordLevel = {}                      -- record per healerclass
+local recordTime = {}                       -- record per healerclass
+local recordName = {}                       -- name of the record holder per healerclass
 
 local function eS_has_value (tab, val)
     for index, value in ipairs(tab) do
@@ -191,6 +197,16 @@ end
 
 --on ReloadEluna / Startup
 CharDBQuery('CREATE DATABASE IF NOT EXISTS `'..Config.customDbName..'`;');
-CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`eventscript_encounters` (`playerGuid` INT NOT NULL, `difficulty` INT DEFAULT 1, `time_stamp` INT NOT NULL, `duration` INT NOT NULL, PRIMARY KEY (`playerGuid`, `time_stamp`));');
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`healer_competition` (`playerGuid` INT NOT NULL, `difficulty` INT DEFAULT 1, `time_stamp` INT NOT NULL, `duration` INT NOT NULL, PRIMARY KEY (`playerGuid`, `time_stamp`));');
+
+local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`healer_competition`;')
+if Data_SQL ~= nil then
+    local playerGuid
+    repeat
+        playerGuid = Data_SQL:GetUInt32(0)
+        beatenLevel = Data_SQL:GetUInt32(1)
+        beatenLevelTime = Data_SQL:GetUInt32(3)
+    until not Data_SQL:NextRow()
+end
 
 --todo: read records from db on startup
