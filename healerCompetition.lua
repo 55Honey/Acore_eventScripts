@@ -16,7 +16,7 @@
 --               -  add this script to ../lua_scripts/
 --               -  adjust the IDs and config flags in case of conflicts and run the associated SQL to add the required NPCs
 ------------------------------------------------------------------------------------------------
--- GM GUIDE:     -  add instructions here
+-- GM GUIDE:     -  nothing to do, it's full auto mode
 ------------------------------------------------------------------------------------------------
 
 ----------------------------------------
@@ -61,12 +61,14 @@ local CLASS_SHAMAN = 7                      -- Shaman
 local CLASS_MAGE = 8                        -- Mage
 local CLASS_WARLOCK = 9                     -- Warlock
 local CLASS_DRUID = 11                      -- Druid
+local CREATURE_EVENT_ON_SPAWN = 5           -- (event, creature) - Can return true to stop normal action
 
 -- local variables
 local encounterStartTime
 local activePlayerGuid
 local activeLevel
 local playerClass
+local lastRecordPrinted = 0
 
 --local arrays
 local spawnedCreatureGuid = {}              -- currently spawned creature
@@ -115,6 +117,28 @@ local function eS_splitString(inputstr, seperator)
     return t
 end
 
+local function eS_healNPCEvent(event, delay, pCall, creature)
+    --todo: all checks about hp go here
+    --todo: if dead: End event. player lost. Despawn all remaining NPCs. Stop events.
+    --todo: if hp full remove NPC from creature guid table and despawn it. if table is empty and no spawns left, end event with victory.
+end
+
+local function eS_startEvent()
+    --todo: move the player to Config.Phase
+    --todo: Store all spawned creature guids in a table
+    --todo: schedule events which spawn things to heal based on the timer
+end
+
+local function es_stopEvent()
+    local player = GetPlayerByGUID(activePlayerGuid)
+    player:SetPhaseMask(1)
+    --todo: more stuff to add probably
+end
+
+local function eS_onSpawn(event, creature)
+    creature:RegisterEvent(eS_healNPCEvent, 100, 0)
+end
+
 local function eS_onHello(event, player, creature)
     if activeLevel ~= nil then
         creature:SendUnitSay("A hero is still trying to rescue the victims of the past since "..eS_getEncounterDuration(), 0 )
@@ -157,7 +181,11 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
         player:GossipComplete()
 
     elseif intid == 1 then
-        --todo: print records in chat
+        if eS_getTimeSince(lastRecordPrinted) > 10000 then
+
+        else
+            player:SendBroadcastMessage("You've just been told.")
+        end
 
     elseif intid == 2 then
 
@@ -172,9 +200,7 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
         player:SetPhaseMask(Config.Phase)
         activePlayerGuid = player:GetGUID()
 
-        --todo: add an event to spawn things to heal
-        --todo: add an event to check if things die or are full
-        --todo: make fully healed NPCs despawn and make the player loose if something dies
+        eS_startEvent()
     elseif intid == 3 then
 
         if beatenLevel[playerLowGuid] == nil then
@@ -188,25 +214,44 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
         player:SetPhaseMask(Config.Phase)
         activePlayerGuid = player:GetGUID()
 
-        --todo: add an event to spawn things to heal
-        --todo: add an event to check if things die or are full
-        --todo: make full things despawn and make the player loose if something dies
+        eS_startEvent()
     end
     player:GossipComplete()
 end
 
 --on ReloadEluna / Startup
 CharDBQuery('CREATE DATABASE IF NOT EXISTS `'..Config.customDbName..'`;');
-CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`healer_competition` (`playerGuid` INT NOT NULL, `difficulty` INT DEFAULT 1, `time_stamp` INT NOT NULL, `duration` INT NOT NULL, PRIMARY KEY (`playerGuid`, `time_stamp`));');
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`healer_levels` (`playerGuid` INT NOT NULL, `difficulty` INT DEFAULT 1, `time_stamp` INT NOT NULL, `duration` INT NOT NULL, PRIMARY KEY (`playerGuid`, `time_stamp`));');
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`healer_records` (`playerGuid` INT NOT NULL, `difficulty` INT DEFAULT 1, `duration` INT NOT NULL, `name` varchar(32), PRIMARY KEY (`playerGuid`));');
 
-local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`healer_competition`;')
+local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`healer_levels`;')
 if Data_SQL ~= nil then
     local playerGuid
     repeat
         playerGuid = Data_SQL:GetUInt32(0)
-        beatenLevel = Data_SQL:GetUInt32(1)
-        beatenLevelTime = Data_SQL:GetUInt32(3)
+        beatenLevel[playerGuid] = Data_SQL:GetUInt32(1)
+        beatenLevelTime[playerGuid] = Data_SQL:GetUInt32(3)
     until not Data_SQL:NextRow()
 end
 
---todo: read records from db on startup
+local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`healer_records`;')
+if Data_SQL ~= nil then
+    local class
+    repeat
+        class = Data_SQL:GetUInt32(0)
+        recordLevel[class] = Data_SQL:GetUInt32(1)
+        recordTime[class] = Data_SQL:GetUInt32(2)
+        recordName[class] = Data_SQL:GetString(3)
+    until not Data_SQL:NextRow()
+end
+Data_SQL = nil
+
+local cancelEventIdHello = RegisterCreatureGossipEvent(Config.npcEntry, GOSSIP_EVENT_ON_HELLO, eS_onHello)
+local cancelEventIdStart = RegisterCreatureGossipEvent(Config.npcEntry, GOSSIP_EVENT_ON_SELECT, eS_healerGossip)
+
+local n
+for n = 1114001,1114001 + 11 do
+    RegisterCreatureEvent(n, CREATURE_EVENT_ON_SPAWN, eS_onSpawn) -- OnSpawn
+end
+
+--todo: Find a non-spammy way to announce records
