@@ -328,7 +328,7 @@ Config_addsAmount[4] = 8                -- how many adds will spawn
 Config_addSpell1[4] = 29320             -- min range 30m, 1-3rd farthest target within 30m --Lightning cloud
 Config_addSpell2[4] = nil               -- min range 45m, cast on tank
 Config_addSpell3[4] = 23105             -- min range 0m -- charge
-Config_addSpell4[4] = 47668             -- cast on the boss -- heal
+Config_addSpell4[4] = 30951             -- cast on the boss -- heal full
 Config_addSpellEnrage[4] = nil          -- Enrage after 300 seconds
 
 Config_addSpellTimer1[4] = 37000        -- This timer applies to Config_addSpell1
@@ -336,11 +336,11 @@ Config_addSpellTimer2[4] = nil          -- This timer applies to Config_addSpell
 Config_addSpellTimer3[4] = 37000        -- This timer applies to Config_addSpell3
 Config_addSpellTimer4[4] = 12000        -- This timer applies to Config_addSpell4
 
-Config_aura1Add1[4] = nil               -- an aura to add to the 1st add-- Arcane
+Config_aura1Add1[4] = 42375             -- an aura to add to the 1st add-- Arcane
 Config_aura2Add1[4] = nil               -- another aura to add to the 1st add-- Nature
-Config_aura1Add2[4] = nil               -- an aura to add to the 2nd add-- Fire
+Config_aura1Add2[4] = 42375             -- an aura to add to the 2nd add-- Fire
 Config_aura2Add2[4] = nil               -- another aura to add to the 2nd add-- Frost
-Config_aura1Add3[4] = nil               -- an aura to add to all ads from the 3rd on-- Holy
+Config_aura1Add3[4] = 42375             -- an aura to add to all ads from the 3rd on-- Holy
 Config_aura2Add3[4] = nil               -- another aura to add to all add from the 3rd on-- Shadow
 
 Config_addSpell3Yell[4] = "Mmmrrrrrrrr."-- yell for the adds when Spell 3 is cast
