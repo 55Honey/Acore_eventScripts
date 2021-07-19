@@ -112,7 +112,8 @@ Config.storeParty = 1
 -- 1: Level 42, Glorifrir Flintshoulder / Zombie Captain
 -- 2: Level 40, Pondulum of Deem / Seawitch
 -- 3: Level 50, Crocolisk Dundee / Aligator
--- 4: Level 50: One-Three-Three-Seven / 
+-- 4: Level 50, Crocolisk Bunbee / Aligator
+-- 5: Level 50: One-Three-Three-Seven / 
 ------------------------------------------
 
 ------------------------------------------
@@ -293,8 +294,63 @@ Config_bossYellPhase2[3] = " I'll git ye!"
 Config_bossSpellSelfYell[3] = "Yous Minions be feeding me all ya Strength!"
 
 ------------------------------------------
--- End of encounter 3
+-- Begin of encounter 4 config
 ------------------------------------------
+
+-- Database NPC entries. Must match the associated .sql file
+Config_bossEntry[4] = 1112031           --db entry of the boss creature
+Config_npcEntry[4] = 1112032            --db entry of the NPC creature to summon the boss
+Config_addEntry[4] = 1112033            --db entry of the add creature
+Config_npcText[4] = 91114               --gossip in npc_text to be told by the summoning NPC
+
+-- list of spells:
+Config_bossSpell1[4] = nil              --directly applied to the tank--
+Config_bossSpell2[4] = 56909            --randomly applied to a player in 35m range-- Cleave, up to 10 targets
+Config_bossSpell2MaxRange[4] = 5        --max range im m/y to check for targets for boss spell 2 (default 35)
+Config_bossSpell3[4] = 19717            --on the 2nd nearest player within 30m-- fire rain
+Config_bossSpell4[4] = 11446            --on a random player within 40m-- 5min domination
+Config_bossSpell4Counter[4] = 1         --amount of casts to perform for spell 4. defaults to 1
+Config_bossSpell4MaxRange[4] = 40       --max range im m to check for targets for boss spell 4 (default 40)
+Config_bossSpell5[4] = 22643            --directly applied to the tank with adds alive --volley
+Config_bossSpell6[4] = 22643            --directly applied to the tank when adds are dead --volley
+Config_bossSpellSelf[4] = 55948         --cast on boss while adds are still alive
+Config_bossSpellEnrage[4] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+
+Config_bossSpellTimer1[4] = 10000       -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[4] = 23000       -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[4] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer5[4] = 19000       -- This timer applies to Config_bossSpell5+6
+Config_bossSpellEnrageTimer[4] = 300000
+
+Config_addHealthModifierParty[4] = 3    -- modifier to change health for party encounter. Value in the SQL applies for raid
+Config_addsAmount[4] = 8                -- how many adds will spawn
+
+Config_addSpell1[4] = 29320             -- min range 30m, 1-3rd farthest target within 30m --Lightning cloud
+Config_addSpell2[4] = nil               -- min range 45m, cast on tank
+Config_addSpell3[4] = 23105             -- min range 0m -- charge
+Config_addSpell4[4] = 47668             -- cast on the boss -- heal
+Config_addSpellEnrage[4] = nil          -- Enrage after 300 seconds
+
+Config_addSpellTimer1[4] = 37000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer2[4] = nil          -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[4] = 37000        -- This timer applies to Config_addSpell3
+Config_addSpellTimer4[4] = 12000        -- This timer applies to Config_addSpell4
+
+Config_aura1Add1[4] = nil               -- an aura to add to the 1st add-- Arcane
+Config_aura2Add1[4] = nil               -- another aura to add to the 1st add-- Nature
+Config_aura1Add2[4] = nil               -- an aura to add to the 2nd add-- Fire
+Config_aura2Add2[4] = nil               -- another aura to add to the 2nd add-- Frost
+Config_aura1Add3[4] = nil               -- an aura to add to all ads from the 3rd on-- Holy
+Config_aura2Add3[4] = nil               -- another aura to add to all add from the 3rd on-- Shadow
+
+Config_addSpell3Yell[4] = "Mmmrrrrrrrr."-- yell for the adds when Spell 3 is cast
+Config_addEnoughYell[4] = "Rooooaaar"   -- yell for the add at 33% and 66% hp
+Config_addEnoughSound[4] = 412          -- sound to play when the add is at 33% and 66%
+Config_addSpell2Sound[4] = 6436         -- sound to play when add casts spell 2
+--yell for the boss when all adds are dead
+Config_bossYellPhase2[4] = " I'll git ye!"
+-- yell for the boss when they cast on themself
+Config_bossSpellSelfYell[4] = "Yous Minions be feeding me all ya Strength!"
 
 -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
 Config_fireworks[1] = 66400
@@ -306,6 +362,10 @@ Config_fireworks[6] = 62074
 Config_fireworks[7] = 62075
 Config_fireworks[8] = 62077
 Config_fireworks[9] = 55420
+
+------------------------------------------
+-- End of encounter 4
+------------------------------------------
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -491,6 +551,7 @@ local function eS_onHello(event, player, creature)
     if bossfightInProgress ~= nil then
         creature:SendUnitSay("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration(), 0 )
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config_npcEntry[eventInProgress], 0)
+        player:GossipSendMenu(Config_npcText[eventInProgress], creature, 0)
         return
     end
 
@@ -545,6 +606,12 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         player:SendBroadcastMessage("Your current event score is: "..scoreEarned[accountId].." and your all-time event score is: "..scoreTotal[accountId])
         player:GossipComplete()
     elseif intid == 1 then
+        
+        if bossfightInProgress ~= nil then
+            player:SendBroadcastMessage("There is already a fight in progress.")
+            player:GossipComplete()
+            return
+        end
 
         if player:IsInGroup() == false then
             player:SendBroadcastMessage("You need to be in a party.")
@@ -599,6 +666,12 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
 
     elseif intid == 2 then
 
+        if bossfightInProgress ~= nil then
+            player:SendBroadcastMessage("There is already a fight in progress.")
+            player:GossipComplete()
+            return
+        end
+        
         if player:IsInGroup() == false then
             player:SendBroadcastMessage("You need to be in a party.")
             player:GossipComplete()
