@@ -118,9 +118,11 @@ local function eS_splitString(inputstr, seperator)
 end
 
 local function eS_healNPCEvent(event, delay, pCall, creature)
-    --todo: all checks about hp go here
-    --todo: if dead: End event. player lost. Despawn all remaining NPCs. Stop events.
-    --todo: if hp full remove NPC from creature guid table and despawn it. if table is empty and no spawns left, end event with victory.
+    if creature:IsFullHealth() == true then
+        --todo: if hp full remove NPC from creature guid table and despawn it. if table is empty and no spawns left, end event with victory.
+    elseif creature:IsDead() == true then
+        --todo: if dead: End event. player lost. Despawn all remaining NPCs. Stop events.
+    end   
 end
 
 local function eS_startEvent()
