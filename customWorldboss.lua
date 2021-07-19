@@ -549,7 +549,7 @@ end
 local function eS_onHello(event, player, creature)
     if player == nil then return end
     if bossfightInProgress ~= nil then
-        creature:SendUnitSay("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration(), 0 )
+        player:SendBroadcastMessage("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration())
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config_npcEntry[eventInProgress], 0)
         player:GossipSendMenu(Config_npcText[eventInProgress], creature, 0)
         return
