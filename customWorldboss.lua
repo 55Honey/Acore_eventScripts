@@ -46,14 +46,27 @@ local Config_bossSpellTimer2 = {}       -- This timer applies to Config_bossSpel
 local Config_bossSpellTimer3 = {}       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later (in ms)
 -- local Config_bossSpellTimer4 = {}    -- Not used. Timer3 covers BossSpells 3+4
 local Config_bossSpellTimer5 = {}       -- This timer applies to Config_bossSpell5+6 (in ms)
-local Config_bossSpellEnrageTimer = {}
+local Config_bossSpellEnrageTimer = {}  -- Time in ms until Config_bossSpellEnrage is cast
+
+local Config_bossSpellModifier1bp0 = {} -- Custom base value of the spell 1s effect #1. Default if left out.
+local Config_bossSpellModifier1bp1 = {} -- Custom base value of the spell 1s effect #2. Default if left out.
+local Config_bossSpellModifier2bp0 = {} -- Custom base value of the spell 2s effect #1. Default if left out.
+local Config_bossSpellModifier2bp1 = {} -- Custom base value of the spell 2s effect #2. Default if left out.
+local Config_bossSpellModifier3bp0 = {} -- Custom base value of the spell 3s effect #1. Default if left out.
+local Config_bossSpellModifier3bp1 = {} -- Custom base value of the spell 3s effect #2. Default if left out.
+local Config_bossSpellModifier4bp0 = {} -- Custom base value of the spell 4s effect #1. Default if left out.
+local Config_bossSpellModifier4bp1 = {} -- Custom base value of the spell 4s effect #2. Default if left out.
+local Config_bossSpellModifier5bp0 = {} -- Custom base value of the spell 5s effect #1. Default if left out.
+local Config_bossSpellModifier5bp1 = {} -- Custom base value of the spell 5s effect #2. Default if left out.
+local Config_bossSpellModifier6bp0 = {} -- Custom base value of the spell 6s effect #1. Default if left out.
+local Config_bossSpellModifier6bp1 = {} -- Custom base value of the spell 6s effect #2. Default if left out.
 
 local Config_addHealthModifierParty = {} -- modifier to change health for party encounter. Value in the SQL applies for raid
 local Config_addsAmount = {}            -- how many adds will spawn
 
 local Config_addSpell1 = {}             -- min range 30m, 1-3rd farthest target within 30m
 local Config_addSpell2 = {}             -- min range 45m, cast on tank
-local Config_addSpell3 = {}             -- min range 0m
+local Config_addSpell3 = {}             -- min range 0m, cast on Self
 local Config_addSpell4 = {}             -- cast on the boss
 
 local Config_addSpellEnrage = {}        -- This spell will be cast on the add in 5man mode only after 300 seconds
@@ -61,6 +74,13 @@ local Config_addSpellTimer1 = {}        -- This timer applies to Config_addSpell
 local Config_addSpellTimer2 = {}        -- This timer applies to Config_addSpell2 (in ms)
 local Config_addSpellTimer3 = {}        -- This timer applies to Config_addSpell3 (in ms)
 local Config_addSpellTimer4 = {}        -- This timer applies to Config_addSpell4 (in ms)
+
+local Config_addSpellModifier1bp0 = {}     -- Custom base value of the spell 1s effect #1. Default if left out.
+local Config_addSpellModifier1bp1 = {}     -- Custom base value of the spell 1s effect #2. Default if left out.
+local Config_addSpellModifier2bp0 = {}     -- Custom base value of the spell 2s effect #1. Default if left out.
+local Config_addSpellModifier2bp1 = {}     -- Custom base value of the spell 2s effect #2. Default if left out.
+local Config_addSpellModifier3bp0 = {}     -- Custom base value of the spell 3s effect #1. Default if left out.
+local Config_addSpellModifier3bp1 = {}     -- Custom base value of the spell 3s effect #2. Default if left out.
 
 local Config_aura1Add1 = {}             -- an aura to add to the 1st add
 local Config_aura2Add1 = {}             -- another aura to add to the 1st add
@@ -218,12 +238,12 @@ Config_addSpellTimer2[2] = 11000        -- This timer applies to Config_addSpell
 Config_addSpellTimer3[2] = 37000        -- This timer applies to Config_addSpell3
 Config_addSpellTimer4[2] = 23000        -- This timer applies to Config_addSpell4
 
-Config_aura1Add1[2] = nil               -- an aura to add to the 1st add-- Arcane
-Config_aura2Add1[2] = nil               -- another aura to add to the 1st add-- Nature
-Config_aura1Add2[2] = nil               -- an aura to add to the 2nd add-- Fire
-Config_aura2Add2[2] = nil               -- another aura to add to the 2nd add-- Frost
-Config_aura1Add3[2] = nil               -- an aura to add to all ads from the 3rd on-- Holy
-Config_aura2Add3[2] = nil               -- another aura to add to all add from the 3rd on-- Shadow
+Config_aura1Add1[2] = nil               -- an aura to add to the 1st add--
+Config_aura2Add1[2] = nil               -- another aura to add to the 1st add--
+Config_aura1Add2[2] = nil               -- an aura to add to the 2nd add--
+Config_aura2Add2[2] = nil               -- another aura to add to the 2nd add--
+Config_aura1Add3[2] = nil               -- an aura to add to all ads from the 3rd on--
+Config_aura2Add3[2] = nil               -- another aura to add to all add from the 3rd on--
 
 Config_addSpell3Yell[2] = "Thissss."    -- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[2] = "Ssssssuffer!"-- yell for the add at 33% and 66% hp
@@ -266,9 +286,9 @@ Config_bossSpellEnrageTimer[3] = 300000
 Config_addHealthModifierParty[3] = 3    -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[3] = 8                -- how many adds will spawn
 
-Config_addSpell1[3] = 29320             -- min range 30m, 1-3rd farthest target within 30m --Lightning cloud
+Config_addSpell1[3] = 29320             -- min range 30m, 1-3rd farthest target within 30m -- charge
 Config_addSpell2[3] = nil               -- min range 45m, cast on tank
-Config_addSpell3[3] = 23105             -- min range 0m -- charge
+Config_addSpell3[3] = 23105             -- min range 0m -- Lightning cloud
 Config_addSpell4[3] = nil               -- cast on the boss
 Config_addSpellEnrage[3] = nil          -- Enrage after 300 seconds
 
@@ -277,12 +297,12 @@ Config_addSpellTimer2[3] = nil          -- This timer applies to Config_addSpell
 Config_addSpellTimer3[3] = 37000        -- This timer applies to Config_addSpell3
 Config_addSpellTimer4[3] = nil          -- This timer applies to Config_addSpell4
 
-Config_aura1Add1[3] = nil               -- an aura to add to the 1st add-- Arcane
-Config_aura2Add1[3] = nil               -- another aura to add to the 1st add-- Nature
-Config_aura1Add2[3] = nil               -- an aura to add to the 2nd add-- Fire
-Config_aura2Add2[3] = nil               -- another aura to add to the 2nd add-- Frost
-Config_aura1Add3[3] = nil               -- an aura to add to all ads from the 3rd on-- Holy
-Config_aura2Add3[3] = nil               -- another aura to add to all add from the 3rd on-- Shadow
+Config_aura1Add1[3] = nil               -- an aura to add to the 1st add--
+Config_aura2Add1[3] = nil               -- another aura to add to the 1st add--
+Config_aura1Add2[3] = nil               -- an aura to add to the 2nd add--
+Config_aura2Add2[3] = nil               -- another aura to add to the 2nd add--
+Config_aura1Add3[3] = nil               -- an aura to add to all ads from the 3rd on--
+Config_aura2Add3[3] = nil               -- another aura to add to all add from the 3rd on--
 
 Config_addSpell3Yell[3] = "Mmmrrrrrrrr."-- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[3] = "Rooooaaar"   -- yell for the add at 33% and 66% hp
@@ -305,7 +325,7 @@ Config_npcText[4] = 91114               --gossip in npc_text to be told by the s
 
 -- list of spells:
 Config_bossSpell1[4] = nil              --directly applied to the tank--
-Config_bossSpell2[4] = 56909            --randomly applied to a player in 35m range-- Cleave, up to 10 targets
+Config_bossSpell2[4] = 56909            --randomly applied to a player in [Config_bossSpell2MaxRange] meters-- Cleave, up to 10 targets
 Config_bossSpell2MaxRange[4] = 5        --max range im m/y to check for targets for boss spell 2 (default 35)
 Config_bossSpell3[4] = 19717            --on the 2nd nearest player within 30m-- fire rain
 Config_bossSpell4[4] = 11446            --on a random player within 40m-- 5min domination
@@ -322,12 +342,25 @@ Config_bossSpellTimer3[4] = 29000       -- This timer applies to Config_bossSpel
 Config_bossSpellTimer5[4] = 19000       -- This timer applies to Config_bossSpell5+6
 Config_bossSpellEnrageTimer[4] = 300000
 
+Config_bossSpellModifier1bp0[4] = 35       -- base damage of the Cleave
+Config_bossSpellModifier1bp1[4] = nil      -- not required if nil
+Config_bossSpellModifier2bp0[4] = nil      -- not required if nil
+Config_bossSpellModifier2bp1[4] = nil      -- not required if nil
+Config_bossSpellModifier3bp0[4] = 800      -- base damage of the fire rain
+Config_bossSpellModifier3bp1[4] = nil      -- not required if nil
+Config_bossSpellModifier4bp0[4] = nil      -- not required if nil
+Config_bossSpellModifier4bp1[4] = nil      -- not required if nil
+Config_bossSpellModifier5bp0[4] = 150      -- base damage for the Frostbolt Volley in P1
+Config_bossSpellModifier5bp1[4] = nil      -- not required if nil
+Config_bossSpellModifier6bp0[4] = 300      -- base damage for the Frostbolt Volley in P2
+Config_bossSpellModifier6bp1[4] = nil      -- not required if nil
+
 Config_addHealthModifierParty[4] = 3    -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[4] = 8                -- how many adds will spawn
 
-Config_addSpell1[4] = 29320             -- min range 30m, 1-3rd farthest target within 30m --Lightning cloud
+Config_addSpell1[4] = 29320             -- min range 30m, 1-3rd farthest target within 30m --charge
 Config_addSpell2[4] = nil               -- min range 45m, cast on tank
-Config_addSpell3[4] = 23105             -- min range 0m -- charge
+Config_addSpell3[4] = 23105             -- min range 0m -- lightning cloud
 Config_addSpell4[4] = 30951             -- cast on the boss -- heal full
 Config_addSpellEnrage[4] = nil          -- Enrage after 300 seconds
 
@@ -336,12 +369,19 @@ Config_addSpellTimer2[4] = nil          -- This timer applies to Config_addSpell
 Config_addSpellTimer3[4] = 37000        -- This timer applies to Config_addSpell3
 Config_addSpellTimer4[4] = 12000        -- This timer applies to Config_addSpell4
 
-Config_aura1Add1[4] = 42375             -- an aura to add to the 1st add-- Arcane
-Config_aura2Add1[4] = nil               -- another aura to add to the 1st add-- Nature
-Config_aura1Add2[4] = 42375             -- an aura to add to the 2nd add-- Fire
-Config_aura2Add2[4] = nil               -- another aura to add to the 2nd add-- Frost
-Config_aura1Add3[4] = 42375             -- an aura to add to all ads from the 3rd on-- Holy
-Config_aura2Add3[4] = nil               -- another aura to add to all add from the 3rd on-- Shadow
+Config_addSpellModifier1bp0[4] = nil    -- not required if nil
+Config_addSpellModifier1bp1[4] = nil    -- not required if nil
+Config_addSpellModifier2bp0[4] = nil    -- not required if nil
+Config_addSpellModifier2bp1[4] = nil    -- not required if nil
+Config_addSpellModifier3bp0[4] = 500    -- Initial damage of Lightning Cloud
+Config_addSpellModifier3bp1[4] = 1000   -- Tick damage of Lightning Cloud
+
+Config_aura1Add1[4] = 42375             -- an aura to add to the 1st add-- AE heal
+Config_aura2Add1[4] = nil               -- another aura to add to the 1st add--
+Config_aura1Add2[4] = 42375             -- an aura to add to the 2nd add-- AE heal
+Config_aura2Add2[4] = nil               -- another aura to add to the 2nd add--
+Config_aura1Add3[4] = 42375             -- an aura to add to all ads from the 3rd on-- AE heal
+Config_aura2Add3[4] = nil               -- another aura to add to all add from the 3rd on--
 
 Config_addSpell3Yell[4] = "Mmmrrrrrrrr."-- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[4] = "Rooooaaar"   -- yell for the add at 33% and 66% hp
@@ -351,6 +391,10 @@ Config_addSpell2Sound[4] = 6436         -- sound to play when add casts spell 2
 Config_bossYellPhase2[4] = " I'll git ye!"
 -- yell for the boss when they cast on themself
 Config_bossSpellSelfYell[4] = "Yous Minions be feeding me all ya Strength!"
+
+------------------------------------------
+-- End of encounter 4
+------------------------------------------
 
 -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
 Config_fireworks[1] = 66400
@@ -362,10 +406,6 @@ Config_fireworks[6] = 62074
 Config_fireworks[7] = 62075
 Config_fireworks[8] = 62077
 Config_fireworks[9] = 55420
-
-------------------------------------------
--- End of encounter 4
-------------------------------------------
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -544,6 +584,11 @@ end
 local function eS_getDifficultyTimer(rawTimer)
     local timer = rawTimer / (1 + ((difficulty - 1) / 5))
     return timer
+end
+
+local function eS_getDifficultyModifier(base)
+    local modifier = base / (1 + ((difficulty - 1) / 5))
+    return modifier
 end
 
 local function eS_onHello(event, player, creature)
@@ -972,7 +1017,19 @@ function bossNPC.Event(event, delay, pCall, creature)
     if Config_bossSpellTimer1[eventInProgress] ~= nil then
         if eS_getDifficultyTimer(Config_bossSpellTimer1[eventInProgress]) < eS_getTimeSince(lastBossSpell1) then
             if Config_bossSpell1[eventInProgress] ~= nil then
-                creature:CastSpell(creature:GetVictim(), Config_bossSpell1[eventInProgress])
+                if Config_bossSpellModifier1bp0[eventInProgress] ~= nil and Config_bossSpellModifier1bp1[eventInProgress] ~= nil then
+                    local base1 = eS_getDifficultyModifier(Config_bossSpellModifier1bp0[eventInProgress])
+                    local base2 = eS_getDifficultyModifier(Config_bossSpellModifier1bp1[eventInProgress])
+                    creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell1[eventInProgress], false, base1, base2)
+                elseif Config_bossSpellModifier1bp0[eventInProgress] ~= nil then
+                    local base1 = eS_getDifficultyModifier(Config_bossSpellModifier1bp0[eventInProgress])
+                    creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell1[eventInProgress], false, base1)
+                elseif Config_bossSpellModifier1bp1[eventInProgress] ~= nil then
+                    local base2 = eS_getDifficultyModifier(Config_bossSpellModifier1bp1[eventInProgress])
+                    creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell1[eventInProgress], false, nil, base2)
+                else
+                    creature:CastSpell(creature:GetVictim(), Config_bossSpell1[eventInProgress])
+                end
                 lastBossSpell1 = GetCurrTime()
                 return
             end
@@ -989,7 +1046,19 @@ function bossNPC.Event(event, delay, pCall, creature)
                     local players = creature:GetPlayersInRange(Config_bossSpell2MaxRange[eventInProgress])
                     local targetPlayer = players[math.random(1, #players)]
                     creature:SendUnitYell("You die now, "..targetPlayer:GetName().."!", 0 )
-                    creature:CastSpell(targetPlayer, Config_bossSpell2[eventInProgress])
+                    if Config_bossSpellModifier2bp0[eventInProgress] ~= nil and Config_bossSpellModifier2bp1[eventInProgress] ~= nil then
+                        local base1 = eS_getDifficultyModifier(Config_bossSpellModifier2bp0[eventInProgress])
+                        local base2 = eS_getDifficultyModifier(Config_bossSpellModifier2bp1[eventInProgress])
+                        creature:CastCustomSpell(targetPlayer, Config_bossSpell2[eventInProgress], false, base1, base2)
+                    elseif Config_bossSpellModifier2bp0[eventInProgress] ~= nil then
+                        local base1 = eS_getDifficultyModifier(Config_bossSpellModifier2bp0[eventInProgress])
+                        creature:CastCustomSpell(targetPlayer, Config_bossSpell2[eventInProgress], false, base1)
+                    elseif Config_bossSpellModifier2bp1[eventInProgress] ~= nil then
+                        local base2 = eS_getDifficultyModifier(Config_bossSpellModifier2bp1[eventInProgress])
+                        creature:CastCustomSpell(targetPlayer, Config_bossSpell2[eventInProgress], false, nil, base2)
+                    else
+                        creature:CastSpell(targetPlayer, Config_bossSpell2[eventInProgress])
+                    end
                     lastBossSpell2 = GetCurrTime()
                     return
                 end
@@ -1004,7 +1073,19 @@ function bossNPC.Event(event, delay, pCall, creature)
                 if #players > 1 then
                     if (math.random(1, 100) <= 50) then
                         if Config_bossSpell3[eventInProgress] ~= nil then
-                            creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), Config_bossSpell3[eventInProgress])
+                            if Config_bossSpellModifier3bp0[eventInProgress] ~= nil and Config_bossSpellModifier3bp1[eventInProgress] ~= nil then
+                                local base1 = eS_getDifficultyModifier(Config_bossSpellModifier3bp0[eventInProgress])
+                                local base2 = eS_getDifficultyModifier(Config_bossSpellModifier3bp1[eventInProgress])
+                                creature:CastCustomSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), Config_bossSpell3[eventInProgress], false, base1, base2)
+                            elseif Config_bossSpellModifier3bp0[eventInProgress] ~= nil then
+                                local base1 = eS_getDifficultyModifier(Config_bossSpellModifier3bp0[eventInProgress])
+                                creature:CastCustomSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), Config_bossSpell3[eventInProgress], false, base1)
+                            elseif Config_bossSpellModifier3bp1[eventInProgress] ~= nil then
+                                local base2 = eS_getDifficultyModifier(Config_bossSpellModifier3bp1[eventInProgress])
+                                creature:CastCustomSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), Config_bossSpell3[eventInProgress], false, nil, base2)
+                            else
+                                creature:CastSpell(creature:GetAITarget(SELECT_TARGET_NEAREST, true, 1, 30), Config_bossSpell3[eventInProgress])
+                            end
                             lastBossSpell3 = GetCurrTime()
                             return
                         end
@@ -1019,8 +1100,20 @@ function bossNPC.Event(event, delay, pCall, creature)
                                 Config_bossSpell4Counter[eventInProgress] = 1
                             end
                             for m = 1, Config_bossSpell4Counter[eventInProgress] do
-                                local targetPlayer = players[nextPlayerIndex]    
-                                creature:CastSpell(targetPlayer, Config_bossSpell4[eventInProgress])
+                                local targetPlayer = players[nextPlayerIndex]
+                                if Config_bossSpellModifier4bp0[eventInProgress] ~= nil and Config_bossSpellModifier4bp1[eventInProgress] ~= nil then
+                                    local base1 = eS_getDifficultyModifier(Config_bossSpellModifier4bp0[eventInProgress])
+                                    local base2 = eS_getDifficultyModifier(Config_bossSpellModifier4bp1[eventInProgress])
+                                    creature:CastCustomSpell(targetPlayer, Config_bossSpell4[eventInProgress], false, base1, base2)
+                                elseif Config_bossSpellModifier4bp0[eventInProgress] ~= nil then
+                                    local base1 = eS_getDifficultyModifier(Config_bossSpellModifier4bp0[eventInProgress])
+                                    creature:CastCustomSpell(targetPlayer, Config_bossSpell4[eventInProgress], false, base1)
+                                elseif Config_bossSpellModifier4bp1[eventInProgress] ~= nil then
+                                    local base2 = eS_getDifficultyModifier(Config_bossSpellModifier4bp1[eventInProgress])
+                                    creature:CastCustomSpell(targetPlayer, Config_bossSpell4[eventInProgress], false, nil, base2)
+                                else
+                                    creature:CastSpell(targetPlayer, Config_bossSpell4[eventInProgress])
+                                end
                                 if nextPlayerIndex >= #players then
                                     nextPlayerIndex = 1
                                 else
@@ -1033,7 +1126,19 @@ function bossNPC.Event(event, delay, pCall, creature)
                     end
                 else
                     if Config_bossSpell3[eventInProgress] ~= nil then
-                        creature:CastSpell(creature:GetVictim(),Config_bossSpell3[eventInProgress])
+                        if Config_bossSpellModifier3bp0[eventInProgress] ~= nil and Config_bossSpellModifier3bp1[eventInProgress] ~= nil then
+                            local base1 = eS_getDifficultyModifier(Config_bossSpellModifier3bp0[eventInProgress])
+                            local base2 = eS_getDifficultyModifier(Config_bossSpellModifier3bp1[eventInProgress])
+                            creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell3[eventInProgress], false, base1, base2)
+                        elseif Config_bossSpellModifier3bp0[eventInProgress] ~= nil then
+                            local base1 = eS_getDifficultyModifier(Config_bossSpellModifier3bp0[eventInProgress])
+                            creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell3[eventInProgress], false, base1)
+                        elseif Config_bossSpellModifier3bp1[eventInProgress] ~= nil then
+                            local base2 = eS_getDifficultyModifier(Config_bossSpellModifier3bp1[eventInProgress])
+                            creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell3[eventInProgress], false, nil, base2)
+                        else
+                            creature:CastSpell(creature:GetVictim(), Config_bossSpell3[eventInProgress])
+                        end
                         lastBossSpell3 = GetCurrTime()
                         return
                     end
@@ -1046,13 +1151,37 @@ function bossNPC.Event(event, delay, pCall, creature)
         if eS_getDifficultyTimer(Config_bossSpellTimer5[eventInProgress]) < eS_getTimeSince(lastBossSpell5) then
             if phase == 1 then
                 if Config_bossSpell5[eventInProgress] ~= nil then
-                    creature:CastSpell(creature:GetVictim(), Config_bossSpell5[eventInProgress])
+                    if Config_bossSpellModifier5bp0[eventInProgress] ~= nil and Config_bossSpellModifier5bp1[eventInProgress] ~= nil then
+                        local base1 = eS_getDifficultyModifier(Config_bossSpellModifier5bp0[eventInProgress])
+                        local base2 = eS_getDifficultyModifier(Config_bossSpellModifier5bp1[eventInProgress])
+                        creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell5[eventInProgress], false, base1, base2)
+                    elseif Config_bossSpellModifier5bp0[eventInProgress] ~= nil then
+                        local base1 = eS_getDifficultyModifier(Config_bossSpellModifier5bp0[eventInProgress])
+                        creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell5[eventInProgress], false, base1)
+                    elseif Config_bossSpellModifier5bp1[eventInProgress] ~= nil then
+                        local base2 = eS_getDifficultyModifier(Config_bossSpellModifier5bp1[eventInProgress])
+                        creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell5[eventInProgress], false, nil, base2)
+                    else
+                        creature:CastSpell(creature:GetVictim(), Config_bossSpell5[eventInProgress])
+                    end
                     lastBossSpell5 = GetCurrTime()
                     return
                 end
             else
                 if Config_bossSpell6[eventInProgress] ~= nil then
-                    creature:CastSpell(creature:GetVictim(), Config_bossSpell6[eventInProgress])
+                    if Config_bossSpellModifier6bp0[eventInProgress] ~= nil and Config_bossSpellModifier6bp1[eventInProgress] ~= nil then
+                        local base1 = eS_getDifficultyModifier(Config_bossSpellModifier6bp0[eventInProgress])
+                        local base2 = eS_getDifficultyModifier(Config_bossSpellModifier6bp1[eventInProgress])
+                        creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell6[eventInProgress], false, base1, base2)
+                    elseif Config_bossSpellModifier6bp0[eventInProgress] ~= nil then
+                        local base1 = eS_getDifficultyModifier(Config_bossSpellModifier6bp0[eventInProgress])
+                        creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell6[eventInProgress], false, base1)
+                    elseif Config_bossSpellModifier6bp1[eventInProgress] ~= nil then
+                        local base2 = eS_getDifficultyModifier(Config_bossSpellModifier6bp1[eventInProgress])
+                        creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell6[eventInProgress], false, nil, base2)
+                    else
+                        creature:CastSpell(creature:GetVictim(), Config_bossSpell6[eventInProgress])
+                    end
                     lastBossSpell5 = GetCurrTime()
                     return
                 end
@@ -1134,18 +1263,42 @@ function addNPC.Event(event, delay, pCall, creature)
         end
     end
 
-    local randomTimer = math.random(0,500)
+    local randomTimer = math.random(0,1000)
 
     if Config_addSpellTimer1[eventInProgress] ~= nil and Config_addSpell1[eventInProgress] ~= nil then
         if eS_getDifficultyTimer(Config_addSpellTimer1[eventInProgress]) < randomTimer + eS_getTimeSince(lastAddSpell1[n]) then
             local random = math.random(0, 2)
             local players = creature:GetPlayersInRange(30)
             if #players > 1 then
-                creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, random, 30), Config_addSpell1[eventInProgress])
+                if Config_addSpellModifier1bp0[eventInProgress] ~= nil and Config_addSpellModifier1bp1[eventInProgress] ~= nil then
+                    local base1 = eS_getDifficultyModifier(Config_addSpellModifier1bp0[eventInProgress])
+                    local base2 = eS_getDifficultyModifier(Config_addSpellModifier1bp1[eventInProgress])
+                    creature:CastCustomSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, random, 30), Config_addSpell1[eventInProgress], false, base1, base2)
+                elseif Config_addSpellModifier1bp0[eventInProgress] ~= nil then
+                    local base1 = eS_getDifficultyModifier(Config_addSpellModifier1bp0[eventInProgress])
+                    creature:CastCustomSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, random, 30), Config_addSpell1[eventInProgress], false, base1)
+                elseif Config_addSpellModifier1bp1[eventInProgress] ~= nil then
+                    local base2 = eS_getDifficultyModifier(Config_addSpellModifier1bp1[eventInProgress])
+                    creature:CastCustomSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, random, 30), Config_addSpell1[eventInProgress], false, nil, base2)
+                else
+                    creature:CastSpell(creature:GetAITarget(SELECT_TARGET_FARTHEST, true, random, 30), Config_addSpell1[eventInProgress])
+                end
                 lastAddSpell1[n] = GetCurrTime()
                 return
             else
-                creature:CastSpell(creature:GetVictim(),Config_addSpell1[eventInProgress])
+                if Config_addSpellModifier1bp0[eventInProgress] ~= nil and Config_addSpellModifier1bp1[eventInProgress] ~= nil then
+                    local base1 = eS_getDifficultyModifier(Config_addSpellModifier1bp0[eventInProgress])
+                    local base2 = eS_getDifficultyModifier(Config_addSpellModifier1bp1[eventInProgress])
+                    creature:CastCustomSpell(creature:GetVictim(), Config_addSpell1[eventInProgress], false, base1, base2)
+                elseif Config_addSpellModifier1bp0[eventInProgress] ~= nil then
+                    local base1 = eS_getDifficultyModifier(Config_addSpellModifier1bp0[eventInProgress])
+                    creature:CastCustomSpell(creature:GetVictim(), Config_addSpell1[eventInProgress], false, base1)
+                elseif Config_addSpellModifier1bp1[eventInProgress] ~= nil then
+                    local base2 = eS_getDifficultyModifier(Config_addSpellModifier1bp1[eventInProgress])
+                    creature:CastCustomSpell(creature:GetVictim(), Config_addSpell1[eventInProgress], false, nil, base2)
+                else
+                    creature:CastSpell(creature:GetVictim(),Config_addSpell1[eventInProgress])
+                end
                 lastAddSpell1[n] = GetCurrTime()
                 return
             end
@@ -1157,7 +1310,19 @@ function addNPC.Event(event, delay, pCall, creature)
             if Config_addSpell2Sound[eventInProgress] ~= nil then
                 creature:PlayDirectSound(Config_addSpell2Sound[eventInProgress])
             end
-            creature:CastSpell(creature:GetVictim(), Config_addSpell2[eventInProgress])
+            if Config_addSpellModifier2bp0[eventInProgress] ~= nil and Config_addSpellModifier2bp1[eventInProgress] ~= nil then
+                local base1 = eS_getDifficultyModifier(Config_addSpellModifier2bp0[eventInProgress])
+                local base2 = eS_getDifficultyModifier(Config_addSpellModifier2bp1[eventInProgress])
+                creature:CastCustomSpell(creature:GetVictim(), Config_addSpell2[eventInProgress], false, base1, base2)
+            elseif Config_addSpellModifier2bp0[eventInProgress] ~= nil then
+                local base1 = eS_getDifficultyModifier(Config_addSpellModifier2bp0[eventInProgress])
+                creature:CastCustomSpell(creature:GetVictim(), Config_addSpell2[eventInProgress], false, base1)
+            elseif Config_addSpellModifier2bp1[eventInProgress] ~= nil then
+                local base2 = eS_getDifficultyModifier(Config_addSpellModifier2bp1[eventInProgress])
+                creature:CastCustomSpell(creature:GetVictim(), Config_addSpell2[eventInProgress], false, nil, base2)
+            else
+                creature:CastSpell(creature:GetVictim(), Config_addSpell2[eventInProgress])
+            end
             lastAddSpell2[n] = GetCurrTime()
             return
         end
@@ -1168,7 +1333,19 @@ function addNPC.Event(event, delay, pCall, creature)
             if Config_addSpell3Yell[eventInProgress] ~= nil then
                 creature:SendUnitYell(Config_addSpell3Yell[eventInProgress], 0 )
             end
-            creature:CastSpell(creature, Config_addSpell3[eventInProgress])
+            if Config_addSpellModifier3bp0[eventInProgress] ~= nil and Config_addSpellModifier3bp1[eventInProgress] ~= nil then
+                local base1 = eS_getDifficultyModifier(Config_addSpellModifier3bp0[eventInProgress])
+                local base2 = eS_getDifficultyModifier(Config_addSpellModifier3bp1[eventInProgress])
+                creature:CastCustomSpell(creature, Config_addSpell3[eventInProgress], false, base1, base2)
+            elseif Config_addSpellModifier3bp0[eventInProgress] ~= nil then
+                local base1 = eS_getDifficultyModifier(Config_addSpellModifier3bp0[eventInProgress])
+                creature:CastCustomSpell(creature, Config_addSpell3[eventInProgress], false, base1)
+            elseif Config_addSpellModifier3bp1[eventInProgress] ~= nil then
+                local base2 = eS_getDifficultyModifier(Config_addSpellModifier3bp1[eventInProgress])
+                creature:CastCustomSpell(creature, Config_addSpell3[eventInProgress], false, nil, base2)
+            else
+                creature:CastSpell(creature, Config_addSpell3[eventInProgress])
+            end
             lastAddSpell3[n] = GetCurrTime()
             return
         end
