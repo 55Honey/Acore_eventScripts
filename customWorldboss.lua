@@ -129,7 +129,7 @@ Config.storeParty = 1
 
 ------------------------------------------
 -- List of encounters:
--- 1: Level 42, Glorifrir Flintshoulder / Zombie Captain
+-- 1: Level 50, Glorifrir Flintshoulder / Zombie Captain
 -- 2: Level 40, Pondulum of Deem / Seawitch
 -- 3: Level 50, Crocolisk Dundee / Aligator
 -- 4: Level 50, Crocolisk Bunbee / Aligator
