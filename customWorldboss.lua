@@ -165,19 +165,40 @@ Config_bossSpellTimer3[1] = 11000       -- This timer applies to Config_bossSpel
 Config_bossSpellTimer5[1] = nil         -- This timer applies to Config_bossSpell5+6
 Config_bossSpellEnrageTimer[1] = 180000
 
+Config_bossSpellModifier1bp0[1] = nil      -- base damage of the Cleave
+Config_bossSpellModifier1bp1[1] = nil      -- not required if nil
+Config_bossSpellModifier2bp0[1] = 2000     -- Fireball modifier hit
+Config_bossSpellModifier2bp1[1] = 2000     -- Fireball modifier tick
+Config_bossSpellModifier3bp0[1] = 10       -- base damage of the D&D
+Config_bossSpellModifier3bp1[1] = nil      -- not required if nil
+Config_bossSpellModifier4bp0[1] = 1200     -- tick damage of fire rain
+Config_bossSpellModifier4bp1[1] = nil      -- not required if nil
+Config_bossSpellModifier5bp0[1] = nil      -- not required if nil
+Config_bossSpellModifier5bp1[1] = nil      -- not required if nil
+Config_bossSpellModifier6bp0[1] = nil      -- not required if nil
+Config_bossSpellModifier6bp1[1] = nil      -- not required if nil
+
+
 Config_addHealthModifierParty[1] = 1    -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[1] = 3                -- how many adds will spawn
 
 Config_addSpell1[1] = 12421             -- min range 30m, 1-3rd farthest target within 30m -- Mithril Frag Bomb 8y 149-201 damage + stun
 Config_addSpell2[1] = 60488             -- min range 45m, cast on tank -- Shadow Bolt (30)
 Config_addSpell3[1] = 24326             -- min range 0m -- HIGH knockback (ZulFarrak beast)
-Config_addSpell4[1] = nil               -- this line is not neccesary. If a spell is missing it will just be skipped
+Config_addSpell4[1] = 69898             -- cast on boss - Hot
 Config_addSpellEnrage[1] = 69166        -- Enrage after 300 seconds
 
 Config_addSpellTimer1[1] = 13000        -- This timer applies to Config_addSpell1
 Config_addSpellTimer2[1] = 11000        -- This timer applies to Config_addSpell2
 Config_addSpellTimer3[1] = 37000        -- This timer applies to Config_addSpell3
-Config_addSpellTimer4[1] = nil          -- This timer applies to Config_addSpell4
+Config_addSpellTimer4[1] = 12000        -- This timer applies to Config_addSpell4
+
+Config_addSpellModifier1bp0[1] = 500    -- not required if nil
+Config_addSpellModifier1bp1[1] = nil    -- not required if nil
+Config_addSpellModifier2bp0[1] = 2000   -- not required if nil
+Config_addSpellModifier2bp1[1] = nil    -- not required if nil
+Config_addSpellModifier3bp0[1] = nil    -- not required if nil
+Config_addSpellModifier3bp1[1] = nil    -- not required if nil
 
 Config_aura1Add1[1] = 34184             -- an aura to add to the 1st add-- Arcane
 Config_aura2Add1[1] = 7941              -- another aura to add to the 1st add-- Nature
@@ -350,9 +371,9 @@ Config_bossSpellModifier3bp0[4] = 800      -- base damage of the fire rain
 Config_bossSpellModifier3bp1[4] = nil      -- not required if nil
 Config_bossSpellModifier4bp0[4] = nil      -- not required if nil
 Config_bossSpellModifier4bp1[4] = nil      -- not required if nil
-Config_bossSpellModifier5bp0[4] = 150      -- base damage for the Frostbolt Volley in P1
+Config_bossSpellModifier5bp0[4] = 250      -- base damage for the Frostbolt Volley in P1
 Config_bossSpellModifier5bp1[4] = nil      -- not required if nil
-Config_bossSpellModifier6bp0[4] = 300      -- base damage for the Frostbolt Volley in P2
+Config_bossSpellModifier6bp0[4] = 400      -- base damage for the Frostbolt Volley in P2
 Config_bossSpellModifier6bp1[4] = nil      -- not required if nil
 
 Config_addHealthModifierParty[4] = 3    -- modifier to change health for party encounter. Value in the SQL applies for raid
@@ -361,7 +382,7 @@ Config_addsAmount[4] = 8                -- how many adds will spawn
 Config_addSpell1[4] = 29320             -- min range 30m, 1-3rd farthest target within 30m --charge
 Config_addSpell2[4] = nil               -- min range 45m, cast on tank
 Config_addSpell3[4] = 23105             -- min range 0m -- lightning cloud
-Config_addSpell4[4] = 30951             -- cast on the boss -- heal full
+Config_addSpell4[4] = 69898             -- cast on the boss -- hot
 Config_addSpellEnrage[4] = nil          -- Enrage after 300 seconds
 
 Config_addSpellTimer1[4] = 37000        -- This timer applies to Config_addSpell1
@@ -587,7 +608,7 @@ local function eS_getDifficultyTimer(rawTimer)
 end
 
 local function eS_getDifficultyModifier(base)
-    local modifier = base / (1 + ((difficulty - 1) / 5))
+    local modifier = base * (1 + ((difficulty - 1) / 5))
     return modifier
 end
 
@@ -1231,7 +1252,7 @@ function addNPC.Event(event, delay, pCall, creature)
             addphase = 3
         end
         if addphase == 1 and creature:GetHealthPct() < 67 or addphase == 2 and creature:GetHealthPct() < 34 then
-            if Config_Yell[eventInProgress] ~= nil then
+            if Config_addEnoughYell[eventInProgress] ~= nil then
                 creature:SendUnitYell(Config_addEnoughYell[eventInProgress], 0 )
             end
             if Config_addEnoughSound[eventInProgress] ~= nil then

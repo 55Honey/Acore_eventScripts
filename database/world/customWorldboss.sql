@@ -6,11 +6,11 @@ DELETE FROM `creature_equip_template` WHERE `CreatureID` IN (1112011,1112021,111
 
 INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `DamageModifier`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES
 -- Event 1 Boss:
-(1112001, 0, 0, 0, 0, 0, 3456, 0, 0, 0, 'Glorifrir Flintshoulder', '', 0, 43, 43, 0, 63, 0, 1, 1.5, 3, 3, 0, 30, 2000, 2000, 1, 1, 1, 32832, 2048, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 50000, 60000, 'SmartAI', 1, 3, 1, 100, 1, 1, 0, 0, 1, 0, 0, 256, '', 0),
+(1112001, 0, 0, 0, 0, 0, 3456, 0, 0, 0, 'Glorifrir Flintshoulder', '', 0, 50, 50, 0, 63, 0, 1, 2, 3, 3, 0, 30, 2000, 2000, 1, 1, 1, 32832, 2048, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 50000, 60000, 'SmartAI', 1, 3, 1, 100, 1, 1, 0, 0, 1, 634077055, 0, 256, '', 0),
 -- Custom Chromie 1:
 (1112002, 0, 0, 0, 0, 0, 10008, 0, 0, 0, 'Chromie', '', 62001, 63, 63, 0, 35, 1, 1, 1.14286, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 33536, 2048, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1.35, 1, 1, 0, 0, 1, 0, 0, 2, '', 0),
 -- Event 1 Add:
-(1112003, 0, 0, 0, 0, 0, 21443, 0, 0, 0, 'Zombie Captain', '', 0, 42, 42, 0, 415, 0, 1, 1.5, 1, 1, 0, 10, 2000, 2000, 1, 1, 1, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 60, 1, 1, 0, 0, 1, 667631487, 0, 256, '', 0),
+(1112003, 0, 0, 0, 0, 0, 21443, 0, 0, 0, 'Zombie Captain', '', 0, 50, 50, 0, 415, 0, 1, 2, 1, 1, 0, 10, 2000, 2000, 1, 1, 1, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 60, 1, 1, 0, 0, 1, 667631487, 0, 256, '', 0),
 -- Event 2 Boss:
 (1112011, 0, 0, 0, 0, 0, 24722, 0, 0, 0, 'Pondulum of Deem', '', 0, 40, 40, 0, 63, 0, 1, 2, 3, 3, 0, 30, 2000, 2000, 1, 1, 1, 32832, 2048, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 50000, 60000, 'SmartAI', 1, 3, 1, 300, 1, 1, 0, 0, 1, 667631231, 0, 0, '', 0),
 -- Custom Chromie 2:
