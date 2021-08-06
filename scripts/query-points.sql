@@ -12,4 +12,4 @@ UPDATE ac_eluna.eventscript_score SET `score_earned_current` = 0;
 INSERT INTO `wp_usermeta` (`user_id`, `meta_key`, `meta_value`)
     SELECT u.`ID`, 'mycred_default', 0
     FROM `wp_users` u
-    WHERE u.`ID` NOT IN (SELECT `user_id` FROM `wp_usermeta` WHERE meta_key = 'mycred_default'); -- you can replace this with the list of users
+    WHERE u.`ID` NOT IN (SELECT `user_id` FROM `wp_usermeta` WHERE meta_key = 'mycred_default'); -- you can add a filter per IDs here
