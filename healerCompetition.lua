@@ -215,22 +215,21 @@ local function eS_onSpawn(event, creature)
 end
 
 local function eS_onHello(event, player, creature)
-    if activeLevel ~= nil then
-        creature:SendUnitSay("Another hero is still trying to rescue the victims of the past since "..eS_getEncounterDuration(), 0 )
-        player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.npcEntry, 0)
-        return
-    end
-
     if player == nil then return end
     playerClass = player:GetClass()
 
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.npcEntry, 0)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "Who's the best healer?", Config.npcEntry, 1)
-    if playerClass == 2 or playerClass == 5 or playerClass == 7 or playerClass == 11 then
-        player:GossipMenuAddItem(OPTION_ICON_CHAT, "I want to retry the same challenge!", Config.npcEntry, 2)
-        player:GossipMenuAddItem(OPTION_ICON_CHAT, "I want to try a new challenge!", Config.npcEntry, 3)
+    if activeLevel ~= nil then
+        if playerClass == 2 or playerClass == 5 or playerClass == 7 or playerClass == 11 then
+            player:GossipMenuAddItem(OPTION_ICON_CHAT, "I want to retry the same challenge!", Config.npcEntry, 2)
+            player:GossipMenuAddItem(OPTION_ICON_CHAT, "I want to try a new challenge!", Config.npcEntry, 3)
+        end
+    else
+        creature:SendUnitSay("Another hero is still trying to rescue the victims of the past since "..eS_getEncounterDuration(), 0 )
     end
     player:GossipSendMenu(Config.npcText, creature, 0)
+
 end
 
 local function eS_healerGossip(event, player, object, sender, intid, code, menu_id)
@@ -247,7 +246,7 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
                 else
                     missionString = "missions"
                 end
-                player:SendBroadcastMessage(player:GetName()..", you've saved the victims of the past in "..beatenLevel[playerLowGuid].." "..missionString.." so far. It took you "..eS_formatTime(beatenLevelTime).." to finish the last mission."
+                player:SendBroadcastMessage(player:GetName()..", you've saved the victims of the past in "..beatenLevel[playerLowGuid].." "..missionString.." so far. It took you "..eS_formatTime(beatenLevelTime).." to finish the last mission.")
             end
         else
             player:SendBroadcastMessage("You are not a healer unfortunately. I am sure there are other tasks for you in Azeroth.")
@@ -262,7 +261,7 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
             player:SendBroadcastMessage("You've just been told.")
         end
 
-    elseif intid >= 2 then
+    elseif intid >= 2  and activeLevel ~= nil then
         if beatenLevel[playerLowGuid] == nil then
             beatenLevel[playerLowGuid] = 0
         end
@@ -279,6 +278,8 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
         z = object:ToCreature():GetZ()
         o = object:ToCreature():GetO()
         eS_startEvent()
+    else
+        object:ToCreature():SendUnitSay("Another hero is still trying to rescue the victims of the past since "..eS_getEncounterDuration(), 0 )
     end
     player:GossipComplete()
 end
