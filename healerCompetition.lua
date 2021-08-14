@@ -126,6 +126,10 @@ local function eS_getEncounterDuration()
     return string.format("%.2d:%.2d", (dt / 1000 / 60) % 60, (dt / 1000) % 60)
 end
 
+local function eS_formatTime(beatenLevelTime)
+    return string.format("%.2d:%.2d", (beatenLevelTime / 1000 / 60) % 60, (beatenLevelTime / 1000) % 60)
+end
+
 local function eS_splitString(inputstr, seperator)
     if seperator == nil then
         seperator = "%s"
@@ -207,6 +211,7 @@ end
 
 local function eS_onSpawn(event, creature)
     creature:RegisterEvent(eS_healNPCEvent, 100, 0)
+    --todo: register event to damage NPCs 5-8 lightly and 9-12 heavily
 end
 
 local function eS_onHello(event, player, creature)
@@ -231,12 +236,18 @@ end
 local function eS_healerGossip(event, player, object, sender, intid, code, menu_id)
     if player == nil then return end
     local playerLowGuid = GetGUIDLow(activePlayerGuid)
+    local missionString
     if intid == 0 then
         if playerClass == 2 or playerClass == 5 or playerClass == 7 or playerClass == 11 then
             if beatenLevel[playerLowGuid] == nil then
                 player:SendBroadcastMessage("You haven't beaten a level in this competition yet.")
             else
-                player:SendBroadcastMessage("Your highest beaten level is: "..beatenLevel[playerLowGuid])
+                if beatenLevel[playerLowGuid] == 1 then
+                    missionString = "mission"
+                else
+                    missionString = "missions"
+                end
+                player:SendBroadcastMessage(player:GetName()..", you've saved the victims of the past in "..beatenLevel[playerLowGuid].." "..missionString.." so far. It took you "..eS_formatTime(beatenLevelTime).." to finish the last mission."
             end
         else
             player:SendBroadcastMessage("You are not a healer unfortunately. I am sure there are other tasks for you in Azeroth.")
@@ -251,38 +262,22 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
             player:SendBroadcastMessage("You've just been told.")
         end
 
-    elseif intid == 2 then
-
+    elseif intid >= 2 then
         if beatenLevel[playerLowGuid] == nil then
             beatenLevel[playerLowGuid] = 0
         end
-
-        activeLevel = beatenLevel[playerLowGuid]
-
-        encounterStartTime = GetCurrTime()
-
-        player:SetPhaseMask(Config.Phase)
-        activePlayerGuid = player:GetGUID()
-
-        x = player:GetX()
-        y = player:GetY()
-        z = player:GetZ()
-        o = player:GetO()
-
-        eS_startEvent()
-    elseif intid == 3 then
-
-        if beatenLevel[playerLowGuid] == nil then
-            beatenLevel[playerLowGuid] = 0
+        if intid == 3 then
+            activeLevel = beatenLevel[playerLowGuid] + 1
+        else
+            activeLevel = beatenLevel[playerLowGuid]
         end
-
-        activeLevel = beatenLevel[playerLowGuid] + 1
-
         encounterStartTime = GetCurrTime()
-
         player:SetPhaseMask(Config.Phase)
         activePlayerGuid = player:GetGUID()
-
+        x = object:ToCreature():GetX()
+        y = object:ToCreature():GetY()
+        z = object:ToCreature():GetZ()
+        o = object:ToCreature():GetO()
         eS_startEvent()
     end
     player:GossipComplete()
@@ -324,3 +319,4 @@ for n = Config.woundedEntry,Config.woundedEntry + 11 do
 end
 
 --todo: Find a non-spammy way to announce records
+--todo: Grant a reward. e.g. Mana potions
