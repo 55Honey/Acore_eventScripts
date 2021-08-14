@@ -39,14 +39,14 @@ Config.npcEntry = 1114100
 Config.woundedEntry = 1114001
 -- Text to display when talking to the npc
 Config.npcText = 92111
--- Phase to send players to while they're doing the event. Phases 1+2 are left out by defaull
+-- Phase to send players to while they're doing the event. Phases 1+2 are left out by default
 Config.Phase = 4
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
 ------------------------------------------
 
---constants
+-- constants
 local PLAYER_EVENT_ON_COMMAND = 42          -- (event, player, command) - player is nil if command used from console. Can return false
 local GOSSIP_EVENT_ON_HELLO = 1             -- (event, player, object) - Object is the Creature/GameObject/Item. Can return false to do default action. For item gossip can return false to stop spell casting.
 local GOSSIP_EVENT_ON_SELECT = 2            -- (event, player, object, sender, intid, code, menu_id)
@@ -68,15 +68,35 @@ local encounterStartTime
 local activePlayerGuid
 local activeLevel
 local playerClass
+local x
+local y
+local z
+local o
 local lastRecordPrinted = 0
+local currentLevel
+local nextWounded
+local difficulty
 
---local arrays
+-- local arrays
 local spawnedCreatureGuid = {}              -- currently spawned creature
 local beatenLevel = {}                      -- highest beaten level per characterGuid
 local beatenLevelTime = {}                  -- duration for highest beaten level per characterGuid
 local recordLevel = {}                      -- record per healerclass
 local recordTime = {}                       -- record per healerclass
 local recordName = {}                       -- name of the record holder per healerclass
+
+-- level data
+local levelSpawn = {}
+levelSpawn[1] = { 1,2,1,3,1,2,4,2,5,2,3,1,6,1,2 }
+levelSpawn[2] = { 2,2,1,3,2,2,4,3,5,2,3,2,6,1,2 }
+levelSpawn[3] = { 2,2,3,3,2,2,4,3,5,2,3,2,6,3,2 }
+levelSpawn[4] = { 3,9,3,3,2,7,4,3,5,2,3,2,6,3,6 }
+levelSpawn[5] = { 6,9,3,3,8,7,4,3,5,10,3,7,6,3,6 }
+levelSpawn[6] = { 6,9,8,4,8,7,4,4,5,10,3,7,6,11,6 }
+levelSpawn[7] = { 7,11,8,4,8,7,8,4,9,10,7,7,6,11,10 }
+levelSpawn[8] = { 7,11,8,8,12,7,8,8,9,10,11,7,10,11,10 }
+levelSpawn[9] = { 7,11,8,8,12,7,8,8,9,10,11,7,10,11,10 }
+levelSpawn[0] = { 10,11,8,11,12,10,8,11,9,10,11,8,10,11,12 }
 
 local function eS_has_value (tab, val)
     for index, value in ipairs(tab) do
@@ -117,18 +137,24 @@ local function eS_splitString(inputstr, seperator)
     return t
 end
 
-local function eS_healNPCEvent(event, delay, pCall, creature)
-    if creature:IsFullHealth() == true then
-        --todo: if hp full remove NPC from creature guid table and despawn it. if table is empty and no spawns left, end event with victory.
-    elseif creature:IsDead() == true then
-        --todo: if dead: End event. player lost. Despawn all remaining NPCs. Stop events.
-    end   
+local function eS_checkVictory()
+    if nextWounded > 15 then
+       for n = 1,15,1 do
+           if spawnedCreatureGuid[n] ~= nil then
+               return false
+           end
+       end
+       return true
+    else
+        return false
+    end
 end
 
-local function eS_startEvent()
-    --todo: move the player to Config.Phase
-    --todo: Store all spawned creature guids in a table
-    --todo: schedule events which spawn things to heal based on the timer
+local function eS_storeEncounter()
+    local gameTime = (tonumber(tostring(GetGameTime())))
+    local playerLowGuid = GetGUIDLow(activePlayerGuid)
+    CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_healer_challenge` VALUES ('..gameTime..', '..playerClass..', '..playerLowGuid..', '..activeLevel..', '..eS_getTimeSince(encounterStartTime)..');');
+    activeLevel = nil
 end
 
 local function es_stopEvent()
@@ -137,13 +163,55 @@ local function es_stopEvent()
     --todo: more stuff to add probably
 end
 
+local function eS_healNPCEvent(event, delay, pCall, creature)
+    local creatureIndex
+    if creature:IsFullHealth() == true then
+        --todo: if hp full remove NPC from creature guid table and despawn it. if table is empty and no spawns left, end event with victory.
+        creatureIndex = eS_returnIndex(spawnedCreatureGuid,creature:GetGUID())
+        creature:DespawnOrUnsummon(0)
+        spawnedCreatureGuid[creatureIndex] = nil
+        if eS_checkVictory() == true then
+            eS_storeEncounter()
+            es_stopEvent()
+        end
+    elseif creature:IsDead() == true then
+        --todo: if dead: End event. player lost. Despawn all remaining NPCs. Stop events.
+        es_stopEvent()
+    end   
+end
+
+local function eS_spawnInjured()
+    local spawnedCreature
+    local player = GetPlayerByGUID(activePlayerGuid)
+
+    local randomX = (math.sin(math.random(1,360)) * 7)
+    local randomY = (math.sin(math.random(1,360)) * 7)
+    spawnedCreature = player:SpawnCreature(Config.woundedEntry + levelSpawn[currentLevel][nextWounded], x + randomX, y + randomY, z+2, o)  --todo: fix this line
+    spawnedCreature:SetPhaseMask(Config.Phase)
+
+    spawnedCreatureGuid[nextWounded] = spawnedCreature:GetGUID()
+    nextWounded = nextWounded + 1
+end
+
+local function eS_startEvent()
+    difficulty = 0
+    if currentLevel > 9 then
+        repeat
+            currentLevel = currentLevel - 10
+            difficulty = difficulty + 1
+        until currentLevel < 10
+    end
+    nextWounded = 1
+    --todo: schedule events which spawn things to heal based on the timer
+end
+
 local function eS_onSpawn(event, creature)
     creature:RegisterEvent(eS_healNPCEvent, 100, 0)
 end
 
 local function eS_onHello(event, player, creature)
     if activeLevel ~= nil then
-        creature:SendUnitSay("A hero is still trying to rescue the victims of the past since "..eS_getEncounterDuration(), 0 )
+        creature:SendUnitSay("Another hero is still trying to rescue the victims of the past since "..eS_getEncounterDuration(), 0 )
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.npcEntry, 0)
         return
     end
@@ -158,13 +226,6 @@ local function eS_onHello(event, player, creature)
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "I want to try a new challenge!", Config.npcEntry, 3)
     end
     player:GossipSendMenu(Config.npcText, creature, 0)
-end
-
-local function storeEncounter()
-    local gameTime = (tonumber(tostring(GetGameTime())))
-    local playerLowGuid = GetGUIDLow(activePlayerGuid)
-    CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_healer_challenge` VALUES ('..gameTime..', '..playerClass..', '..playerLowGuid..', '..activeLevel..', '..eS_getTimeSince(encounterStartTime)..');');
-    activeLevel = nil
 end
 
 local function eS_healerGossip(event, player, object, sender, intid, code, menu_id)
@@ -184,7 +245,8 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
 
     elseif intid == 1 then
         if eS_getTimeSince(lastRecordPrinted) > 10000 then
-
+            object:ToCreature():SendUnitSay("The dev forgot to print the records here.") --.todo. print records in /s
+            lastRecordPrinted = GetCurrTime()
         else
             player:SendBroadcastMessage("You've just been told.")
         end
@@ -201,6 +263,11 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
 
         player:SetPhaseMask(Config.Phase)
         activePlayerGuid = player:GetGUID()
+
+        x = player:GetX()
+        y = player:GetY()
+        z = player:GetZ()
+        o = player:GetO()
 
         eS_startEvent()
     elseif intid == 3 then
@@ -252,7 +319,7 @@ local cancelEventIdHello = RegisterCreatureGossipEvent(Config.npcEntry, GOSSIP_E
 local cancelEventIdStart = RegisterCreatureGossipEvent(Config.npcEntry, GOSSIP_EVENT_ON_SELECT, eS_healerGossip)
 
 local n
-for n = 1114001,1114001 + 11 do
+for n = Config.woundedEntry,Config.woundedEntry + 11 do
     RegisterCreatureEvent(n, CREATURE_EVENT_ON_SPAWN, eS_onSpawn) -- OnSpawn
 end
 
