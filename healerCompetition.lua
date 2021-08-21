@@ -316,6 +316,7 @@ local cancelEventIdStart = RegisterCreatureGossipEvent(Config.npcEntry, GOSSIP_E
 
 local n
 for n = Config.woundedEntry,Config.woundedEntry + 11 do
+    --todo: Change 100ms polling to CREATURE_EVENT_ON_HIT_BY_SPELL
     RegisterCreatureEvent(n, CREATURE_EVENT_ON_SPAWN, eS_onSpawn) -- OnSpawn
 end
 
