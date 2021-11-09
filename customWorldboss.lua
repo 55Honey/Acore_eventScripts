@@ -38,6 +38,9 @@ local Config_bossSpell4Counter = {}     --amount of casts to perform for spell 4
 local Config_bossSpell4MaxRange = {}    --max range im m to check for targets for boss spell 4 (default 40)
 local Config_bossSpell5 = {}            --directly applied to the tank with adds alive
 local Config_bossSpell6 = {}            --directly applied to the tank when adds are dead
+local Config_bossSpell7 = {}            --directly applied to the tank
+local Config_bossSpell8 = {}            --directly applied to the tank x seconds after spell 7
+local Config_bossSpell8delay = {}       --delay between spell 7 and 8. Must be smaller than timer7 / 2
 local Config_bossSpellSelf = {}         --cast on boss while adds are still alive
 local Config_bossSpellEnrage = {}       --cast on boss once after Config_bossSpellEnrageTimer ms have passed
 
@@ -46,6 +49,9 @@ local Config_bossSpellTimer2 = {}       -- This timer applies to Config_bossSpel
 local Config_bossSpellTimer3 = {}       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later (in ms)
 -- local Config_bossSpellTimer4 = {}    -- Not used. Timer3 covers BossSpells 3+4
 local Config_bossSpellTimer5 = {}       -- This timer applies to Config_bossSpell5+6 (in ms)
+-- local Config_bossSpellTimer6 = {}    -- Not used. Timer5 covers BossSpells 5+6
+local Config_bossSpellTimer7 = {}       -- This timer applies to Config_bossSpell7+8 (in ms)
+-- local Config_bossSpellTimer8 = {}    -- Not used. Timer7 covers BossSpells 7+8
 local Config_bossSpellEnrageTimer = {}  -- Time in ms until Config_bossSpellEnrage is cast
 
 local Config_bossSpellModifier1bp0 = {} -- Custom base value of the spell 1s effect #1. Default if left out.
@@ -60,6 +66,10 @@ local Config_bossSpellModifier5bp0 = {} -- Custom base value of the spell 5s eff
 local Config_bossSpellModifier5bp1 = {} -- Custom base value of the spell 5s effect #2. Default if left out.
 local Config_bossSpellModifier6bp0 = {} -- Custom base value of the spell 6s effect #1. Default if left out.
 local Config_bossSpellModifier6bp1 = {} -- Custom base value of the spell 6s effect #2. Default if left out.
+local Config_bossSpellModifier7bp0 = {} -- Custom base value of the spell 6s effect #1. Default if left out.
+local Config_bossSpellModifier7bp1 = {} -- Custom base value of the spell 6s effect #2. Default if left out.
+local Config_bossSpellModifier8bp0 = {} -- Custom base value of the spell 6s effect #1. Default if left out.
+local Config_bossSpellModifier8bp1 = {} -- Custom base value of the spell 6s effect #2. Default if left out.
 
 local Config_addHealthModifierParty = {} -- modifier to change health for party encounter. Value in the SQL applies for raid
 local Config_addsAmount = {}            -- how many adds will spawn
@@ -354,6 +364,8 @@ Config_bossSpell4Counter[4] = 1         --amount of casts to perform for spell 4
 Config_bossSpell4MaxRange[4] = 40       --max range im m to check for targets for boss spell 4 (default 40)
 Config_bossSpell5[4] = 22643            --directly applied to the tank with adds alive --volley
 Config_bossSpell6[4] = 22643            --directly applied to the tank when adds are dead --volley
+Config_bossSpell7[4] = nil              --directly applied to the tank
+Config_bossSpell8[4] = nil              --directly applied to the tank x seconds after spell 7
 Config_bossSpellSelf[4] = 55948         --cast on boss while adds are still alive
 Config_bossSpellEnrage[4] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
@@ -361,6 +373,8 @@ Config_bossSpellTimer1[4] = 10000       -- This timer applies to Config_bossSpel
 Config_bossSpellTimer2[4] = 23000       -- This timer applies to Config_bossSpell2
 Config_bossSpellTimer3[4] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 Config_bossSpellTimer5[4] = 19000       -- This timer applies to Config_bossSpell5+6
+Config_bossSpellTimer7[4] = nil         -- This timer applies to Config_bossSpell7+8
+Config_bossSpell8delay[4] = nil         -- Delay between spell 7 and 8. Must be smaller than timer7 / 2
 Config_bossSpellEnrageTimer[4] = 300000
 
 Config_bossSpellModifier1bp0[4] = 35       -- base damage of the Cleave
@@ -375,6 +389,10 @@ Config_bossSpellModifier5bp0[4] = 250      -- base damage for the Frostbolt Voll
 Config_bossSpellModifier5bp1[4] = nil      -- not required if nil
 Config_bossSpellModifier6bp0[4] = 400      -- base damage for the Frostbolt Volley in P2
 Config_bossSpellModifier6bp1[4] = nil      -- not required if nil
+Config_bossSpellModifier7bp0[4] = nil      -- not required if nil
+Config_bossSpellModifier7bp1[4] = nil      -- not required if nil
+Config_bossSpellModifier8bp0[4] = nil      -- not required if nil
+Config_bossSpellModifier8bp1[4] = nil      -- not required if nil
 
 Config_addHealthModifierParty[4] = 3    -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[4] = 8                -- how many adds will spawn
@@ -414,7 +432,94 @@ Config_bossYellPhase2[4] = " I'll git ye!"
 Config_bossSpellSelfYell[4] = "Yous Minions be feeding me all ya Strength!"
 
 ------------------------------------------
--- End of encounter 4
+-- Begin of encounter 5 config
+------------------------------------------
+
+-- Database NPC entries. Must match the associated .sql file
+Config_bossEntry[5] = 1112041           --db entry of the boss creature
+Config_npcEntry[5] = 1112042            --db entry of the NPC creature to summon the boss
+Config_addEntry[5] = 1112043            --db entry of the add creature
+Config_npcText[5] = 91115               --gossip in npc_text to be told by the summoning NPC
+
+-- list of spells:
+Config_bossSpell1[5] = nil              --directly applied to the tank--
+Config_bossSpell2[5] = 56909            --randomly applied to a player in 35m range-- Cleave, up to 10 targets
+Config_bossSpell2MaxRange[5] = 5        --max range im m/y to check for targets for boss spell 2 (default 35)
+Config_bossSpell3[5] = 19717            --on the 2nd nearest player within 30m--
+Config_bossSpell4[5] = 11446            --on a random player within 40m-- 5min domination
+Config_bossSpell4Counter[5] = 1         --amount of casts to perform for spell 4. defaults to 1
+Config_bossSpell4MaxRange[5] = 40       --max range im m to check for targets for boss spell 4 (default 40)
+Config_bossSpell5[5] = 22643            --directly applied to the tank with adds alive --volley
+Config_bossSpell6[5] = 22643            --directly applied to the tank when adds are dead --volley
+Config_bossSpell7[5] = 16805            --directly applied to the tank
+Config_bossSpell8[5] = 16805            --directly applied to the tank x seconds after spell 7
+Config_bossSpell8delay[5] = 6000        --delay between spell 7 and 8. Must be smaller than timer7 / 2
+Config_bossSpellSelf[5] = 55948         --cast on boss while adds are still alive
+Config_bossSpellEnrage[5] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+
+Config_bossSpellTimer1[5] = 10000       -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[5] = 23000       -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[5] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer5[5] = 19000       -- This timer applies to Config_bossSpell5+6
+Config_bossSpellTimer7[5] = 18000       -- This timer applies to Config_bossSpell7+8 (in ms)
+Config_bossSpellEnrageTimer[5] = 300000
+
+Config_bossSpellModifier1bp0[5] = 35       -- base damage of the Cleave
+Config_bossSpellModifier1bp1[5] = nil      -- not required if nil
+Config_bossSpellModifier2bp0[5] = nil      -- not required if nil
+Config_bossSpellModifier2bp1[5] = nil      -- not required if nil
+Config_bossSpellModifier3bp0[5] = 800      -- base damage of the fire rain
+Config_bossSpellModifier3bp1[5] = nil      -- not required if nil
+Config_bossSpellModifier4bp0[5] = nil      -- not required if nil
+Config_bossSpellModifier4bp1[5] = nil      -- not required if nil
+Config_bossSpellModifier5bp0[5] = 250      -- base damage for the Frostbolt Volley in P1
+Config_bossSpellModifier5bp1[5] = nil      -- not required if nil
+Config_bossSpellModifier6bp0[5] = 400      -- base damage for the Frostbolt Volley in P2
+Config_bossSpellModifier6bp1[5] = nil      -- not required if nil
+Config_bossSpellModifier7bp0[5] = nil      -- not required if nil
+Config_bossSpellModifier7bp1[5] = nil      -- not required if nil
+Config_bossSpellModifier8bp0[5] = nil      -- not required if nil
+Config_bossSpellModifier8bp1[5] = nil      -- not required if nil
+
+Config_addHealthModifierParty[5] = 2    -- modifier to change health for party encounter. Value in the SQL applies for raid
+Config_addsAmount[5] = 6                -- how many adds will spawn
+
+Config_addSpell1[5] = 29320             -- min range 30m, 1-3rd farthest target within 30m -- charge
+Config_addSpell2[5] = nil               -- min range 45m, cast on tank
+Config_addSpell3[5] = 23105             -- min range 0m -- Lightning cloud
+Config_addSpell4[5] = 69898             -- cast on the boss
+Config_addSpellEnrage[5] = nil          -- Enrage after 300 seconds
+
+Config_addSpellTimer1[5] = 37000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer2[5] = nil          -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[5] = 37000        -- This timer applies to Config_addSpell3
+Config_addSpellTimer4[5] = 12000        -- This timer applies to Config_addSpell4
+
+Config_addSpellModifier1bp0[5] = nil    -- not required if nil
+Config_addSpellModifier1bp1[5] = nil    -- not required if nil
+Config_addSpellModifier2bp0[5] = nil    -- not required if nil
+Config_addSpellModifier2bp1[5] = nil    -- not required if nil
+Config_addSpellModifier3bp0[5] = 400    -- Initial damage of Lightning Cloud
+Config_addSpellModifier3bp1[5] = 1200   -- Tick damage of Lightning Cloud
+
+Config_aura1Add1[5] = 42375             -- an aura to add to the 1st add-- AE heal
+Config_aura2Add1[5] = nil               -- another aura to add to the 1st add--
+Config_aura1Add2[5] = 42375             -- an aura to add to the 2nd add-- AE heal
+Config_aura2Add2[5] = nil               -- another aura to add to the 2nd add--
+Config_aura1Add3[5] = 42375             -- an aura to add to all ads from the 3rd on-- AE heal
+Config_aura2Add3[5] = nil               -- another aura to add to all add from the 3rd on--
+
+Config_addSpell3Yell[5] = "Mmmrrrrrrrr."-- yell for the adds when Spell 3 is cast
+Config_addEnoughYell[5] = "Rooooaaar"   -- yell for the add at 33% and 66% hp
+Config_addEnoughSound[5] = 412          -- sound to play when the add is at 33% and 66%
+Config_addSpell2Sound[5] = 6436         -- sound to play when add casts spell 2
+--yell for the boss when all adds are dead
+Config_bossYellPhase2[5] = " I'll git ye!"
+-- yell for the boss when they cast on themself
+Config_bossSpellSelfYell[5] = "Yous Minions be feeding me all ya Strength!"
+
+------------------------------------------
+-- End of encounter 5
 ------------------------------------------
 
 -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
@@ -472,6 +577,8 @@ local lastBossSpell1
 local lastBossSpell2
 local lastBossSpell3
 local lastBossSpell5
+local lastBossSpell7
+local nextBossSpell8Delay
 local lastBossSpellSelf
 local lastAddSpell1 = {}
 local lastAddSpell2 = {}
@@ -603,13 +710,21 @@ local function eS_getTimeSince(time)
 end
 
 local function eS_getDifficultyTimer(rawTimer)
-    local timer = rawTimer / (1 + ((difficulty - 1) / 5))
-    return timer
+    if difficulty == 1 then
+        return rawTimer
+    else
+        local timer = rawTimer / (1 + ((difficulty - 1) / 9))
+        return timer
+    end
 end
 
 local function eS_getDifficultyModifier(base)
-    local modifier = base * (1 + ((difficulty - 1) / 5))
-    return modifier
+    if difficulty == 1 then
+        return base
+    else
+        local modifier = base * (1 + ((difficulty - 1) / 9))
+        return modifier
+    end
 end
 
 local function eS_onHello(event, player, creature)
@@ -755,6 +870,8 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
             return
         end
         groupPlayers = group:GetMembers()
+
+        --prevent starting the next raid while fireworks are running
         for n, v in pairs(groupPlayers) do
             if eS_has_value(playersForFireworks, v:GetGUID()) then
                 object:SendUnitSay("Please, just a little break. I need to breathe, "..player:GetName()..". How about watching the fireworks?", 0 )
@@ -762,6 +879,7 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
                 return
             end
         end
+
         --start raid encounter
         bossfightInProgress = RAID_IN_PROGRESS
 
@@ -856,11 +974,8 @@ local function eS_command(event, player, command)
     local commandArray = {}
     local eventNPC
 
-    --prevent players from using this  
-    if player == nil then
-        print("Can not start an event from the console.")
-        return
-    else
+    --prevent players from using this
+    if player ~= nil then
         if player:GetGMRank() < Config.GMRankForEventStart then
             return
         end
@@ -880,6 +995,10 @@ local function eS_command(event, player, command)
     if commandArray[3] == nil then commandArray[3] = 1 end
 
     if commandArray[1] == "startevent" then
+        if player == nil then
+            print("Can not start an event from the console.")
+            return false
+        end
         eventNPC = tonumber(commandArray[2])
         difficulty = tonumber(commandArray[3])
 
@@ -928,10 +1047,11 @@ local function eS_command(event, player, command)
     --prevent non-Admins from using the rest
     if player ~= nil then
         if player:GetGMRank() < Config.GMRankForUpdateDB then
-            return
+            return false
         end
     end
     --nothing here yet
+    return false
 end
 
 function bossNPC.onEnterCombat(event, creature, target)
@@ -947,6 +1067,8 @@ function bossNPC.onEnterCombat(event, creature, target)
     lastBossSpell2 = encounterStartTime
     lastBossSpell3 = encounterStartTime
     lastBossSpell5 = encounterStartTime
+    lastBossSpell7 = encounterStartTime
+    nextBossSpell8Delay = nil
     lastBossSpellSelf = encounterStartTime
 end
 
@@ -1206,6 +1328,51 @@ function bossNPC.Event(event, delay, pCall, creature)
                     lastBossSpell5 = GetCurrTime()
                     return
                 end
+            end
+        end
+    end
+
+    if Config_bossSpellTimer7[eventInProgress] ~= nil then
+        if nextBossSpell8Delay ~= nil then
+            if Config_bossSpell8[eventInProgress] ~= nil then
+                if Config_bossSpell8delay[eventInProgress] < eS_getTimeSince(nextBossSpell8Delay) then
+                    if Config_bossSpellModifier8bp0[eventInProgress] ~= nil and Config_bossSpellModifier8bp1[eventInProgress] ~= nil then
+                        local base1 = eS_getDifficultyModifier(Config_bossSpellModifier8bp0[eventInProgress])
+                        local base2 = eS_getDifficultyModifier(Config_bossSpellModifier8bp1[eventInProgress])
+                        creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell8[eventInProgress], false, base1, base2)
+                    elseif Config_bossSpellModifier8bp0[eventInProgress] ~= nil then
+                        local base1 = eS_getDifficultyModifier(Config_bossSpellModifier8bp0[eventInProgress])
+                        creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell8[eventInProgress], false, base1)
+                    elseif Config_bossSpellModifier8bp1[eventInProgress] ~= nil then
+                        local base2 = eS_getDifficultyModifier(Config_bossSpellModifier8bp1[eventInProgress])
+                        creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell8[eventInProgress], false, nil, base2)
+                    else
+                        creature:CastSpell(creature:GetVictim(), Config_bossSpell8[eventInProgress])
+                    end
+                    nextBossSpell8Delay = nil
+                    return
+                end
+            end
+        end
+
+        if eS_getDifficultyTimer(Config_bossSpellTimer7[eventInProgress]) < eS_getTimeSince(lastBossSpell7) then
+            if Config_bossSpell7[eventInProgress] ~= nil then
+                if Config_bossSpellModifier7bp0[eventInProgress] ~= nil and Config_bossSpellModifier7bp1[eventInProgress] ~= nil then
+                    local base1 = eS_getDifficultyModifier(Config_bossSpellModifier7bp0[eventInProgress])
+                    local base2 = eS_getDifficultyModifier(Config_bossSpellModifier7bp1[eventInProgress])
+                    creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell7[eventInProgress], false, base1, base2)
+                elseif Config_bossSpellModifier7bp0[eventInProgress] ~= nil then
+                    local base1 = eS_getDifficultyModifier(Config_bossSpellModifier7bp0[eventInProgress])
+                    creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell7[eventInProgress], false, base1)
+                elseif Config_bossSpellModifier7bp1[eventInProgress] ~= nil then
+                    local base2 = eS_getDifficultyModifier(Config_bossSpellModifier7bp1[eventInProgress])
+                    creature:CastCustomSpell(creature:GetVictim(), Config_bossSpell7[eventInProgress], false, nil, base2)
+                else
+                    creature:CastSpell(creature:GetVictim(), Config_bossSpell7[eventInProgress])
+                end
+                lastBossSpell7 = GetCurrTime()
+                nextBossSpell8Delay = lastBossSpell7
+                return
             end
         end
     end
