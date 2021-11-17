@@ -1558,7 +1558,9 @@ end
 
 function addNPC.reset(event, creature)
     local player
-    eS_checkInCombat()
+    if bossfightInProgress == PARTY_IN_PROGRESS then
+        eS_checkInCombat()
+    end
     creature:RemoveEvents()
     if bossfightInProgress == PARTY_IN_PROGRESS then
         if creature:IsDead() == true then
