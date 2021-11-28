@@ -1,3 +1,6 @@
+-- drop inhabitType collumn if still exsist
+ALTER TABLE `creature_template` DROP `InhabitType`;
+
 -- Delete if already exsisting for rerun ability
 
 DELETE FROM `creature_template_movement` WHERE `CreatureId` IN (1112001,1112002,1112003,1112011,1112012,1112013,1112021,1112022,1112023,1112031,1112032,1112033,1112041,1112042,1112043);
