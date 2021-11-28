@@ -20,6 +20,6 @@ INSERT INTO `creature_template_movement` (`CreatureId`, `Ground`, `Swim`, `Fligh
 (1112031, 1, 1, 0, 0, 0, 0, NULL), -- Event 4 Boss
 (1112032, 1, 1, 0, 0, 0, 0, NULL), -- Custom Chromie 4
 (1112033, 1, 1, 0, 0, 0, 0, NULL), -- Event 4 Add
-(1112041, 1, 1, 0, 0, 0, 0, NULL), -- Event 4 Boss
-(1112042, 1, 1, 0, 0, 0, 0, NULL), -- Custom Chromie 4
-(1112043, 1, 1, 0, 0, 0, 0, NULL); -- Event 4 Add
+(1112041, 1, 1, 0, 0, 0, 0, NULL), -- Event 5 Boss
+(1112042, 1, 1, 0, 0, 0, 0, NULL), -- Custom Chromie 5
+(1112043, 1, 1, 0, 0, 0, 0, NULL); -- Event 5 Add
