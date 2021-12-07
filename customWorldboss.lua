@@ -106,7 +106,8 @@ local Config_addSpell2Sound = {}        -- sound to play when add casts spell 2
 local Config_bossYellPhase2 = {}        -- yell for the boss when phase 2 starts
 local Config_bossSpellSelfYell = {}     -- yell for the boss when they cast on themself
 
-local Config_fireworks = {}
+local Config_fireworks = {}             -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
+local partyEvent = {}                   -- selected boss per [accountId] for party only mode
 
 ------------------------------------------
 -- Begin of config section
@@ -136,14 +137,21 @@ Config.storeRaid = 1
 Config.rewardParty = 0
 -- set to 1 to store succesful party attempts in the db. Any other value including nil turns it off.
 Config.storeParty = 1
+-- npc entry for party-only mode
+Config.partySelectNpc = 1112999
+-- generic welcome text1
+Config.defaultNpcText1 = 91101
+-- generic welcome text2
+Config.defaultNpcText2 = 91102
 
 ------------------------------------------
 -- List of encounters:
 -- 1: Level 50, Glorifrir Flintshoulder / Zombie Captain
 -- 2: Level 40, Pondulum of Deem / Seawitch
--- 3: Level 50, Crocolisk Dundee / Aligator
--- 4: Level 50, Crocolisk Bunbee / Aligator
--- 5: Level 50: One-Three-Three-Seven / 
+-- 3: Level 50, Crocolisk Dundee / Aligator Minion
+-- 4: Level 50, Crocolisk Bunbee / Aligator Pet
+-- 5: Level 60, Crocolisk Rundee / Aligator Guard
+-- 6: Level 60: One-Three-Three-Seven /
 ------------------------------------------
 
 ------------------------------------------
@@ -742,6 +750,29 @@ local function eS_onHello(event, player, creature)
     player:GossipSendMenu(Config_npcText[eventInProgress], creature, 0)
 end
 
+local function eS_onPartyOnlyHello(event, player, creature)
+    if player == nil then return end
+    if bossfightInProgress ~= nil then
+        player:SendBroadcastMessage("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration())
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.partySelectNpc, 0)
+        player:GossipSendMenu(Config.defaultNpcText1, creature, 0)
+        return
+    end
+
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.partySelectNpc, 0)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 1)", Config.partySelectNpc, 1)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 2)", Config.partySelectNpc, 2)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 3)", Config.partySelectNpc, 3)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 4)", Config.partySelectNpc, 4)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 5)", Config.partySelectNpc, 5)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 6)", Config.partySelectNpc, 6)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 7)", Config.partySelectNpc, 7)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 8)", Config.partySelectNpc, 8)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 9)", Config.partySelectNpc, 9)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 10)", Config.partySelectNpc, 10)
+    player:GossipSendMenu(Config.defaultNpcText1, creature, 0)
+end
+
 local function awardScore()
     local score = Config.baseScore + (Config.additionalScore * difficulty)
     for _, playerGuid in pairs(playersInRaid) do
@@ -951,6 +982,93 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         end
     end
     player:GossipComplete()
+end
+
+local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, code, menu_id)
+    local spawnedBoss
+    local spawnedCreature = {}
+
+    if player == nil then return end
+
+    local group = player:GetGroup()
+    local accountId = player:GetAccountId()
+
+    if intid == 0 then
+        if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
+        if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
+        player:SendBroadcastMessage("Your current event score is: "..scoreEarned[accountId].." and your all-time event score is: "..scoreTotal[accountId])
+        player:GossipComplete()
+
+    elseif intid <= 100 then
+        partyEvent[accountId] = intid - 100
+
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Zombie Captain (Level 50)", Config.partySelectNpc, 101)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Seawitch (Level 40)", Config.partySelectNpc, 102)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Aligator Pet (Level 50)", Config.partySelectNpc, 104)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Aligator Guard (Level 60)", Config.partySelectNpc, 105)
+        player:GossipSendMenu(Config.defaultNpcText2, object, 0)
+
+    else
+
+        if bossfightInProgress ~= nil then
+            player:SendBroadcastMessage("There is already a fight in progress.")
+            player:GossipComplete()
+            return
+        end
+
+        if player:IsInGroup() == false then
+            player:SendBroadcastMessage("You need to be in a party.")
+            player:GossipComplete()
+            return
+        end
+
+        if group:IsRaidGroup() == true then
+            player:SendBroadcastMessage("You can not accept that task while in a raid group.")
+            player:GossipComplete()
+            return
+        end
+        if not group:IsLeader(player:GetGUID()) then
+            player:SendBroadcastMessage("You are not the leader of your group.")
+            player:GossipComplete()
+            return
+        end
+        groupPlayers = group:GetMembers()
+        for n, v in pairs(groupPlayers) do
+            if eS_has_value(playersForFireworks, v:GetGUID()) then
+                object:SendUnitSay("Please, just a little break. I need to breathe, "..player:GetName()..". How about watching the fireworks?", 0 )
+                player:GossipComplete()
+                return
+            end
+        end
+        local eventInProgress = partyEvent[accountId]
+        --start 5man encounter
+        bossfightInProgress = PARTY_IN_PROGRESS
+        spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
+        spawnedCreature[1]:SetPhaseMask(2)
+        spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
+
+        local maxHealth = Config_addHealthModifierParty[eventInProgress] * spawnedCreature[1]:GetMaxHealth()
+        local health = Config_addHealthModifierParty[eventInProgress] * spawnedCreature[1]:GetHealth()
+        spawnedCreature[1]:SetMaxHealth(maxHealth)
+        spawnedCreature[1]:SetHealth(health)
+
+        encounterStartTime = GetCurrTime()
+
+        for n, v in pairs(groupPlayers) do
+            if v:GetDistance(player) ~= nil then
+                if v:GetDistance(player) < 80 then
+                    v:SetPhaseMask(2)
+                    playersInRaid[n] = v:GetGUID()
+                    spawnedCreature[1]:SetInCombatWith(v)
+                    v:SetInCombatWith(spawnedCreature[1])
+                    spawnedCreature[1]:AddThreat(v, 1)
+                end
+            else
+                v:SendBroadcastMessage("You were too far away to join the fight.")
+            end
+        end
+
+    end
 end
 
 local function eS_summonEventNPC(playerGuid)
@@ -1660,3 +1778,6 @@ if Data_SQL ~= nil then
         scoreTotal[account] = Data_SQL:GetUInt32(2)
     until not Data_SQL:NextRow()
 end
+
+RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_HELLO, eS_onPartyOnlyHello)
+RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_SELECT, eS_chromiePartyOnlyGossip)
