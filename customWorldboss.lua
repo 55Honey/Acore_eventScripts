@@ -143,6 +143,8 @@ Config.partySelectNpc = 1112999
 Config.defaultNpcText1 = 91101
 -- generic welcome text2
 Config.defaultNpcText2 = 91102
+-- activate 5man gossip
+Config.partySelectNpcActive = 1
 
 ------------------------------------------
 -- List of encounters:
@@ -1000,7 +1002,7 @@ local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, c
         player:GossipComplete()
 
     elseif intid <= 100 then
-        partyEvent[accountId] = intid - 100
+        partyEvent[accountId] = intid
 
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "Zombie Captain (Level 50)", Config.partySelectNpc, 101)
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "Seawitch (Level 40)", Config.partySelectNpc, 102)
@@ -1009,7 +1011,8 @@ local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, c
         player:GossipSendMenu(Config.defaultNpcText2, object, 0)
 
     else
-
+        difficulty = partyEvent[accountId]
+        partyEvent[accountId] = intid - 100
         if bossfightInProgress ~= nil then
             player:SendBroadcastMessage("There is already a fight in progress.")
             player:GossipComplete()
@@ -1040,7 +1043,12 @@ local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, c
                 return
             end
         end
-        local eventInProgress = partyEvent[accountId]
+        eventInProgress = partyEvent[accountId]
+        local x = player:GetX()
+        local y = player:GetY()
+        local z = player:GetZ()
+        local o = player:GetO()
+
         --start 5man encounter
         bossfightInProgress = PARTY_IN_PROGRESS
         spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
@@ -1779,5 +1787,7 @@ if Data_SQL ~= nil then
     until not Data_SQL:NextRow()
 end
 
-RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_HELLO, eS_onPartyOnlyHello)
-RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_SELECT, eS_chromiePartyOnlyGossip)
+if Config.partySelectNpcActive == 1 then
+    RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_HELLO, eS_onPartyOnlyHello)
+    RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_SELECT, eS_chromiePartyOnlyGossip)
+end
