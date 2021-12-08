@@ -107,7 +107,6 @@ local Config_bossYellPhase2 = {}        -- yell for the boss when phase 2 starts
 local Config_bossSpellSelfYell = {}     -- yell for the boss when they cast on themself
 
 local Config_fireworks = {}             -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
-local partyEvent = {}                   -- selected boss per [accountId] for party only mode
 
 ------------------------------------------
 -- Begin of config section
@@ -143,8 +142,16 @@ Config.partySelectNpc = 1112999
 Config.defaultNpcText1 = 91101
 -- generic welcome text2
 Config.defaultNpcText2 = 91102
--- activate 5man gossip
+-- activate permanent 5man only NPC
 Config.partySelectNpcActive = 1
+-- Map where to spawn the exchange NPC
+Config.InstanceId = 0
+Config.MapId = 1
+-- Pos where to spawn the exchange NPC
+Config.NpcX = -7168.4
+Config.NpcY = -3961.6
+Config.NpcZ = 9.403
+Config.NpcO = 6.24
 
 ------------------------------------------
 -- List of encounters:
@@ -566,6 +573,8 @@ local SELECT_TARGET_FARTHEST = 4
 local PARTY_IN_PROGRESS = 1
 local RAID_IN_PROGRESS = 2
 
+local ELUNA_EVENT_ON_LUA_STATE_CLOSE = 16
+
 --local variables
 local cancelGossipEvent
 local eventInProgress
@@ -582,7 +591,7 @@ local spawnedBossGuid
 local spawnedNPCGuid
 local encounterStartTime
 local mapEventStart
-
+local npcObjectGuid
 local lastBossSpell1
 local lastBossSpell2
 local lastBossSpell3
@@ -594,6 +603,7 @@ local lastAddSpell1 = {}
 local lastAddSpell2 = {}
 local lastAddSpell3 = {}
 local lastAddSpell4 = {}
+local partyEvent = {}                   -- selected boss per [accountId] for party only mode
 
 --local arrays
 local cancelEventIdHello = {}
@@ -1766,6 +1776,16 @@ local function initAddEvents()
     end
 end
 
+local function eS_CloseLua(eI_CloseLua)
+    if npcObjectGuid ~= nil then
+        local npcObject
+        local map
+        map = GetMapById(Config.MapId)
+        npcObject = map:GetWorldObject(npcObjectGuid):ToCreature()
+        npcObject:DespawnOrUnsummon(0)
+    end
+end
+
 --on ReloadEluna / Startup
 RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, eS_command)
 RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, eS_resetPlayers)
@@ -1788,6 +1808,9 @@ if Data_SQL ~= nil then
 end
 
 if Config.partySelectNpcActive == 1 then
+    RegisterServerEvent(ELUNA_EVENT_ON_LUA_STATE_CLOSE, eS_CloseLua, 0)
     RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_HELLO, eS_onPartyOnlyHello)
     RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_SELECT, eS_chromiePartyOnlyGossip)
+    local npcObject = PerformIngameSpawn(1, Config.partySelectNpc, Config.MapId, Config.InstanceId, Config.NpcX, Config.NpcY, Config.NpcZ, Config.NpcO)
+    npcObjectGuid = npcObject:GetGUID()
 end
