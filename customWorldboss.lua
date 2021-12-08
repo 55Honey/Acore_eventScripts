@@ -152,6 +152,8 @@ Config.NpcX = -7168.4
 Config.NpcY = -3961.6
 Config.NpcZ = 9.403
 Config.NpcO = 6.24
+Config.PartyNpcYellText = 'Come to the Gadgetzan graveyard, if you dare. Try and proof yourself to Chromie!'
+Config.PartyNpcSayText = 'What are you waiting for? Bring a party of five and step up against the enemies of time!'
 
 ------------------------------------------
 -- List of encounters:
@@ -592,6 +594,7 @@ local spawnedNPCGuid
 local encounterStartTime
 local mapEventStart
 local npcObjectGuid
+local partyNpcSayCounter = 0
 local lastBossSpell1
 local lastBossSpell2
 local lastBossSpell3
@@ -1764,6 +1767,7 @@ local function initBossEvents()
         end
     end
 end
+
 local function initAddEvents()
     for n = Config_addEntry[1], Config_addEntry[1] + 990, 10 do
         if eS_has_value(Config_addEntry,n) then
@@ -1773,6 +1777,16 @@ local function initAddEvents()
         else
             return
         end
+    end
+end
+
+local function eS_partyNpcYell(eventid, delay, repeats, worldobject)
+    if partyNpcSayCounter == 10 then
+        worldobject:SendUnitYell(Config.PartyNpcYellText, 0)
+        partyNpcSayCounter = 0
+    else
+        worldobject:SendUnitSay(Config.PartyNpcSayText, 0)
+        partyNpcSayCounter = partyNpcSayCounter + 1
     end
 end
 
@@ -1813,4 +1827,5 @@ if Config.partySelectNpcActive == 1 then
     RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_SELECT, eS_chromiePartyOnlyGossip)
     local npcObject = PerformIngameSpawn(1, Config.partySelectNpc, Config.MapId, Config.InstanceId, Config.NpcX, Config.NpcY, Config.NpcZ, Config.NpcO)
     npcObjectGuid = npcObject:GetGUID()
+    npcObject:RegisterEvent(eS_partyNpcYell, 60000, 0)
 end
