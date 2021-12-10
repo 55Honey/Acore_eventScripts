@@ -1038,7 +1038,7 @@ local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, c
             return
         end
 
-        if group:IsRaidGroup() then
+        if group:IsRaidGroup() == true then
             player:SendBroadcastMessage("You can not accept that task while in a raid group.")
             player:GossipComplete()
             return
