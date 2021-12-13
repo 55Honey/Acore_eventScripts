@@ -1110,7 +1110,7 @@ local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, c
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "Seawitch (Level 40)", Config.partySelectNpc, 102)
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "Aligator Pet (Level 50)", Config.partySelectNpc, 104)
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "Aligator Guard (Level 60)", Config.partySelectNpc, 105)
-        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Ragnaros QT (Level 60)", Config.partySelectNpc, 106)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Ragnarix Qt (Level 60)", Config.partySelectNpc, 106)
         player:GossipSendMenu(Config.defaultNpcText2, object, 0)
 
     else
