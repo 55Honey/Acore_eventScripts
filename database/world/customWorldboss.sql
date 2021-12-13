@@ -1,11 +1,12 @@
-DELETE FROM `creature_template` WHERE `entry` IN (1112001,1112002,1112003,1112011,1112012,1112013,1112021,1112022,1112023,1112031,1112032,1112033,1112041,1112042,1112043,1112999);
-DELETE FROM `npc_text` WHERE `ID` IN (91101,91102,91111,91112,91113,91114,91115);
-DELETE FROM `gossip_menu` WHERE `MenuID` IN (62001,62002,62003,62004,62005);
+DELETE FROM `creature_template` WHERE `entry` IN 
+(1112001,1112002,1112003,1112011,1112012,1112013,1112021,1112022,1112023,1112031,1112032,1112033,1112041,1112042,1112043,1112051,1112052,1112053,1112999);
+DELETE FROM `npc_text` WHERE `ID` IN (91101,91102,91111,91112,91113,91114,91115,91116);
+DELETE FROM `gossip_menu` WHERE `MenuID` IN (62001,62002,62003,62004,62005,62006);
 DELETE FROM `creature_equip_template` WHERE `CreatureID` IN (1112011,1112021,1112031,1112041);
 
 
 INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `DamageModifier`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES
--- Party-only Chromie:
+-- Party-only NPC:
 (1112999, 0, 0, 0, 0, 0, 11062, 0, 0, 0, 'Amber Haze', 'Dark Queen of Timeshifts', 62001, 63, 63, 0, 35, 1, 1, 1.14286, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 33536, 2048, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1.35, 1, 1, 0, 0, 1, 0, 0, 2, '', 0),
 -- Event 1 Boss:
 (1112001, 0, 0, 0, 0, 0, 3456, 0, 0, 0, 'Glorifrir Flintshoulder', '', 0, 50, 50, 0, 63, 0, 1, 2, 3, 3, 0, 30, 2000, 2000, 1, 1, 1, 32832, 2048, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 50000, 60000, 'SmartAI', 1, 3, 1, 450, 1, 1, 0, 0, 1, 634077055, 0, 256, '', 0),
@@ -31,12 +32,19 @@ INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entr
 (1112032, 0, 0, 0, 0, 0, 10008, 0, 0, 0, 'Chromie', '', 62004, 63, 63, 0, 35, 1, 1, 1.14286, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 33536, 2048, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1.35, 1, 1, 0, 0, 1, 0, 0, 2, '', 0),
 -- Event 4 Add:
 (1112033, 0, 0, 0, 0, 0, 1034, 0, 0, 0, 'Aligator Pet', '', 0, 50, 50, 0, 63, 0, 1, 2, 1, 1, 0, 5, 2000, 2000, 1, 1, 8, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 50, 100, 1, 0, 0, 1, 667631227, 0, 256, '', 0),
--- Event 4 Boss:
+-- Event 5 Boss:
 (1112041, 0, 0, 0, 0, 0, 17557, 0, 0, 0, 'Crocolisk Rundee', '', 0, 60, 60, 0, 63, 0, 1, 2, 2, 3, 0, 30, 2000, 2000, 1, 1, 1, 32832, 2048, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 50000, 60000, 'SmartAI', 1, 3, 1, 600, 100, 1, 0, 0, 1, 667631231, 0, 0, '', 0),
--- Custom Chromie 4:
+-- Custom Chromie 5:
 (1112042, 0, 0, 0, 0, 0, 10008, 0, 0, 0, 'Chromie', '', 62004, 63, 63, 0, 35, 1, 1, 1.14286, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 33536, 2048, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1.35, 1, 1, 0, 0, 1, 0, 0, 2, '', 0),
--- Event 4 Add:
+-- Event 5 Add:
 (1112043, 0, 0, 0, 0, 0, 1034, 0, 0, 0, 'Aligator Guard', '', 0, 60, 60, 0, 63, 0, 1, 2, 1, 1, 0, 15, 2000, 2000, 1, 1, 8, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 70, 100, 1, 0, 0, 1, 667631227, 0, 256, '', 0);
+-- Event 6 Boss:
+(1112051, 0, 0, 0, 0, 0, 9475, 0, 0, 0, 'One-Three-Three-Seven', '', 0, 60, 60, 0, 63, 0, 1, 2, 2, 3, 0, 30, 2000, 2000, 1, 1, 1, 32832, 2048, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 50000, 60000, 'SmartAI', 1, 3, 1, 600, 100, 1, 0, 0, 1, 667631231, 0, 0, '', 0),
+-- Custom Chromie 6:
+(1112052, 0, 0, 0, 0, 0, 10008, 0, 0, 0, 'Chromie', '', 62004, 63, 63, 0, 35, 1, 1, 1.14286, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 33536, 2048, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1.35, 1, 1, 0, 0, 1, 0, 0, 2, '', 0),
+-- Event 6 Add:
+(1112053, 0, 0, 0, 0, 0, 8409, 0, 0, 0, 'Ragnaros Qt', '', 0, 60, 60, 0, 63, 0, 1, 2, 1, 1, 0, 15, 2000, 2000, 1, 1, 8, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 70, 100, 1, 0, 0, 1, 667631227, 0, 256, '', 0);
+
 
 -- Npc_text
 SET @NPC_TEXT = 'Greetings, $n. One of the invaders of the timeline is in a nearby timenode. I might be able to make them visible for your eyes and vulnerable to your magic and weapons, but i can not aid you in this fight while i am maintaining the spell. Are you ready to face the worst this timeline has to deal with?\n';
@@ -47,14 +55,16 @@ INSERT INTO `npc_text` (`ID`, `text0_0`, `BroadcastTextID0`, `lang0`, `Probabili
 (91112, CONCAT(@NPC_TEXT, 'From what i can tell, you want to try and prevent their spells from being cast. And once the Axe becomes desperate, my advice is to stand very close together.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
 (91113, CONCAT(@NPC_TEXT, 'The hunter drains power from the minions. You want to get rid of them as soon as you can.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
 (91114, CONCAT(@NPC_TEXT, 'The hunter drains power from the minions. They have strong healing powers. You must seperate them from each other! And watch out for fire rains.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
-(91115, CONCAT(@NPC_TEXT, 'The hunter drains power from the minions. They have strong healing powers. You must seperate them from each other! And watch out for fire rains.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+(91115, CONCAT(@NPC_TEXT, 'The hunter drains power from the minions. They have strong healing powers. You must seperate them from each other! And watch out for fire rains.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
+(91115, CONCAT(@NPC_TEXT, 'The elementals empower the robot. Kill them fast! And watch out for fire!'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 
 INSERT INTO `gossip_menu` (`MenuID`, `TextID`) VALUES
 (62001, 91111),
 (62002, 91112),
 (62003, 91113),
 (62004, 91114),
-(62005, 91115);
+(62005, 91115),
+(62006, 91116);
 
 INSERT INTO `creature_equip_template` (`CreatureID`, `ID`, `ItemID1`, `ItemID2`, `ItemID3`, `VerifiedBuild`) VALUES 
 (1112011, 1, 41175, 0, 0, 18019),
