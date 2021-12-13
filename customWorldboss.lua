@@ -162,7 +162,7 @@ Config.PartyNpcSayText = 'What are you waiting for? Bring a party of five and st
 -- 3: Level 50, Crocolisk Dundee / Aligator Minion
 -- 4: Level 50, Crocolisk Bunbee / Aligator Pet
 -- 5: Level 60, Crocolisk Rundee / Aligator Guard
--- 6: Level 60: One-Three-Three-Seven /
+-- 6: Level 60: One-Three-Three-Seven / Ragnarosqt
 ------------------------------------------
 
 ------------------------------------------
@@ -538,7 +538,96 @@ Config_bossYellPhase2[5] = " I'll git ye!"
 Config_bossSpellSelfYell[5] = "Yous Minions be feeding me all ya Strength!"
 
 ------------------------------------------
--- End of encounter 5
+-- Begin of encounter 6 config
+------------------------------------------
+
+-- Database NPC entries. Must match the associated .sql file
+Config_bossEntry[6] = 1112051           --db entry of the boss creature
+Config_npcEntry[6] = 1112052            --db entry of the NPC creature to summon the boss
+Config_addEntry[6] = 1112053            --db entry of the add creature
+Config_npcText[6] = 91116               --gossip in npc_text to be told by the summoning NPC
+
+-- list of spells:
+Config_bossSpell1[6] = nil              --directly applied to the tank--
+Config_bossSpell2[6] = 56909            --randomly applied to a player in 35m range-- Cleave, up to 10 targets
+Config_bossSpell2MaxRange[6] = 5        --max range im m/y to check for targets for boss spell 2 (default 35)
+Config_bossSpell3[6] = 19717            --on the 2nd nearest player within 30m--
+Config_bossSpell4[6] = 11446            --on a random player within 40m-- 5min domination
+Config_bossSpell4Counter[6] = 1         --amount of casts to perform for spell 4. defaults to 1
+Config_bossSpell4MaxRange[6] = 40       --max range im m to check for targets for boss spell 4 (default 40)
+Config_bossSpell5[6] = 22643            --directly applied to the tank with adds alive --volley
+Config_bossSpell6[6] = 22643            --directly applied to the tank when adds are dead --volley
+Config_bossSpell7[6] = 16805            --directly applied to the tank
+Config_bossSpell8[6] = 16805            --directly applied to the tank x seconds after spell 7
+Config_bossSpell8delay[6] = 6000        --delay between spell 7 and 8. Must be smaller than timer7 / 2
+Config_bossSpellSelf[6] = 67973         --cast on boss while adds are still alive (Rejuvenation)
+Config_bossSpellEnrage[6] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+
+Config_bossSpellTimer1[6] = 10000       -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[6] = 23000       -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[6] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer5[6] = 19000       -- This timer applies to Config_bossSpell5+6
+Config_bossSpellTimer7[6] = 18000       -- This timer applies to Config_bossSpell7+8 (in ms)
+Config_bossSpellEnrageTimer[6] = 300000
+
+Config_bossSpellModifier1bp0[6] = 35       -- base damage of the Cleave
+Config_bossSpellModifier1bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier2bp0[6] = nil      -- not required if nil
+Config_bossSpellModifier2bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier3bp0[6] = 800      -- base damage of the fire rain
+Config_bossSpellModifier3bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier4bp0[6] = nil      -- not required if nil
+Config_bossSpellModifier4bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier5bp0[6] = 250      -- base damage for the Frostbolt Volley in P1
+Config_bossSpellModifier5bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier6bp0[6] = 400      -- base damage for the Frostbolt Volley in P2
+Config_bossSpellModifier6bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier7bp0[6] = nil      -- not required if nil
+Config_bossSpellModifier7bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier8bp0[6] = nil      -- not required if nil
+Config_bossSpellModifier8bp1[6] = nil      -- not required if nil
+
+Config_addHealthModifierParty[6] = 0.5     -- modifier to change health for party encounter. Value in the SQL applies for raid
+Config_addsAmount[6] = 2                   -- how many adds will spawn
+
+Config_addSpell1[6] = 29320             -- min range 30m, 1-3rd farthest target within 30m -- charge
+Config_addSpell2[6] = 19630             -- min range 45m, cast on tank -- Cone of Fire
+Config_addSpell3[6] = 19780             -- min range 0m -- Hand of Ragnaros
+Config_addSpell4[6] = 42795             -- cast on the boss (Growth)
+Config_addSpellEnrage[6] = nil          -- Enrage after 300 seconds
+
+Config_addSpellTimer1[6] = 37000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer2[6] = 23000        -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[6] = 37000        -- This timer applies to Config_addSpell3
+Config_addSpellTimer4[6] = 12000        -- This timer applies to Config_addSpell4
+
+Config_addSpellModifier1bp0[6] = nil    -- not required if nil
+Config_addSpellModifier1bp1[6] = nil    -- not required if nil
+Config_addSpellModifier2bp0[6] = nil    -- not required if nil
+Config_addSpellModifier2bp1[6] = nil    -- not required if nil
+Config_addSpellModifier3bp0[6] = nil    -- not required if nil
+Config_addSpellModifier3bp1[6] = 1200   -- Damage of Hand of Ragnaros knockback
+
+Config_aura1Add1[6] = 23266             -- an aura to add to the 1st add-- Fiery Aura
+Config_aura2Add1[6] = nil               -- another aura to add to the 1st add--
+Config_aura1Add2[6] = 23266             -- an aura to add to the 2nd add-- Fiery Aura
+Config_aura2Add2[6] = nil               -- another aura to add to the 2nd add--
+Config_aura1Add3[6] = 23266             -- an aura to add to all ads from the 3rd on-- Fiery Aura
+Config_aura2Add3[6] = nil               -- another aura to add to all add from the 3rd on--
+
+Config_addSpell3Yell[6] = "Die, Insect."-- yell for the adds when Spell 3 is cast
+Config_addEnoughYell[6] = "Feel my Wrath!"   -- yell for the add at 33% and 66% hp
+Config_addEnoughSound[6] = 412          -- sound to play when the add is at 33% and 66%
+Config_addSpell2Sound[6] = 6436         -- sound to play when add casts spell 2
+--yell for the boss when all adds are dead
+Config_bossYellPhase2[6] = "Bee bop. Reconfiguring!"
+-- yell for the boss when they cast on themself
+Config_bossSpellSelfYell[6] = "Adjusting Defenses. Stand back."
+
+
+
+------------------------------------------
+-- End of encounter 6
 ------------------------------------------
 
 -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
@@ -1021,6 +1110,7 @@ local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, c
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "Seawitch (Level 40)", Config.partySelectNpc, 102)
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "Aligator Pet (Level 50)", Config.partySelectNpc, 104)
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "Aligator Guard (Level 60)", Config.partySelectNpc, 105)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Ragnaros QT (Level 60)", Config.partySelectNpc, 106)
         player:GossipSendMenu(Config.defaultNpcText2, object, 0)
 
     else
