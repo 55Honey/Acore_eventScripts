@@ -37,7 +37,7 @@ INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entr
 -- Custom Chromie 5:
 (1112042, 0, 0, 0, 0, 0, 10008, 0, 0, 0, 'Chromie', '', 62004, 63, 63, 0, 35, 1, 1, 1.14286, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 33536, 2048, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 3, 1, 1.35, 1, 1, 0, 0, 1, 0, 0, 2, '', 0),
 -- Event 5 Add:
-(1112043, 0, 0, 0, 0, 0, 1034, 0, 0, 0, 'Aligator Guard', '', 0, 60, 60, 0, 63, 0, 1, 2, 1, 1, 0, 15, 2000, 2000, 1, 1, 8, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 70, 100, 1, 0, 0, 1, 667631227, 0, 256, '', 0);
+(1112043, 0, 0, 0, 0, 0, 1034, 0, 0, 0, 'Aligator Guard', '', 0, 60, 60, 0, 63, 0, 1, 2, 1, 1, 0, 15, 2000, 2000, 1, 1, 8, 0, 2048, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 297, 393, 'SmartAI', 1, 3, 1, 70, 100, 1, 0, 0, 1, 667631227, 0, 256, '', 0),
 -- Event 6 Boss:
 (1112051, 0, 0, 0, 0, 0, 9475, 0, 0, 0, 'One-Three-Three-Seven', '', 0, 60, 60, 0, 63, 0, 1, 2, 2, 3, 0, 30, 2000, 2000, 1, 1, 1, 32832, 2048, 0, 0, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 50000, 60000, 'SmartAI', 1, 3, 1, 600, 100, 1, 0, 0, 1, 667631231, 0, 0, '', 0),
 -- Custom Chromie 6:
@@ -56,7 +56,7 @@ INSERT INTO `npc_text` (`ID`, `text0_0`, `BroadcastTextID0`, `lang0`, `Probabili
 (91113, CONCAT(@NPC_TEXT, 'The hunter drains power from the minions. You want to get rid of them as soon as you can.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
 (91114, CONCAT(@NPC_TEXT, 'The hunter drains power from the minions. They have strong healing powers. You must seperate them from each other! And watch out for fire rains.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
 (91115, CONCAT(@NPC_TEXT, 'The hunter drains power from the minions. They have strong healing powers. You must seperate them from each other! And watch out for fire rains.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
-(91115, CONCAT(@NPC_TEXT, 'The elementals empower the robot. Kill them fast! And watch out for fire!'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+(91116, CONCAT(@NPC_TEXT, 'The elementals empower the robot. Kill them fast! And watch out for fire!'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 
 INSERT INTO `gossip_menu` (`MenuID`, `TextID`) VALUES
 (62001, 91111),
