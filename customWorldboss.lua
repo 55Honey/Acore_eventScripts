@@ -590,15 +590,15 @@ Config_bossSpellModifier8bp1[6] = nil      -- not required if nil
 Config_addHealthModifierParty[6] = 0.5     -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[6] = 2                   -- how many adds will spawn
 
-Config_addSpell1[6] = 29320             -- min range 30m, 1-3rd farthest target within 30m -- charge
+Config_addSpell1[6] = 35181             -- min range 30m, 1-3rd farthest target within 30m -- Meteor
 Config_addSpell2[6] = 19630             -- min range 45m, cast on tank -- Cone of Fire
-Config_addSpell3[6] = 19780             -- min range 0m -- Hand of Ragnaros
+Config_addSpell3[6] = 13808             -- min range 0m -- Grenade
 Config_addSpell4[6] = 42795             -- cast on the boss (Growth)
 Config_addSpellEnrage[6] = nil          -- Enrage after 300 seconds
 
 Config_addSpellTimer1[6] = 37000        -- This timer applies to Config_addSpell1
-Config_addSpellTimer2[6] = 23000        -- This timer applies to Config_addSpell2
-Config_addSpellTimer3[6] = 37000        -- This timer applies to Config_addSpell3
+Config_addSpellTimer2[6] = 13000        -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[6] = 23000        -- This timer applies to Config_addSpell3
 Config_addSpellTimer4[6] = 12000        -- This timer applies to Config_addSpell4
 
 Config_addSpellModifier1bp0[6] = nil    -- not required if nil
@@ -606,7 +606,7 @@ Config_addSpellModifier1bp1[6] = nil    -- not required if nil
 Config_addSpellModifier2bp0[6] = nil    -- not required if nil
 Config_addSpellModifier2bp1[6] = nil    -- not required if nil
 Config_addSpellModifier3bp0[6] = nil    -- not required if nil
-Config_addSpellModifier3bp1[6] = 1200   -- Damage of Hand of Ragnaros knockback
+Config_addSpellModifier3bp1[6] = nil    -- not required if nil
 
 Config_aura1Add1[6] = 23266             -- an aura to add to the 1st add-- Fiery Aura
 Config_aura2Add1[6] = nil               -- another aura to add to the 1st add--
