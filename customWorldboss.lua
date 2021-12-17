@@ -152,7 +152,7 @@ Config.NpcX = -7168.4
 Config.NpcY = -3961.6
 Config.NpcZ = 9.403
 Config.NpcO = 6.24
-Config.PartyNpcYellText = 'Come to the Gadgetzan graveyard, if you dare. Try and proof yourself to Chromie!'
+Config.PartyNpcYellText = 'Come to the Gadgetzan graveyard, if you dare. Try and prove yourself to Chromie!'
 Config.PartyNpcSayText = 'What are you waiting for? Bring a party of five and step up against the enemies of time!'
 
 ------------------------------------------
