@@ -106,7 +106,7 @@ local Config_addSpell2Sound = {}        -- sound to play when add casts spell 2
 local Config_bossYellPhase2 = {}        -- yell for the boss when phase 2 starts
 local Config_bossSpellSelfYell = {}     -- yell for the boss when they cast on themself
 
-local Config_fireworks = {}
+local Config_fireworks = {}             -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
 
 ------------------------------------------
 -- Begin of config section
@@ -136,14 +136,33 @@ Config.storeRaid = 1
 Config.rewardParty = 0
 -- set to 1 to store succesful party attempts in the db. Any other value including nil turns it off.
 Config.storeParty = 1
+-- npc entry for party-only mode
+Config.partySelectNpc = 1112999
+-- generic welcome text1
+Config.defaultNpcText1 = 91101
+-- generic welcome text2
+Config.defaultNpcText2 = 91102
+-- activate permanent 5man only NPC
+Config.partySelectNpcActive = 1
+-- Map where to spawn the exchange NPC
+Config.InstanceId = 0
+Config.MapId = 1
+-- Pos where to spawn the exchange NPC
+Config.NpcX = -7168.4
+Config.NpcY = -3961.6
+Config.NpcZ = 9.403
+Config.NpcO = 6.24
+Config.PartyNpcYellText = 'Come to the Gadgetzan graveyard, if you dare. Try and prove yourself to Chromie!'
+Config.PartyNpcSayText = 'What are you waiting for? Bring a party of five and step up against the enemies of time!'
 
 ------------------------------------------
 -- List of encounters:
 -- 1: Level 50, Glorifrir Flintshoulder / Zombie Captain
 -- 2: Level 40, Pondulum of Deem / Seawitch
--- 3: Level 50, Crocolisk Dundee / Aligator
--- 4: Level 50, Crocolisk Bunbee / Aligator
--- 5: Level 50: One-Three-Three-Seven / 
+-- 3: Level 50, Crocolisk Dundee / Aligator Minion
+-- 4: Level 50, Crocolisk Bunbee / Aligator Pet
+-- 5: Level 60, Crocolisk Rundee / Aligator Guard
+-- 6: Level 60: One-Three-Three-Seven / Ragnarosqt
 ------------------------------------------
 
 ------------------------------------------
@@ -519,7 +538,96 @@ Config_bossYellPhase2[5] = " I'll git ye!"
 Config_bossSpellSelfYell[5] = "Yous Minions be feeding me all ya Strength!"
 
 ------------------------------------------
--- End of encounter 5
+-- Begin of encounter 6 config
+------------------------------------------
+
+-- Database NPC entries. Must match the associated .sql file
+Config_bossEntry[6] = 1112051           --db entry of the boss creature
+Config_npcEntry[6] = 1112052            --db entry of the NPC creature to summon the boss
+Config_addEntry[6] = 1112053            --db entry of the add creature
+Config_npcText[6] = 91116               --gossip in npc_text to be told by the summoning NPC
+
+-- list of spells:
+Config_bossSpell1[6] = nil              --directly applied to the tank--
+Config_bossSpell2[6] = 56909            --randomly applied to a player in 35m range-- Cleave, up to 10 targets
+Config_bossSpell2MaxRange[6] = 5        --max range im m/y to check for targets for boss spell 2 (default 35)
+Config_bossSpell3[6] = 19717            --on the 2nd nearest player within 30m--
+Config_bossSpell4[6] = 11446            --on a random player within 40m-- 5min domination
+Config_bossSpell4Counter[6] = 1         --amount of casts to perform for spell 4. defaults to 1
+Config_bossSpell4MaxRange[6] = 40       --max range im m to check for targets for boss spell 4 (default 40)
+Config_bossSpell5[6] = 22643            --directly applied to the tank with adds alive --volley
+Config_bossSpell6[6] = 22643            --directly applied to the tank when adds are dead --volley
+Config_bossSpell7[6] = 16805            --directly applied to the tank
+Config_bossSpell8[6] = 16805            --directly applied to the tank x seconds after spell 7
+Config_bossSpell8delay[6] = 6000        --delay between spell 7 and 8. Must be smaller than timer7 / 2
+Config_bossSpellSelf[6] = 67973         --cast on boss while adds are still alive (Rejuvenation)
+Config_bossSpellEnrage[6] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+
+Config_bossSpellTimer1[6] = 10000       -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[6] = 23000       -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[6] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer5[6] = 19000       -- This timer applies to Config_bossSpell5+6
+Config_bossSpellTimer7[6] = 18000       -- This timer applies to Config_bossSpell7+8 (in ms)
+Config_bossSpellEnrageTimer[6] = 300000
+
+Config_bossSpellModifier1bp0[6] = 35       -- base damage of the Cleave
+Config_bossSpellModifier1bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier2bp0[6] = nil      -- not required if nil
+Config_bossSpellModifier2bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier3bp0[6] = 800      -- base damage of the fire rain
+Config_bossSpellModifier3bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier4bp0[6] = nil      -- not required if nil
+Config_bossSpellModifier4bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier5bp0[6] = 250      -- base damage for the Frostbolt Volley in P1
+Config_bossSpellModifier5bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier6bp0[6] = 400      -- base damage for the Frostbolt Volley in P2
+Config_bossSpellModifier6bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier7bp0[6] = nil      -- not required if nil
+Config_bossSpellModifier7bp1[6] = nil      -- not required if nil
+Config_bossSpellModifier8bp0[6] = nil      -- not required if nil
+Config_bossSpellModifier8bp1[6] = nil      -- not required if nil
+
+Config_addHealthModifierParty[6] = 0.5     -- modifier to change health for party encounter. Value in the SQL applies for raid
+Config_addsAmount[6] = 2                   -- how many adds will spawn
+
+Config_addSpell1[6] = 35181             -- min range 30m, 1-3rd farthest target within 30m -- Meteor
+Config_addSpell2[6] = 19630             -- min range 45m, cast on tank -- Cone of Fire
+Config_addSpell3[6] = 13808             -- min range 0m -- Grenade
+Config_addSpell4[6] = 42795             -- cast on the boss (Growth)
+Config_addSpellEnrage[6] = nil          -- Enrage after 300 seconds
+
+Config_addSpellTimer1[6] = 37000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer2[6] = 13000        -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[6] = 23000        -- This timer applies to Config_addSpell3
+Config_addSpellTimer4[6] = 12000        -- This timer applies to Config_addSpell4
+
+Config_addSpellModifier1bp0[6] = nil    -- not required if nil
+Config_addSpellModifier1bp1[6] = nil    -- not required if nil
+Config_addSpellModifier2bp0[6] = nil    -- not required if nil
+Config_addSpellModifier2bp1[6] = nil    -- not required if nil
+Config_addSpellModifier3bp0[6] = nil    -- not required if nil
+Config_addSpellModifier3bp1[6] = nil    -- not required if nil
+
+Config_aura1Add1[6] = 23266             -- an aura to add to the 1st add-- Fiery Aura
+Config_aura2Add1[6] = nil               -- another aura to add to the 1st add--
+Config_aura1Add2[6] = 23266             -- an aura to add to the 2nd add-- Fiery Aura
+Config_aura2Add2[6] = nil               -- another aura to add to the 2nd add--
+Config_aura1Add3[6] = 23266             -- an aura to add to all ads from the 3rd on-- Fiery Aura
+Config_aura2Add3[6] = nil               -- another aura to add to all add from the 3rd on--
+
+Config_addSpell3Yell[6] = "Die, Insect."-- yell for the adds when Spell 3 is cast
+Config_addEnoughYell[6] = "Feel my Wrath!"   -- yell for the add at 33% and 66% hp
+Config_addEnoughSound[6] = 412          -- sound to play when the add is at 33% and 66%
+Config_addSpell2Sound[6] = 6436         -- sound to play when add casts spell 2
+--yell for the boss when all adds are dead
+Config_bossYellPhase2[6] = "Bee bop. Reconfiguring!"
+-- yell for the boss when they cast on themself
+Config_bossSpellSelfYell[6] = "Adjusting Defenses. Stand back."
+
+
+
+------------------------------------------
+-- End of encounter 6
 ------------------------------------------
 
 -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
@@ -556,6 +664,8 @@ local SELECT_TARGET_FARTHEST = 4
 local PARTY_IN_PROGRESS = 1
 local RAID_IN_PROGRESS = 2
 
+local ELUNA_EVENT_ON_LUA_STATE_CLOSE = 16
+
 --local variables
 local cancelGossipEvent
 local eventInProgress
@@ -572,7 +682,8 @@ local spawnedBossGuid
 local spawnedNPCGuid
 local encounterStartTime
 local mapEventStart
-
+local npcObjectGuid
+local partyNpcSayCounter = 0
 local lastBossSpell1
 local lastBossSpell2
 local lastBossSpell3
@@ -584,6 +695,7 @@ local lastAddSpell1 = {}
 local lastAddSpell2 = {}
 local lastAddSpell3 = {}
 local lastAddSpell4 = {}
+local partyEvent = {}                   -- selected boss per [accountId] for party only mode
 
 --local arrays
 local cancelEventIdHello = {}
@@ -740,6 +852,29 @@ local function eS_onHello(event, player, creature)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant!", Config_npcEntry[eventInProgress], 1)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything.", Config_npcEntry[eventInProgress], 2)
     player:GossipSendMenu(Config_npcText[eventInProgress], creature, 0)
+end
+
+local function eS_onPartyOnlyHello(event, player, creature)
+    if player == nil then return end
+    if bossfightInProgress ~= nil then
+        player:SendBroadcastMessage("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration())
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.partySelectNpc, 0)
+        player:GossipSendMenu(Config.defaultNpcText1, creature, 0)
+        return
+    end
+
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.partySelectNpc, 0)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 1)", Config.partySelectNpc, 1)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 2)", Config.partySelectNpc, 2)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 3)", Config.partySelectNpc, 3)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 4)", Config.partySelectNpc, 4)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 5)", Config.partySelectNpc, 5)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 6)", Config.partySelectNpc, 6)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 7)", Config.partySelectNpc, 7)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 8)", Config.partySelectNpc, 8)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 9)", Config.partySelectNpc, 9)
+    player:GossipMenuAddItem(OPTION_ICON_CHAT, "Let us fight a servant! (Difficulty 10)", Config.partySelectNpc, 10)
+    player:GossipSendMenu(Config.defaultNpcText1, creature, 0)
 end
 
 local function awardScore()
@@ -951,6 +1086,100 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         end
     end
     player:GossipComplete()
+end
+
+local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, code, menu_id)
+    local spawnedBoss
+    local spawnedCreature = {}
+
+    if player == nil then return end
+
+    local group = player:GetGroup()
+    local accountId = player:GetAccountId()
+
+    if intid == 0 then
+        if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
+        if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
+        player:SendBroadcastMessage("Your current event score is: "..scoreEarned[accountId].." and your all-time event score is: "..scoreTotal[accountId])
+        player:GossipComplete()
+
+    elseif intid <= 100 then
+        partyEvent[accountId] = intid
+
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Zombie Captain (Level 50)", Config.partySelectNpc, 101)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Seawitch (Level 40)", Config.partySelectNpc, 102)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Aligator Pet (Level 50)", Config.partySelectNpc, 104)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Aligator Guard (Level 60)", Config.partySelectNpc, 105)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "Ragnarix Qt (Level 60)", Config.partySelectNpc, 106)
+        player:GossipSendMenu(Config.defaultNpcText2, object, 0)
+
+    else
+        difficulty = partyEvent[accountId]
+        partyEvent[accountId] = intid - 100
+        if bossfightInProgress ~= nil then
+            player:SendBroadcastMessage("There is already a fight in progress.")
+            player:GossipComplete()
+            return
+        end
+
+        if player:IsInGroup() == false then
+            player:SendBroadcastMessage("You need to be in a party.")
+            player:GossipComplete()
+            return
+        end
+
+        if group:IsRaidGroup() == true then
+            player:SendBroadcastMessage("You can not accept that task while in a raid group.")
+            player:GossipComplete()
+            return
+        end
+        if not group:IsLeader(player:GetGUID()) then
+            player:SendBroadcastMessage("You are not the leader of your group.")
+            player:GossipComplete()
+            return
+        end
+        groupPlayers = group:GetMembers()
+        for n, v in pairs(groupPlayers) do
+            if eS_has_value(playersForFireworks, v:GetGUID()) then
+                object:SendUnitSay("Please, just a little break. I need to breathe, "..player:GetName()..". How about watching the fireworks?", 0 )
+                player:GossipComplete()
+                return
+            end
+        end
+        eventInProgress = partyEvent[accountId]
+        local x = player:GetX()
+        local y = player:GetY()
+        local z = player:GetZ()
+        local o = player:GetO()
+
+        --start 5man encounter
+        bossfightInProgress = PARTY_IN_PROGRESS
+        spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
+        spawnedCreature[1]:SetPhaseMask(2)
+        spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
+
+        local maxHealth = Config_addHealthModifierParty[eventInProgress] * spawnedCreature[1]:GetMaxHealth()
+        local health = Config_addHealthModifierParty[eventInProgress] * spawnedCreature[1]:GetHealth()
+        spawnedCreature[1]:SetMaxHealth(maxHealth)
+        spawnedCreature[1]:SetHealth(health)
+
+        encounterStartTime = GetCurrTime()
+
+        for n, v in pairs(groupPlayers) do
+            if v:GetDistance(player) ~= nil then
+                if v:GetDistance(player) < 80 then
+                    v:SetPhaseMask(2)
+                    playersInRaid[n] = v:GetGUID()
+                    spawnedCreature[1]:SetInCombatWith(v)
+                    v:SetInCombatWith(spawnedCreature[1])
+                    spawnedCreature[1]:AddThreat(v, 1)
+                end
+            else
+                v:SendBroadcastMessage("You were too far away to join the fight.")
+            end
+        end
+
+    end
 end
 
 local function eS_summonEventNPC(playerGuid)
@@ -1558,7 +1787,9 @@ end
 
 function addNPC.reset(event, creature)
     local player
-    eS_checkInCombat()
+    if bossfightInProgress == PARTY_IN_PROGRESS then
+        eS_checkInCombat()
+    end
     creature:RemoveEvents()
     if bossfightInProgress == PARTY_IN_PROGRESS then
         if creature:IsDead() == true then
@@ -1626,6 +1857,7 @@ local function initBossEvents()
         end
     end
 end
+
 local function initAddEvents()
     for n = Config_addEntry[1], Config_addEntry[1] + 990, 10 do
         if eS_has_value(Config_addEntry,n) then
@@ -1635,6 +1867,26 @@ local function initAddEvents()
         else
             return
         end
+    end
+end
+
+local function eS_partyNpcYell(eventid, delay, repeats, worldobject)
+    if partyNpcSayCounter == 10 then
+        worldobject:SendUnitYell(Config.PartyNpcYellText, 0)
+        partyNpcSayCounter = 0
+    else
+        worldobject:SendUnitSay(Config.PartyNpcSayText, 0)
+        partyNpcSayCounter = partyNpcSayCounter + 1
+    end
+end
+
+local function eS_CloseLua(eI_CloseLua)
+    if npcObjectGuid ~= nil then
+        local npcObject
+        local map
+        map = GetMapById(Config.MapId)
+        npcObject = map:GetWorldObject(npcObjectGuid):ToCreature()
+        npcObject:DespawnOrUnsummon(0)
     end
 end
 
@@ -1657,4 +1909,13 @@ if Data_SQL ~= nil then
         scoreEarned[account] = Data_SQL:GetUInt32(1)
         scoreTotal[account] = Data_SQL:GetUInt32(2)
     until not Data_SQL:NextRow()
+end
+
+if Config.partySelectNpcActive == 1 then
+    RegisterServerEvent(ELUNA_EVENT_ON_LUA_STATE_CLOSE, eS_CloseLua, 0)
+    RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_HELLO, eS_onPartyOnlyHello)
+    RegisterCreatureGossipEvent(Config.partySelectNpc, GOSSIP_EVENT_ON_SELECT, eS_chromiePartyOnlyGossip)
+    local npcObject = PerformIngameSpawn(1, Config.partySelectNpc, Config.MapId, Config.InstanceId, Config.NpcX, Config.NpcY, Config.NpcZ, Config.NpcO)
+    npcObjectGuid = npcObject:GetGUID()
+    npcObject:RegisterEvent(eS_partyNpcYell, 60000, 0)
 end
