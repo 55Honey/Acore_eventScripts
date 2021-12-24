@@ -1276,11 +1276,11 @@ local function eS_command(event, player, command)
     --prevent non-Admins from using the rest
     if player ~= nil then
         if player:GetGMRank() < Config.GMRankForUpdateDB then
-            return false
+            return
         end
     end
     --nothing here yet
-    return false
+    return
 end
 
 function bossNPC.onEnterCombat(event, creature, target)
