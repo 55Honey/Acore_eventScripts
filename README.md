@@ -16,7 +16,7 @@ Adjust the config flags and IDs in the .lua and .sql in case of conflicts and ru
 It is possible to reward players for participating in events. There is a config flag each to award score for playing 5man and for raid encounters. The amouont of score is configurable too.
 Another config flag allows to store any and all events in the db and visualize them, e.g. with a module for acore_cms.
 -  the acore_cms module assumes that 1112001 is the boss of encounter 1 and adding +10 for each subsequent encounter (1112011 = boss for encounter 2 / 1112021 = boss for encounter 3, etc.)
--  While the boss entires always end with `1`, the summoning NPC ends with `2`, and the add NPCs end with `3`. 4-0 are reserved for future use.
+-  While the boss entries always end with `1`, the summoning NPC ends with `2`, and the add NPCs end with `3`. 4-0 are reserved for future use.
 
 ## Website connection
 To award score to a currency on an acore_cms powered website, the queries in [query-points.sql](https://github.com/55Honey/Acore_eventScripts/blob/main/scripts/query-points.sql) can be used.
