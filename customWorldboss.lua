@@ -709,12 +709,12 @@ local spawnedCreatureGuid = {}
 local scoreEarned = {}
 local scoreTotal = {}
 
-if Config.addEnoughSpell == nil then print("customWorldboss.lua: Missing flag Config.addEnoughSpell.") end
-if Config.customDbName == nil then print("customWorldboss.lua: Missing flag Config.customDbName.") end
-if Config.GMRankForEventStart == nil then print("customWorldboss.lua: Missing flag Config.GMRankForEventStart.") end
-if Config.GMRankForUpdateDB == nil then print("customWorldboss.lua: Missing flag Config.GMRankForUpdateDB.") end
-if Config.printErrorsToConsole == nil then print("customWorldboss.lua: Missing flag Config.printErrorsToConsole.") end
-if Config.addEnrageTimer == nil then print("customWorldboss.lua: Missing flag Config.addEnrageTimer.") end
+if Config.addEnoughSpell == nil then PrintError("customWorldboss.lua: Missing flag Config.addEnoughSpell.") end
+if Config.customDbName == nil then PrintError("customWorldboss.lua: Missing flag Config.customDbName.") end
+if Config.GMRankForEventStart == nil then PrintError("customWorldboss.lua: Missing flag Config.GMRankForEventStart.") end
+if Config.GMRankForUpdateDB == nil then PrintError("customWorldboss.lua: Missing flag Config.GMRankForUpdateDB.") end
+if Config.printErrorsToConsole == nil then PrintError("customWorldboss.lua: Missing flag Config.printErrorsToConsole.") end
+if Config.addEnrageTimer == nil then PrintError("customWorldboss.lua: Missing flag Config.addEnrageTimer.") end
 
 local function eS_has_value (tab, val)
     for index, value in ipairs(tab) do
@@ -1199,15 +1199,13 @@ local function eS_summonEventNPC(playerGuid)
     cancelEventIdStart[eventInProgress] = RegisterCreatureGossipEvent(Config_npcEntry[eventInProgress], GOSSIP_EVENT_ON_SELECT, eS_chromieGossip)
 end
 
-local function eS_command(event, player, command)
+local function eS_command(event, player, command, chatHandler)
     local commandArray = {}
     local eventNPC
 
     --prevent players from using this
-    if player ~= nil then
-        if player:GetGMRank() < Config.GMRankForEventStart then
-            return
-        end
+    if not chatHandler:IsAvailable(Config.GMRankForEventStart) then
+        return
     end
 
     -- split the command variable into several strings which can be compared individually
@@ -1225,14 +1223,14 @@ local function eS_command(event, player, command)
 
     if commandArray[1] == "startevent" then
         if player == nil then
-            print("Can not start an event from the console.")
+            chatHandler:SendSysMessage("Can not start an event from the console.")
             return false
         end
         eventNPC = tonumber(commandArray[2])
         difficulty = tonumber(commandArray[3])
 
         if Config_npcEntry[eventNPC] == nil or Config_bossEntry == nil or Config_addEntry == nil or Config_npcText == nil then
-            player:SendBroadcastMessage("Event "..eventNPC.." is not properly configured. Aborting")
+            chatHandler:SendSysMessage("Event "..eventNPC.." is not properly configured. Aborting")
             return false
         end
 
@@ -1244,28 +1242,28 @@ local function eS_command(event, player, command)
         if eventInProgress == nil then
             eventInProgress = eventNPC
             eS_summonEventNPC(player:GetGUID())
-            player:SendBroadcastMessage("Starting event "..eventInProgress.." with difficulty "..difficulty..".")
+            chatHandler:SendSysMessage("Starting event "..eventInProgress.." with difficulty "..difficulty..".")
             return false
         else
-            player:SendBroadcastMessage("Event "..eventInProgress.." is already active.")
+            chatHandler:SendSysMessage("Event "..eventInProgress.." is already active.")
             return false
         end
     elseif commandArray[1] == "stopevent" then
         if player == nil then
-            print("Must be used from inside the game.")
+            chatHandler:SendSysMessage("Must be used from inside the game.")
             return false
         end
         if eventInProgress == nil then
-            player:SendBroadcastMessage("There is no event in progress.")
+            chatHandler:SendSysMessage("There is no event in progress.")
             return false
         end
         local map = player:GetMap()
         local mapId = map:GetMapId()
         if mapId ~= mapEventStart then
-            player:SendBroadcastMessage("You must be in the same map to stop an event.")
+            chatHandler:SendSysMessage("You must be in the same map to stop an event.")
             return false
         end
-        player:SendBroadcastMessage("Stopping event "..eventInProgress..".")
+        chatHandler:SendSysMessage("Stopping event "..eventInProgress..".")
         ClearCreatureGossipEvents(Config_npcEntry[eventInProgress])
         local spawnedNPC = map:GetWorldObject(spawnedNPCGuid):ToCreature()
         spawnedNPC:DespawnOrUnsummon(0)
@@ -1274,11 +1272,10 @@ local function eS_command(event, player, command)
     end
 
     --prevent non-Admins from using the rest
-    if player ~= nil then
-        if player:GetGMRank() < Config.GMRankForUpdateDB then
-            return
-        end
+    if not chatHandler:IsAvailable(Config.GMRankForUpdateDB) then
+        return
     end
+
     --nothing here yet
     return
 end
