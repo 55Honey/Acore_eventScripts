@@ -48,8 +48,8 @@ local xCoord = -13207.77
 local yCoord = 274.35
 local zCoord = 38.23
 local orientation = 4.22
-local gurubashiMessage = ' minutes from now, all players which reside in an open world map, will be teleported for an event. If you wish to opt out, please type ".fun no". There will be further announcements every minute.'
-local eventMessage = ' all players in open world maps will be teleported for an event. If you wish to opt out, please type ".fun no".'
+local gurubashiMessage = ' minutes from now all players which reside in an open world map AND opt in will be teleported for an event. If you wish to participate type ".fun on". There will be further announcements every minute.'
+local eventMessage = ' all players in open world maps who sign up, will be teleported for an event. If you wish to opt in, please type ".fun on".'
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -67,7 +67,7 @@ local storedMap = {}
 local storedX = {}
 local storedY = {}
 local storedZ = {}
-local optOut = {}
+local optIn = {}
 
 local function randomised(init)
     return math.random (-20, 20) + init
@@ -87,7 +87,7 @@ local function ft_wipePos(event, player)
     storedX[player:GetGUIDLow()] = nil
     storedY[player:GetGUIDLow()] = nil
     storedZ[player:GetGUIDLow()] = nil
-    optOut[player:GetGUIDLow()] = nil
+    optIn[player:GetGUIDLow()] = nil
 end
 
 local function splitString(inputstr, seperator)
@@ -116,7 +116,7 @@ local function ft_teleport(playerArray)
 
     for n = 1, #playerArray do
 
-        if optOut[playerArray[n]:GetGUIDLow()] ~= nil then
+        if optIn[playerArray[n]:GetGUIDLow()] ~= nil then
             if ft_hasValue(Config.AllowedMaps,playerArray[n]:GetMapId()) then
 
                 if not playerArray[n]:IsAlive() then
@@ -178,7 +178,7 @@ local function ft_funEventAnnouncer(eventid, delay, repeats)
         print('Executing Gurubashi Teleport. Duration: '..duration..'ms')
 
         CreateLuaEvent(ft_teleportReminder,15000,12)
-        optOut = {}
+        optIn = {}
     end
 end
 
@@ -194,9 +194,19 @@ local function ft_command(event, player, command, chatHandler)
             chatHandler:SendSysMessage("Can not use 'no' from the console. Requires player object.")
             return false
         end
-        optOut[player:GetGUIDLow()] = 1
+        optIn[player:GetGUIDLow()] = nil
         chatHandler:SendSysMessage("You've chosen to not participate in the event this time.")
-        return
+        return false
+    end
+
+    if commandArray[2] == 'on' then
+        if player == nil then
+            chatHandler:SendSysMessage("Can not use 'on' from the console. Requires player object.")
+            return false
+        end
+        optIn[player:GetGUIDLow()] = 1
+        chatHandler:SendSysMessage("You've signed up for the event!")
+        return false
     end
 
     if commandArray[2] == 'return' then
