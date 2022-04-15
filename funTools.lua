@@ -48,8 +48,8 @@ local xCoord = -13207.77
 local yCoord = 274.35
 local zCoord = 38.23
 local orientation = 4.22
-local gurubashiMessage = ' minutes from now all players which reside in an open world map AND opt in will be teleported for an event. If you wish to participate type ".fun on". There will be further announcements every minute.'
-local eventMessage = ' all players in open world maps who sign up, will be teleported for an event. If you wish to opt in, please type ".fun on".'
+local gurubashiMessage = " minutes from now all players which reside in an open world map AND opt in will be teleported for an event. If you wish to participate type '.fun on'. There will be further announcements every minute."
+local eventMessage = " all players in open world maps who sign up, will be teleported for an event. If you wish to opt in, please type '.fun on'."
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -61,7 +61,7 @@ local TEAM_ALLIANCE = 0
 local TEAM_HORDE = 1
 local TEAM_NEUTRAL = 2
 
-local message = 'Party time! Greetings from Chromie and her helpers!'
+local message = "Party time! Greetings from Chromie and her helpers!"
 
 local storedMap = {}
 local storedX = {}
@@ -109,7 +109,7 @@ local function ft_storePos(player)
 end
 
 local function ft_teleportReminder(eventId, delay, repeats)
-    SendWorldMessage('Participants of the event can become revived and return to their original position by typing ".fun return".')
+    SendWorldMessage("Participants of the event can become revived and return to their original position by typing '.fun return'.")
 end
 
 local function ft_teleport(playerArray)
@@ -187,6 +187,10 @@ local function ft_command(event, player, command, chatHandler)
     local commandArray = splitString(command)
     if commandArray[1] ~= 'fun' then
         return
+    end
+
+    if commandArray[2] == nil then
+        chatHandler:SendSysMessage("If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no'.")
     end
 
     if commandArray[2] == 'no' then
