@@ -37,8 +37,8 @@
 
 local Config = {}
 
-Config.Spell1 = 71142       -- Rejuvenation with 6750 to 11250 ticks for 15s
-Config.Spell2 = 61734       -- Noblegarden Bunny
+Config.Spell1 = 71142       -- Rejuvenation with 6750 to 11250 ticks for 15s. Applied before teleport. May be nil.
+Config.Spell2 = 61734       -- Noblegarden Bunny. Applied after teleport. May be nil.
 Config.AllowedMaps = {0,1,530,571}
 -- Allowed maps are: Eastern Kingdoms, Kalimdor, Outland (Including Belf and Spacegoat starting zones), Northrend
 
@@ -121,13 +121,17 @@ local function ft_teleport(playerArray)
             end
             ft_storePos(playerArray[n])
             playerArray[n]:SetHealth(playerArray[n]:GetMaxHealth())
-            playerArray[n]:AddAura(Config.Spell1, playerArray[n])
+            if Config.Spell1 ~= nil then
+                playerArray[n]:AddAura(Config.Spell1, playerArray[n])
+            end
 
             if playerArray[n]:IsInGroup() then
                 playerArray[n]:RemoveFromGroup()
             end
 
-            playerArray[n]:CastSpell(playerArray[n], Config.Spell2, true)
+            if Config.Spell2 ~= nil then
+                playerArray[n]:CastSpell(playerArray[n], Config.Spell2, true)
+            end
 
             playerArray[n]:Teleport(mapId, randomised(xCoord), randomised(yCoord), zCoord, orientation)
             playerArray[n]:RegisterEvent(ft_wipePos, 300000)
