@@ -46,9 +46,9 @@ Adjust the config flags and IDs in the .lua. You can change spells, allowed maps
 
 ## GM Usage:
 .fun gurubashi [$repeats]
-    will start an announcement about an incoming fun event happening every minute. Repeats defaults to 15.
+will start an announcement about an incoming fun event happening every minute. Repeats defaults to 15.
 
-    The last Repetition will result in all players who are in open world and opt-in by typing '.fun on' to do the following:
+The last Repetition will result in all players who are in open world and opt-in by typing '.fun on' to do the following:
     - leave their parties/raids
     - get resurrected and set to full health
     - receive a strong hot
