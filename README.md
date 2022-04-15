@@ -1,8 +1,9 @@
 ## EventScripts
-Lua script for Azerothcore with ElunaLUA to
+Lua scripts for Azerothcore with ElunaLUA to
 - spawn (custom) NPCs and grant them scripted combat abilities (customWorldboss.lua)
 - a fun event to teleport players who opt-in to Gurubashi (funTools.lua)
 
+### Proudly hosted on [ChromieCraft](https://www.chromiecraft.com/)
 
 #### Find me on patreon: https://www.patreon.com/Honeys
 
