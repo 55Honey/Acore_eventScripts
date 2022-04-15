@@ -46,8 +46,8 @@ Be in a party or raid respectively. As the party/raid leader: Talk to the NPC. G
 Adjust the config flags and IDs in the .lua. You can change spells, allowed maps and locations.
 
 ## GM Usage:
-.fun gurubashi [$repeats]
-will start an announcement about an incoming fun event happening every minute. Repeats defaults to 15.
+`.fun gurubashi [$repeats]`
+will start an announcement about an incoming fun event happening every minute. `$repeats` is optional and defaults to 15.
 
 The last Repetition will result in all players who are in open world and opt-in by typing '.fun on' to do the following:
 - leave their parties/raids
