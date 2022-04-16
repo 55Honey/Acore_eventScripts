@@ -47,6 +47,7 @@ Config.Phase = 4
 ------------------------------------------
 
 -- constants
+local PLAYER_EVENT_ON_LOGOUT = 4            -- (event, player)
 local PLAYER_EVENT_ON_COMMAND = 42          -- (event, player, command) - player is nil if command used from console. Can return false
 local GOSSIP_EVENT_ON_HELLO = 1             -- (event, player, object) - Object is the Creature/GameObject/Item. Can return false to do default action. For item gossip can return false to stop spell casting.
 local GOSSIP_EVENT_ON_SELECT = 2            -- (event, player, object, sender, intid, code, menu_id)
@@ -96,7 +97,7 @@ levelSpawn[6] = { 6,9,8,4,8,7,4,4,5,10,3,7,6,11,6 }
 levelSpawn[7] = { 7,11,8,4,8,7,8,4,9,10,7,7,6,11,10 }
 levelSpawn[8] = { 7,11,8,8,12,7,8,8,9,10,11,7,10,11,10 }
 levelSpawn[9] = { 7,11,8,8,12,7,8,8,9,10,11,7,10,11,10 }
-levelSpawn[0] = { 10,11,8,11,12,10,8,11,9,10,11,8,10,11,12 }
+levelSpawn[10] = { 10,11,8,11,12,10,8,11,9,10,11,8,10,11,12 }
 
 local function eS_has_value (tab, val)
     for index, value in ipairs(tab) do
@@ -167,6 +168,12 @@ local function es_stopEvent()
     --todo: more stuff to add probably
 end
 
+local function es_onLogout(event, player)
+    if player:GetGUID() == activePlayerGuid then
+        es_stopEvent()
+    end
+end
+
 local function eS_healNPCEvent(event, delay, pCall, creature)
     local creatureIndex
     if creature:IsFullHealth() == true then
@@ -184,6 +191,15 @@ local function eS_healNPCEvent(event, delay, pCall, creature)
     end   
 end
 
+local function eS_getSpawnTimer()
+   return 3000 + ( 300 * currentLevel )
+end
+
+local function eS_getDurationTimer()
+    return 15 * (3000 + ( 300 * currentLevel )) + 15000
+end
+
+
 local function eS_spawnInjured()
     local spawnedCreature
     local player = GetPlayerByGUID(activePlayerGuid)
@@ -199,19 +215,23 @@ end
 
 local function eS_startEvent()
     difficulty = 0
-    if currentLevel > 9 then
+    if currentLevel > 10 then
         repeat
             currentLevel = currentLevel - 10
             difficulty = difficulty + 1
         until currentLevel < 10
     end
     nextWounded = 1
-    --todo: schedule events which spawn things to heal based on the timer
+
+    -- one level has 15 adds max
+    CreateLuaEvent(eS_spawnInjured, eS_getSpawnTimer(), 15)
+    player:RegisterEvent(es_stopEvent, eS_getDurationTimer(), 1)
 end
 
 local function eS_onSpawn(event, creature)
     creature:RegisterEvent(eS_healNPCEvent, 100, 0)
-    --todo: register event to damage NPCs 5-8 lightly and 9-12 heavily
+    -- todo: set ho according to beatenLevel[playerLowGuid]
+    -- todo: register event to damage NPCs 5-8 lightly and 9-12 heavily
 end
 
 local function eS_onHello(event, player, creature)
@@ -234,16 +254,14 @@ end
 
 local function eS_healerGossip(event, player, object, sender, intid, code, menu_id)
     if player == nil then return end
-    local playerLowGuid = GetGUIDLow(activePlayerGuid)
-    local missionString
+    local playerLowGuid = player:GetGUIDLow()
+    local missionString = "mission"
     if intid == 0 then
         if playerClass == 2 or playerClass == 5 or playerClass == 7 or playerClass == 11 then
             if beatenLevel[playerLowGuid] == nil then
                 player:SendBroadcastMessage("You haven't beaten a level in this competition yet.")
             else
-                if beatenLevel[playerLowGuid] == 1 then
-                    missionString = "mission"
-                else
+                if beatenLevel[playerLowGuid] ~= 1 then
                     missionString = "missions"
                 end
                 player:SendBroadcastMessage(player:GetName()..", you've saved the victims of the past in "..beatenLevel[playerLowGuid].." "..missionString.." so far. It took you "..eS_formatTime(beatenLevelTime).." to finish the last mission.")
@@ -255,21 +273,28 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
 
     elseif intid == 1 then
         if eS_getTimeSince(lastRecordPrinted) > 10000 then
-            object:ToCreature():SendUnitSay("The dev forgot to print the records here.") --.todo. print records in /s
+            object:ToCreature():SendUnitSay("The dev forgot to print the records here.") --:todo print records in /s
             lastRecordPrinted = GetCurrTime()
         else
             player:SendBroadcastMessage("You've just been told.")
         end
 
-    elseif intid >= 2  and activeLevel ~= nil then
+    elseif intid >= 2 then
+        if activeLevel ~= nil then
+            object:ToCreature():SendUnitSay("Another hero is still trying to rescue the victims of the past since "..eS_getEncounterDuration(), 0 )
+            player:GossipComplete()
+        end
+
         if beatenLevel[playerLowGuid] == nil then
             beatenLevel[playerLowGuid] = 0
         end
+
         if intid == 3 then
             activeLevel = beatenLevel[playerLowGuid] + 1
         else
             activeLevel = beatenLevel[playerLowGuid]
         end
+
         encounterStartTime = GetCurrTime()
         player:SetPhaseMask(Config.Phase)
         activePlayerGuid = player:GetGUID()
@@ -278,10 +303,8 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
         z = object:ToCreature():GetZ()
         o = object:ToCreature():GetO()
         eS_startEvent()
-    else
-        object:ToCreature():SendUnitSay("Another hero is still trying to rescue the victims of the past since "..eS_getEncounterDuration(), 0 )
+        player:GossipComplete()
     end
-    player:GossipComplete()
 end
 
 --on ReloadEluna / Startup
@@ -291,11 +314,11 @@ CharDBQuery('CREATE TABLE IF NOT EXISTS `'..Config.customDbName..'`.`healer_reco
 
 local Data_SQL = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`healer_levels`;')
 if Data_SQL ~= nil then
-    local playerGuid
+    local playerGuidLow
     repeat
-        playerGuid = Data_SQL:GetUInt32(0)
-        beatenLevel[playerGuid] = Data_SQL:GetUInt32(1)
-        beatenLevelTime[playerGuid] = Data_SQL:GetUInt32(3)
+        playerGuidLow = Data_SQL:GetUInt32(0)
+        beatenLevel[playerGuidLow] = Data_SQL:GetUInt32(1)
+        beatenLevelTime[playerGuidLow] = Data_SQL:GetUInt32(3)
     until not Data_SQL:NextRow()
 end
 
@@ -320,5 +343,9 @@ for n = Config.woundedEntry,Config.woundedEntry + 11 do
     RegisterCreatureEvent(n, CREATURE_EVENT_ON_SPAWN, eS_onSpawn) -- OnSpawn
 end
 
---todo: Find a non-spammy way to announce records
+-- todo: register logout to eS_stopEvent
+RegisterPlayerEvent(PLAYER_EVENT_ON_LOGOUT, eS_onLogout)
+
+
+--todo: Find a non-spammy way to announce records (probably /say from Lushen in BB)
 --todo: Grant a reward. e.g. Mana potions
