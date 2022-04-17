@@ -14,7 +14,7 @@ The ElunaLua module itself usually doesn't require much setup/config. Just speci
 If the directory was not changed in the ElunaLua config, add the .lua script to your `../lua_scripts/` directory as a subfolder of the worldserver.
 
 
-# customWorldboss.lua
+# lua-custom-worldboss
 ## Admin Usage:
 Adjust the config flags and IDs in the .lua and .sql in case of conflicts and run the associated SQL to add the required NPCs. You can add more encounters by just adding more config flags.
 
@@ -41,7 +41,7 @@ Be in a party or raid respectively. As the party/raid leader: Talk to the NPC. G
 
 ![image](https://user-images.githubusercontent.com/71938210/121604233-6f61c080-ca4a-11eb-8c71-70774a9881ad.png)
 
-# funTools.lua
+# lua-fun-tools
 ## Admin Usage:
 Adjust the config flags and IDs in the .lua. You can change spells, allowed maps and locations.
 
