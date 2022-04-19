@@ -208,11 +208,19 @@ local function eS_announceNewTime()
 end
 
 local function eS_SaveToDB(playerLowGuid)
-   -- todo
+    -- todo
 end
 
 local function eS_SaveRecordsToDB()
-    --  todo
+    -- todo
+end
+
+local function eS_lightDamage(eventId, delay, repeats, creature)
+    -- todo
+end
+
+local function eS_heavyDamage(eventId, delay, repeats, creature)
+    -- todo
 end
 
 local function eS_saveAndCheckRecords(phaseId,player)
@@ -322,7 +330,7 @@ local function eS_spawnInjured(eventid, delay, repeats, player)
     local npcId = levelSpawn[difficulty[phaseId]][nextWounded[phaseId]]
     local npcEntry = Config.woundedEntry + npcId
 
-    spawnedCreature = player:SpawnCreature(npcEntry, x + randomX, y + randomY, z+2, o)
+    spawnedCreature = player:SpawnCreature(npcEntry, x + randomX, y + randomY, z + 0.2, o)
     spawnedCreatureGuid[phaseId][nextWounded] = spawnedCreature:GetGUID()
 
     spawnedCreature:SetLevel(difficulty[phaseId])
@@ -417,7 +425,7 @@ local function eS_healerGossip(event, player, object, sender, intid, code, menu_
 
     elseif intid == 1 then
         if eS_getTimeSince(lastRecordPrinted) > 10000 then
-            object:ToCreature():SendUnitSay("The dev forgot to print the records here.") --:todo print records in /s
+            object:ToCreature():SendUnitSay("The dev forgot to print the records here.",0) --:todo print records in /s
             lastRecordPrinted = GetCurrTime()
         else
             player:SendBroadcastMessage("You've just been told.")
