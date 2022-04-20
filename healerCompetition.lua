@@ -263,7 +263,7 @@ local function eS_wipeEvent(phaseId,player)
 
     local success = 1
 
-    for n = 1,16 do
+    for n = 1,15 do
         RemoveEventById(cancelSpawnedCreatureEvents[phaseId][n])
         cancelSpawnedCreatureEvents[phaseId][n] = nil
         creature = map:GetWorldObject(spawnedCreatureGuid[phaseId][n])
