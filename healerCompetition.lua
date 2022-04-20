@@ -304,7 +304,7 @@ local function eS_getPhaseIdByPlayer(player)
     end
 
     for n = 1,16 do
-        if player:GetGUID() == activePlayerGuid[n] then
+        if tonumber(tostring(player:GetGUID())) == activePlayerGuid[n] then
             return n
         end
     end
@@ -331,7 +331,7 @@ local function eS_spawnInjured(eventid, delay, repeats, player)
     local npcEntry = Config.woundedEntry + npcId
 
     spawnedCreature = player:SpawnCreature(npcEntry, x + randomX, y + randomY, z + 0.2, o)
-    spawnedCreatureGuid[phaseId][nextWounded] = spawnedCreature:GetGUID()
+    spawnedCreatureGuid[phaseId][nextWounded] = tonumber(tostring(spawnedCreature:GetGUID()))
 
     spawnedCreature:SetLevel(difficulty[phaseId])
     local maxHealth = eS_getMaxHealth(activeLevel[phaseId])
@@ -349,10 +349,10 @@ local function eS_spawnInjured(eventid, delay, repeats, player)
 
     if npcId > 8 then
         -- register event to damage heavily
-        cancelSpawnedCreatureEvents[phaseId] = spawnedCreature:RegisterEvent(eS_heavyDamage, delay, 0)
+        cancelSpawnedCreatureEvents[phaseId][nextWounded] = spawnedCreature:RegisterEvent(eS_heavyDamage, delay, 0)
     elseif npcId > 4 then
         -- register event to damage lightly
-        cancelSpawnedCreatureEvents[phaseId] = spawnedCreature:RegisterEvent(eS_lightDamage, delay, 0)
+        cancelSpawnedCreatureEvents[phaseId][nextWounded] = spawnedCreature:RegisterEvent(eS_lightDamage, delay, 0)
     end
 
     spawnedCreature:RegisterEvent(eS_checkNPCEvent, 100, 0)
@@ -362,7 +362,7 @@ end
 
 local function eS_startEvent(phaseId, player, playerClass)
     encounterStartTime[phaseId] = GetCurrTime()
-    activePlayerGuid[phaseId] = player:GetGUID()
+    activePlayerGuid[phaseId] = tonumber(tostring(player:GetGUID()))
     activePlayerClass[phaseId] = playerClass
     player:SetPhaseMask(Config.encounterPhases[phaseId])
 
@@ -385,7 +385,7 @@ end
 local function eS_onHello(event, player, creature)
     if player == nil then return end
     local playerClass = player:GetClass()
-    local playerLowGuid = player:GetGUIDLow()
+    local playerLowGuid = tonumber(tostring(player:GetGUIDLow()))
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.npcEntry, 0)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "Who's the best healer?", Config.npcEntry, 1)
     if eS_getFreePhaseId() > 0 then
@@ -404,7 +404,7 @@ end
 
 local function eS_healerGossip(event, player, object, sender, intid, code, menu_id)
     if player == nil then return end
-    local playerLowGuid = player:GetGUIDLow()
+    local playerLowGuid = tonumber(tostring(player:GetGUIDLow()))
     local playerClass = player:GetClass()
 
     if intid == 0 then
