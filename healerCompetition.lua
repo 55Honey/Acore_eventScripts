@@ -253,28 +253,28 @@ local function eS_saveAndCheckRecords(phaseId,player)
 end
 
 local function eS_wipeEvent(phaseId,player)
-    local n
-    local map
-    local creature
-    map = GetMapById(Config.mapId)
+    local map = GetMapById(Config.mapId)
 
     RemoveEventById(cancelSpawns[phaseId])
     RemoveEventById(cancelEndEvent[phaseId])
 
     local success = 1
 
-    for n = 1,15 do
-        RemoveEventById(cancelSpawnedCreatureEvents[phaseId][n])
-        cancelSpawnedCreatureEvents[phaseId][n] = nil
-        creature = map:GetWorldObject(spawnedCreatureGuid[phaseId][n])
-
-        if not creature:IsFullHealth() then
-            success = 0
+    for n = 1, 15 do
+        if cancelSpawnedCreatureEvents[phaseId][n] then
+            RemoveEventById(cancelSpawnedCreatureEvents[phaseId][n])
         end
+        cancelSpawnedCreatureEvents[phaseId][n] = nil
+        if(spawnedCreatureGuid[phaseId][n]) then
+            local creature = map:GetWorldObject(spawnedCreatureGuid[phaseId][n])
+            if(creature) then
+                if not creature:IsFullHealth() then
+                    success = 0
+                end
 
-        spawnedCreatureGuid[phaseId][n] = nil
-        if creature ~= nil then
-            creature:DespawnOrUnsummon(0)
+                spawnedCreatureGuid[phaseId][n] = nil
+                creature:DespawnOrUnsummon(0)
+            end
         end
     end
 
@@ -316,9 +316,9 @@ local function eS_stopEvent(eventid, delay, repeats, player)
     eS_wipeEvent(phaseId,player)
 end
 
-local function eS_checkNPCEvent(eventid, delay, repeats, creature)
-    if creature:IsFullHealth() then
-        creature:RemoveEvents()
+local function eS_checkNPCEvent(eventid, delay, repeats, worldobject)
+    if worldobject:ToCreature():IsFullHealth() then
+        worldobject:RemoveEvents()
     end
 end
 
@@ -331,7 +331,7 @@ local function eS_spawnInjured(eventid, delay, repeats, player)
     local npcEntry = Config.woundedEntry + npcId
 
     spawnedCreature = player:SpawnCreature(npcEntry, x + randomX, y + randomY, z + 0.2, o)
-    spawnedCreatureGuid[phaseId][nextWounded] = tonumber(tostring(spawnedCreature:GetGUID()))
+    spawnedCreatureGuid[phaseId][nextWounded[phaseId]] = spawnedCreature:GetGUID()
 
     spawnedCreature:SetLevel(difficulty[phaseId])
     local maxHealth = eS_getMaxHealth(activeLevel[phaseId])
@@ -349,10 +349,10 @@ local function eS_spawnInjured(eventid, delay, repeats, player)
 
     if npcId > 8 then
         -- register event to damage heavily
-        cancelSpawnedCreatureEvents[phaseId][nextWounded] = spawnedCreature:RegisterEvent(eS_heavyDamage, delay, 0)
+        cancelSpawnedCreatureEvents[phaseId][nextWounded[phaseId]] = spawnedCreature:RegisterEvent(eS_heavyDamage, delay, 0)
     elseif npcId > 4 then
         -- register event to damage lightly
-        cancelSpawnedCreatureEvents[phaseId][nextWounded] = spawnedCreature:RegisterEvent(eS_lightDamage, delay, 0)
+        cancelSpawnedCreatureEvents[phaseId][nextWounded[phaseId]] = spawnedCreature:RegisterEvent(eS_lightDamage, delay, 0)
     end
 
     spawnedCreature:RegisterEvent(eS_checkNPCEvent, 100, 0)
