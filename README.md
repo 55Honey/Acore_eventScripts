@@ -2,6 +2,7 @@
 Lua scripts for Azerothcore with ElunaLUA to
 - spawn (custom) NPCs and grant them scripted combat abilities (customWorldboss.lua)
 - a fun event to teleport players who opt-in to Gurubashi (funTools.lua)
+- to allow healing classes participation in a healing competition (healerCompetition.lua)
 
 ### Proudly hosted on [ChromieCraft](https://www.chromiecraft.com/)
 
@@ -60,3 +61,13 @@ The last Repetition will result in all players who are in open world and opt-in 
 `.fun on` to opt-in for the event.
 `.fun no` to opt-out of the event (default).
 `.fun return` they are teleported to their saved position and their saved position is deleted.
+
+# healerCompetition.lua
+## Admin Usage:
+Adjust the config flags and IDs in the .lua and .sql in case of conflicts and run the associated SQL to add the required NPCs.
+
+## GM Usage:
+Nothing to do, watch them trying if you want to.
+
+## Player Usage:
+Talk to the NPC to start the challenges. (Default: Nurse Lushen in Booty Bay)
