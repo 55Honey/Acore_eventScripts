@@ -265,7 +265,15 @@ local function eS_wipeEvent(phaseId,player)
             RemoveEventById(cancelSpawnedCreatureEvents[phaseId][n])
         end
         cancelSpawnedCreatureEvents[phaseId][n] = nil
-        if(spawnedCreatureGuid[phaseId][n]) then
+        print('-----------------------------------------------------')
+        print('- Checking creature -')
+        print('n: '..n)
+        print('phaseId: '..phaseId)
+        print('spawnedCreatureGuid[phaseId][n]:')
+        print(spawnedCreatureGuid[phaseId][n])
+        print('-----------------------------------------------------')
+
+        if (spawnedCreatureGuid[phaseId][n]) then
             local creature = map:GetWorldObject(spawnedCreatureGuid[phaseId][n])
             if(creature) then
                 print('271')
@@ -333,7 +341,13 @@ local function eS_spawnInjured(eventid, delay, repeats, player)
 
     spawnedCreature = player:SpawnCreature(npcEntry, x + randomX, y + randomY, z + 0.2, o)
     spawnedCreatureGuid[phaseId][nextWounded[phaseId]] = spawnedCreature:GetGUID()
-
+    print('-----------------------------------------------------')
+    print('- Spawning -')
+    print('phaseId: '..phaseId)
+    print('nextWounded[phaseId]: '..nextWounded[phaseId])
+    print('spawnedCreatureGuid[phaseId][nextWounded[phaseId]]:')
+    print(spawnedCreatureGuid[phaseId][nextWounded[phaseId]])
+    print('-----------------------------------------------------')
     spawnedCreature:SetLevel(difficulty[phaseId])
     local maxHealth = eS_getMaxHealth(activeLevel[phaseId])
     spawnedCreature:SetMaxHealth(maxHealth)
