@@ -268,6 +268,7 @@ local function eS_wipeEvent(phaseId,player)
         if(spawnedCreatureGuid[phaseId][n]) then
             local creature = map:GetWorldObject(spawnedCreatureGuid[phaseId][n])
             if(creature) then
+                print('271')
                 if not creature:IsFullHealth() then
                     success = 0
                 end
@@ -304,7 +305,7 @@ local function eS_getPhaseIdByPlayer(player)
     end
 
     for n = 1,16 do
-        if tonumber(tostring(player:GetGUID())) == activePlayerGuid[n] then
+        if player:GetGUID() == activePlayerGuid[n] then
             return n
         end
     end
@@ -362,7 +363,7 @@ end
 
 local function eS_startEvent(phaseId, player, playerClass)
     encounterStartTime[phaseId] = GetCurrTime()
-    activePlayerGuid[phaseId] = tonumber(tostring(player:GetGUID()))
+    activePlayerGuid[phaseId] = player:GetGUID()
     activePlayerClass[phaseId] = playerClass
     player:SetPhaseMask(Config.encounterPhases[phaseId])
 
@@ -385,7 +386,7 @@ end
 local function eS_onHello(event, player, creature)
     if player == nil then return end
     local playerClass = player:GetClass()
-    local playerLowGuid = tonumber(tostring(player:GetGUIDLow()))
+    local playerLowGuid = player:GetGUIDLow()
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.npcEntry, 0)
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "Who's the best healer?", Config.npcEntry, 1)
     if eS_getFreePhaseId() > 0 then
@@ -404,7 +405,7 @@ end
 
 local function eS_healerGossip(event, player, object, sender, intid, code, menu_id)
     if player == nil then return end
-    local playerLowGuid = tonumber(tostring(player:GetGUIDLow()))
+    local playerLowGuid = player:GetGUIDLow()
     local playerClass = player:GetClass()
 
     if intid == 0 then
