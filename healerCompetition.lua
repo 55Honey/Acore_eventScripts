@@ -42,7 +42,7 @@ Config.npcText = 92111
 -- Phase to send players to while they're doing the event. Phases 1+2 are left out by default
 Config.encounterPhases = {4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072 }
 -- Map where the events happen(must match the spawn of the event NPC)
-Config.mapId = 0
+Config.mapId = 1 -- 1=Kalimdor todo: remove the hardcode and read the mapid from the NPCs map 1114100
 -- Modificator for health increase of injured NPCs per level
 Config.healthMod = 100
 -- Base health for injured NPCs
