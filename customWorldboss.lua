@@ -18,7 +18,7 @@
 --               -  the acore_cms module assumes that 1112001 is the boss of encounter 1 and adding +10 for each subsequent encounter
 --                  (1112011 = boss for encounter 2 / 1112021 = boss for encounter 3, etc.)
 ------------------------------------------------------------------------------------------------
--- GM GUIDE:     -  use .startevent $event $difficulty to start and spawn 
+-- GM GUIDE:     -  use .startevent $event $difficulty to start and spawn
 --               -  maybe offer teleports
 --               -  use .stopevent to end the event and despawn the NPC
 ------------------------------------------------------------------------------------------------
@@ -53,6 +53,7 @@ local Config_bossSpellTimer5 = {}       -- This timer applies to Config_bossSpel
 local Config_bossSpellTimer7 = {}       -- This timer applies to Config_bossSpell7+8 (in ms)
 -- local Config_bossSpellTimer8 = {}    -- Not used. Timer7 covers BossSpells 7+8
 local Config_bossSpellEnrageTimer = {}  -- Time in ms until Config_bossSpellEnrage is cast
+local Config_minPhaseForTimer7 = {}     -- From this phase on the boss will use Timer 7 to cast Spell 7+8
 
 local Config_bossSpellModifier1bp0 = {} -- Custom base value of the spell 1s effect #1. Default if left out.
 local Config_bossSpellModifier1bp1 = {} -- Custom base value of the spell 1s effect #2. Default if left out.
@@ -548,18 +549,18 @@ Config_addEntry[6] = 1112053            --db entry of the add creature
 Config_npcText[6] = 91116               --gossip in npc_text to be told by the summoning NPC
 
 -- list of spells:
-Config_bossSpell1[6] = nil              --directly applied to the tank--
-Config_bossSpell2[6] = 56909            --randomly applied to a player in 35m range-- Cleave, up to 10 targets
-Config_bossSpell2MaxRange[6] = 5        --max range im m/y to check for targets for boss spell 2 (default 35)
-Config_bossSpell3[6] = 19717            --on the 2nd nearest player within 30m--
+Config_bossSpell1[6] = 5106             --directly applied to the tank-- 15second stun
+Config_bossSpell2[6] = 25034            --randomly applied to a player in 35m range-- Forked Lightning
+Config_bossSpell2MaxRange[6] = 30       --max range im m/y to check for targets for boss spell 2 (default 35)
+Config_bossSpell3[6] = 25021            --on the 2nd nearest player within 30m-- Chain Lightning
 Config_bossSpell4[6] = 11446            --on a random player within 40m-- 5min domination
 Config_bossSpell4Counter[6] = 1         --amount of casts to perform for spell 4. defaults to 1
 Config_bossSpell4MaxRange[6] = 40       --max range im m to check for targets for boss spell 4 (default 40)
-Config_bossSpell5[6] = 22643            --directly applied to the tank with adds alive --volley
-Config_bossSpell6[6] = 22643            --directly applied to the tank when adds are dead --volley
-Config_bossSpell7[6] = 16805            --directly applied to the tank
-Config_bossSpell8[6] = 16805            --directly applied to the tank x seconds after spell 7
-Config_bossSpell8delay[6] = 6000        --delay between spell 7 and 8. Must be smaller than timer7 / 2
+Config_bossSpell5[6] = nil              --directly applied to the tank with adds alive --volley
+Config_bossSpell6[6] = nil              --directly applied to the tank when adds are dead --volley
+Config_bossSpell7[6] = 37106            --directly applied to the tank - Charged Arcane Explosion
+Config_bossSpell8[6] = 43648            --directly applied to the tank x seconds after spell 7 - Electrical Storm
+Config_bossSpell8delay[6] = 8000        --delay between spell 7 and 8. Must be smaller than timer7 / 2
 Config_bossSpellSelf[6] = 67973         --cast on boss while adds are still alive (Rejuvenation)
 Config_bossSpellEnrage[6] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
@@ -567,20 +568,21 @@ Config_bossSpellTimer1[6] = 10000       -- This timer applies to Config_bossSpel
 Config_bossSpellTimer2[6] = 23000       -- This timer applies to Config_bossSpell2
 Config_bossSpellTimer3[6] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
 Config_bossSpellTimer5[6] = 19000       -- This timer applies to Config_bossSpell5+6
-Config_bossSpellTimer7[6] = 18000       -- This timer applies to Config_bossSpell7+8 (in ms)
+Config_bossSpellTimer7[6] = 22000       -- This timer applies to Config_bossSpell7+8 (in ms)
 Config_bossSpellEnrageTimer[6] = 300000
+Config_minPhaseForTimer7[6] = 2         -- From this phase on the boss will use Timer 7 to cast Spell 7+8. Will ignore it before.
 
 Config_bossSpellModifier1bp0[6] = 35       -- base damage of the Cleave
 Config_bossSpellModifier1bp1[6] = nil      -- not required if nil
-Config_bossSpellModifier2bp0[6] = nil      -- not required if nil
+Config_bossSpellModifier2bp0[6] = 800      -- not required if nil
 Config_bossSpellModifier2bp1[6] = nil      -- not required if nil
 Config_bossSpellModifier3bp0[6] = 800      -- base damage of the fire rain
 Config_bossSpellModifier3bp1[6] = nil      -- not required if nil
 Config_bossSpellModifier4bp0[6] = nil      -- not required if nil
 Config_bossSpellModifier4bp1[6] = nil      -- not required if nil
-Config_bossSpellModifier5bp0[6] = 250      -- base damage for the Frostbolt Volley in P1
+Config_bossSpellModifier5bp0[6] = nil      -- not required if nil
 Config_bossSpellModifier5bp1[6] = nil      -- not required if nil
-Config_bossSpellModifier6bp0[6] = 400      -- base damage for the Frostbolt Volley in P2
+Config_bossSpellModifier6bp0[6] = 500      -- base damage for the Frostbolt Volley in P2
 Config_bossSpellModifier6bp1[6] = nil      -- not required if nil
 Config_bossSpellModifier7bp0[6] = nil      -- not required if nil
 Config_bossSpellModifier7bp1[6] = nil      -- not required if nil
@@ -590,7 +592,7 @@ Config_bossSpellModifier8bp1[6] = nil      -- not required if nil
 Config_addHealthModifierParty[6] = 0.5     -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[6] = 2                   -- how many adds will spawn
 
-Config_addSpell1[6] = 35181             -- min range 30m, 1-3rd farthest target within 30m -- Meteor
+Config_addSpell1[6] = 28884             -- min range 30m, 1-3rd farthest target within 30m -- Meteor
 Config_addSpell2[6] = 19630             -- min range 45m, cast on tank -- Cone of Fire
 Config_addSpell3[6] = 13808             -- min range 0m -- Grenade
 Config_addSpell4[6] = 42795             -- cast on the boss (Growth)
@@ -598,7 +600,7 @@ Config_addSpellEnrage[6] = nil          -- Enrage after 300 seconds
 
 Config_addSpellTimer1[6] = 37000        -- This timer applies to Config_addSpell1
 Config_addSpellTimer2[6] = 13000        -- This timer applies to Config_addSpell2
-Config_addSpellTimer3[6] = 23000        -- This timer applies to Config_addSpell3
+Config_addSpellTimer3[6] = 7000         -- This timer applies to Config_addSpell3
 Config_addSpellTimer4[6] = 12000        -- This timer applies to Config_addSpell4
 
 Config_addSpellModifier1bp0[6] = nil    -- not required if nil
@@ -922,7 +924,7 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         player:SendBroadcastMessage("Your current event score is: "..scoreEarned[accountId].." and your all-time event score is: "..scoreTotal[accountId])
         player:GossipComplete()
     elseif intid == 1 then
-        
+
         if bossfightInProgress ~= nil then
             player:SendBroadcastMessage("There is already a fight in progress.")
             player:GossipComplete()
@@ -987,7 +989,7 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
             player:GossipComplete()
             return
         end
-        
+
         if player:IsInGroup() == false then
             player:SendBroadcastMessage("You need to be in a party.")
             player:GossipComplete()
@@ -1558,7 +1560,10 @@ function bossNPC.Event(event, delay, pCall, creature)
         end
     end
 
-    if Config_bossSpellTimer7[eventInProgress] ~= nil then
+    if Config_minPhaseForTimer7[eventInProgress] == nil then
+        Config_minPhaseForTimer7[eventInProgress] = 1
+    end
+    if Config_bossSpellTimer7[eventInProgress] ~= nil and phase >= Config_minPhaseForTimer7[eventInProgress] then
         if nextBossSpell8Delay ~= nil then
             if Config_bossSpell8[eventInProgress] ~= nil then
                 if Config_bossSpell8delay[eventInProgress] < eS_getTimeSince(nextBossSpell8Delay) then
