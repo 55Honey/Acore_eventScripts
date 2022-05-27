@@ -1,4 +1,4 @@
-DELETE FROM `creature_template` WHERE `entry` IN 
+DELETE FROM `creature_template` WHERE `entry` IN
 (1112001,1112002,1112003,1112011,1112012,1112013,1112021,1112022,1112023,1112031,1112032,1112033,1112041,1112042,1112043,1112051,1112052,1112053,1112999);
 DELETE FROM `npc_text` WHERE `ID` IN (91101,91102,91111,91112,91113,91114,91115,91116);
 DELETE FROM `gossip_menu` WHERE `MenuID` IN (62001,62002,62003,62004,62005,62006);
@@ -58,7 +58,7 @@ INSERT INTO `npc_text` (`ID`, `text0_0`, `BroadcastTextID0`, `lang0`, `Probabili
 (91113, CONCAT(@NPC_TEXT, 'The hunter drains power from the minions. You want to get rid of them as soon as you can.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
 (91114, CONCAT(@NPC_TEXT, 'The hunter drains power from the minions. They have strong healing powers. You must seperate them from each other! And watch out for fire rains.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
 (91115, CONCAT(@NPC_TEXT, 'The hunter drains power from the minions. They have strong healing powers. You must seperate them from each other! And watch out for fire rains.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
-(91116, CONCAT(@NPC_TEXT, 'The elementals empower the robot. Kill them fast! Stand together when the meteor happens! You stand no chance alone!'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+(91116, CONCAT(@NPC_TEXT, 'The elementals empower the robot. Kill them fast! Stand together when the storm and metors happen, you stand no chance alone! And split up to avoid the explosion.'), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 
 INSERT INTO `gossip_menu` (`MenuID`, `TextID`) VALUES
 (62001, 91111),
@@ -68,14 +68,14 @@ INSERT INTO `gossip_menu` (`MenuID`, `TextID`) VALUES
 (62005, 91115),
 (62006, 91116);
 
-INSERT INTO `creature_equip_template` (`CreatureID`, `ID`, `ItemID1`, `ItemID2`, `ItemID3`, `VerifiedBuild`) VALUES 
+INSERT INTO `creature_equip_template` (`CreatureID`, `ID`, `ItemID1`, `ItemID2`, `ItemID3`, `VerifiedBuild`) VALUES
 (1112011, 1, 41175, 0, 0, 18019),
 (1112021, 1, 7682, 0, 0, 18019),
 (1112031, 1, 7682, 0, 0, 18019),
 (1112041, 1, 7682, 0, 0, 18019);
 
 -- insert new movement type adjustments since their old inhabit type was 3 for ground and water
-INSERT INTO `creature_template_movement` (`CreatureId`, `Ground`, `Swim`, `Flight`, `Rooted`, `Chase`, `Random`, `InteractionPauseTimer`) VALUES 
+INSERT INTO `creature_template_movement` (`CreatureId`, `Ground`, `Swim`, `Flight`, `Rooted`, `Chase`, `Random`, `InteractionPauseTimer`) VALUES
 (1112001, 1, 1, 0, 0, 0, 0, NULL), -- Event 1 Boss
 (1112002, 1, 1, 0, 0, 0, 0, NULL), -- Custom Chromie 1
 (1112003, 1, 1, 0, 0, 0, 0, NULL), -- Event 1 Add
