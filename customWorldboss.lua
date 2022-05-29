@@ -572,11 +572,11 @@ Config_bossSpellTimer7[6] = 22000       -- This timer applies to Config_bossSpel
 Config_bossSpellEnrageTimer[6] = 300000
 Config_minPhaseForTimer7[6] = 2         -- From this phase on the boss will use Timer 7 to cast Spell 7+8. Will ignore it before.
 
-Config_bossSpellModifier1bp0[6] = 35       -- base damage of the Cleave
+Config_bossSpellModifier1bp0[6] = nil      -- not required if nil
 Config_bossSpellModifier1bp1[6] = nil      -- not required if nil
-Config_bossSpellModifier2bp0[6] = 1000      -- not required if nil
+Config_bossSpellModifier2bp0[6] = 1000     -- base damage of the forked lightning
 Config_bossSpellModifier2bp1[6] = nil      -- not required if nil
-Config_bossSpellModifier3bp0[6] = 800      -- base damage of the fire rain
+Config_bossSpellModifier3bp0[6] = 800      -- base damage of the Chain Lightning
 Config_bossSpellModifier3bp1[6] = nil      -- not required if nil
 Config_bossSpellModifier4bp0[6] = nil      -- not required if nil
 Config_bossSpellModifier4bp1[6] = nil      -- not required if nil
