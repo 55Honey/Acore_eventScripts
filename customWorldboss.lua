@@ -549,7 +549,7 @@ Config_addEntry[6] = 1112053            --db entry of the add creature
 Config_npcText[6] = 91116               --gossip in npc_text to be told by the summoning NPC
 
 -- list of spells:
-Config_bossSpell1[6] = 5106             --directly applied to the tank-- 15second stun
+Config_bossSpell1[6] = 15283            --directly applied to the tank-- 8second stun
 Config_bossSpell2[6] = 25034            --randomly applied to a player in 35m range-- Forked Lightning
 Config_bossSpell2MaxRange[6] = 30       --max range im m/y to check for targets for boss spell 2 (default 35)
 Config_bossSpell3[6] = 25021            --on the 2nd nearest player within 30m-- Chain Lightning
