@@ -589,7 +589,7 @@ Config_bossSpellModifier7bp1[6] = nil      -- not required if nil
 Config_bossSpellModifier8bp0[6] = nil      -- not required if nil
 Config_bossSpellModifier8bp1[6] = nil      -- not required if nil
 
-Config_addHealthModifierParty[6] = 0.5     -- modifier to change health for party encounter. Value in the SQL applies for raid
+Config_addHealthModifierParty[6] = 0.2     -- modifier to change health for party encounter. Value in the SQL applies for raid
 Config_addsAmount[6] = 2                   -- how many adds will spawn
 
 Config_addSpell1[6] = 28884             -- min range 30m, 1-3rd farthest target within 30m -- Meteor
