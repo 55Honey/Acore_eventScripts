@@ -595,7 +595,7 @@ Config_addsAmount[6] = 2                   -- how many adds will spawn
 Config_addSpell1[6] = 28884             -- min range 30m, 1-3rd farthest target within 30m -- Meteor
 Config_addSpell2[6] = 19630             -- min range 45m, cast on tank -- Cone of Fire
 Config_addSpell3[6] = 13808             -- min range 0m -- Grenade
-Config_addSpell4[6] = 42795             -- cast on the boss (Growth)
+Config_addSpell4[6] = 67973             -- cast on the boss (Rejuvenation)
 Config_addSpellEnrage[6] = nil          -- Enrage after 300 seconds
 
 Config_addSpellTimer1[6] = 37000        -- This timer applies to Config_addSpell1
