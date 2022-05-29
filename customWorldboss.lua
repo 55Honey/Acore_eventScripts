@@ -610,11 +610,11 @@ Config_addSpellModifier2bp1[6] = nil    -- not required if nil
 Config_addSpellModifier3bp0[6] = 1000    -- not required if nil
 Config_addSpellModifier3bp1[6] = nil    -- not required if nil
 
-Config_aura1Add1[6] = 23266             -- an aura to add to the 1st add-- Fiery Aura
-Config_aura2Add1[6] = nil               -- another aura to add to the 1st add--
-Config_aura1Add2[6] = 23266             -- an aura to add to the 2nd add-- Fiery Aura
+Config_aura1Add1[6] = 13022             -- an aura to add to the 1st add-- Fire and Arcane Reflect
+Config_aura2Add1[6] = 19595             -- another aura to add to the 1st add-- Shadow and Frost Reflect
+Config_aura1Add2[6] = 25777             -- an aura to add to the 2nd add-- Thorns
 Config_aura2Add2[6] = nil               -- another aura to add to the 2nd add--
-Config_aura1Add3[6] = 23266             -- an aura to add to all ads from the 3rd on-- Fiery Aura
+Config_aura1Add3[6] = nil               -- an aura to add to all ads from the 3rd on-- Fiery Aura
 Config_aura2Add3[6] = nil               -- another aura to add to all add from the 3rd on--
 
 Config_addSpell3Yell[6] = "Die, Insect."-- yell for the adds when Spell 3 is cast
