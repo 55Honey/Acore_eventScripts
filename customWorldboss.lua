@@ -626,8 +626,6 @@ Config_bossYellPhase2[6] = "Bee bop. Reconfiguring!"
 -- yell for the boss when they cast on themself
 Config_bossSpellSelfYell[6] = "Adjusting Defenses. Stand back."
 
-
-
 ------------------------------------------
 -- End of encounter 6
 ------------------------------------------
@@ -1019,24 +1017,56 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
 
         --start raid encounter
         bossfightInProgress = RAID_IN_PROGRESS
+        encounterStartTime = GetCurrTime()
 
         spawnedBoss = player:SpawnCreature(Config_bossEntry[eventInProgress], x, y, z+2, o)
         spawnedBoss:SetPhaseMask(2)
         spawnedBoss:SetScale(spawnedBoss:GetScale() * eS_getSize(difficulty))
         spawnedBossGuid = spawnedBoss:GetGUID()
 
-        if Config_addsAmount[eventInProgress] == nil then Config_addsAmount[eventInProgress] = 1 end
+        --Spawn the adds
+        if Config_addsAmount[eventInProgress] ~= nil and Config_addsAmount[eventInProgress] > 0 and Config_addEntry[eventInProgress] ~= nil then
+            for c = 1, Config_addsAmount[eventInProgress] do
+                local randomX = math.sin(math.random(1,360)) * 15
+                local randomY = math.sin(math.random(1,360)) * 15
+                spawnedCreature[c] = player:SpawnCreature(Config_addEntry[eventInProgress], x + randomX, y + randomY, z+2, o)
+                spawnedCreature[c]:SetPhaseMask(2)
+                spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * eS_getSize(difficulty))
+                spawnedCreatureGuid[c] = spawnedCreature[c]:GetGUID()
+            end
 
-        for c = 1, Config_addsAmount[eventInProgress] do
-            local randomX = (math.sin(math.random(1,360)) * 15)
-            local randomY = (math.sin(math.random(1,360)) * 15)
-            spawnedCreature[c] = player:SpawnCreature(Config_addEntry[eventInProgress], x + randomX, y + randomY, z+2, o)
-            spawnedCreature[c]:SetPhaseMask(2)
-            spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * eS_getSize(difficulty))
-            spawnedCreatureGuid[c] = spawnedCreature[c]:GetGUID()
+            --apply auras to adds
+            if spawnedCreature[1] ~= nil then
+                if Config_aura1Add1[1] ~= nil then
+                    spawnedCreature[1]:AddAura(Config_aura1Add1[1], spawnedCreature[1])
+                end
+                if Config_aura2Add1[1] ~= nil then
+                    spawnedCreature[1]:AddAura(Config_aura2Add1[1], spawnedCreature[1])
+                end
+            end
+            if spawnedCreature[2] ~= nil then
+                if Config_aura1Add2[2] ~= nil then
+                    spawnedCreature[2]:AddAura(Config_aura1Add2[2], spawnedCreature[2])
+                end
+                if Config_aura2Add2[2] ~= nil then
+                    spawnedCreature[2]:AddAura(Config_aura2Add2[2], spawnedCreature[2])
+                end
+            end
+            if #spawnedCreature > 2 then
+                for c = 3, #spawnedCreature do
+                    if spawnedCreature[c] ~= nil then
+                        if Config_aura1Add3[c] ~= nil then
+                            spawnedCreature[c]:AddAura(Config_aura1Add3[c], spawnedCreature[c])
+                        end
+                        if Config_aura2Add3[c] ~= nil then
+                            spawnedCreature[c]:AddAura(Config_aura2Add3[c], spawnedCreature[c])
+                        end
+                    end
+                end
+            end
         end
-        encounterStartTime = GetCurrTime()
-
+        
+        --Put the players in combat
         for n, v in pairs(groupPlayers) do
             if v:GetDistance(player) ~= nil then
                 if v:GetDistance(player) < 80 then
@@ -1045,45 +1075,17 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
                     spawnedBoss:SetInCombatWith(v)
                     v:SetInCombatWith(spawnedBoss)
                     spawnedBoss:AddThreat(v, 1)
-                    for c = 1, Config_addsAmount[eventInProgress] do
-                        spawnedCreature[c]:SetInCombatWith(v)
-                        v:SetInCombatWith(spawnedCreature[c])
-                        spawnedCreature[c]:AddThreat(v, 1)
+                    --Also make the adds fight the player
+                    if #spawnedCreature > 0 then
+                        for c = 1, Config_addsAmount[eventInProgress] do
+                            spawnedCreature[c]:SetInCombatWith(v)
+                            v:SetInCombatWith(spawnedCreature[c])
+                            spawnedCreature[c]:AddThreat(v, 1)
+                        end
                     end
                 end
             else
                 v:SendBroadcastMessage("You were too far away to join the fight.")
-            end
-        end
-
-        --apply auras to adds
-        if spawnedCreature[1] ~= nil then
-            if Config_aura1Add1[1] ~= nil then
-                spawnedCreature[1]:AddAura(Config_aura1Add1[1], spawnedCreature[1])
-            end
-            if Config_aura2Add1[1] ~= nil then
-                spawnedCreature[1]:AddAura(Config_aura2Add1[1], spawnedCreature[1])
-            end
-        end
-
-        if spawnedCreature[2] ~= nil then
-            if Config_aura1Add2[2] ~= nil then
-                spawnedCreature[2]:AddAura(Config_aura1Add2[2], spawnedCreature[2])
-            end
-            if Config_aura2Add2[2] ~= nil then
-                spawnedCreature[2]:AddAura(Config_aura2Add2[2], spawnedCreature[2])
-            end
-        end
-        if #spawnedCreature > 2 then
-            for c = 3, #spawnedCreature do
-                if spawnedCreature[c] ~= nil then
-                    if Config_aura1Add3[c] ~= nil then
-                        spawnedCreature[c]:AddAura(Config_aura1Add3[c], spawnedCreature[c])
-                    end
-                    if Config_aura2Add3[c] ~= nil then
-                        spawnedCreature[c]:AddAura(Config_aura2Add3[c], spawnedCreature[c])
-                    end
-                end
             end
         end
     end
@@ -1156,7 +1158,7 @@ local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, c
 
         --start 5man encounter
         bossfightInProgress = PARTY_IN_PROGRESS
-        spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
+        spawnedCreature[1] = player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
         spawnedCreature[1]:SetPhaseMask(2)
         spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
 
