@@ -819,8 +819,12 @@ local function eS_getEncounterDuration()
 end
 
 local function eS_getTimeSince(time)
-    local dt = GetTimeDiff(time)
-    return dt
+    if time then
+        local dt = GetTimeDiff(time)
+        return dt
+    else
+        return 0
+    end
 end
 
 local function eS_getDifficultyTimer(rawTimer)
