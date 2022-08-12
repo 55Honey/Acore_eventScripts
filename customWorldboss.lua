@@ -822,9 +822,7 @@ local function eS_getTimeSince(time)
     if time then
         return GetTimeDiff(time)
     end
-
     return 0
-    end
 end
 
 local function eS_getDifficultyTimer(rawTimer)
