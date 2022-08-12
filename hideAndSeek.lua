@@ -64,6 +64,21 @@ function haS.SplitString(inputstr, seperator)
     return t
 end
 
+haS.fireworkspells = {}
+haS.fireworkspells[1] = 66400
+haS.fireworkspells[2] = 66402
+haS.fireworkspells[3] = 46847
+haS.fireworkspells[4] = 46829
+haS.fireworkspells[5] = 46830
+haS.fireworkspells[6] = 62074
+haS.fireworkspells[7] = 62075
+haS.fireworkspells[8] = 62077
+haS.fireworkspells[9] = 55420
+
+function haS.Fireworks( _, _, _, worldobject )
+    worldobject:CastSpell( player, haS.fireworkspells[ math.random(1, #haS.fireworkspells) ] )
+end
+
 function haS.OnHello( event, player, object )
     if haS.Conf.CopperReward ~= nil and haS.Conf.ItemReward ~= nil then
         SendMail( 'Winner of the Hide and Seek Event', 'Congratulations, you\'ve won a fabulous prize!', player:GetGUIDLow(), 0, 61, 5, haS.Conf.CopperReward[haS.ActiveId], 0, haS.Conf.ItemReward[ haS.ActiveId ], 1 )
@@ -72,6 +87,8 @@ function haS.OnHello( event, player, object )
     elseif haS.Conf.CopperReward == nil and haS.Conf.ItemReward ~= nil then
         SendMail( 'Winner of the Hide and Seek Event', 'Congratulations, you\'ve won a fabulous prize!', player:GetGUIDLow(), 0, 61, 5, 0, 0, haS.Conf.ItemReward[ haS.ActiveId ], 1 )
     end
+
+    player:RegisterEvent( haS.Fireworks, 500, 40)
 
     player:GossipComplete()
     haS.AnnounceWinner( player )
