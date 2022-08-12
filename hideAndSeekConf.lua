@@ -1,3 +1,5 @@
+--This file is explicitely excluded from the AGPL3 license, which is active for the remaining repository, unless explicetly stated otherwise.
+
 -- Config file for the hide and seek lua
 --[[
 -----------------------------------------------------------
