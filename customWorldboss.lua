@@ -820,10 +820,10 @@ end
 
 local function eS_getTimeSince(time)
     if time then
-        local dt = GetTimeDiff(time)
-        return dt
-    else
-        return 0
+        return GetTimeDiff(time)
+    end
+
+    return 0
     end
 end
 
