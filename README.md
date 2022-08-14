@@ -1,3 +1,9 @@
+### License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
+Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network, the complete source code of the modified version must be made available.
+The license applies to each and every `.lua` file and `.sql` file in the repository as well as this readme, unless explicitely stated otherwise in the header of the file.
+
+This is not legal advice.
+
 ## EventScripts
 Lua scripts for Azerothcore with ElunaLUA to
 - spawn (custom) NPCs and grant them scripted combat abilities (customWorldboss.lua)
@@ -60,3 +66,14 @@ The last Repetition will result in all players who are in open world and opt-in 
 `.fun on` to opt-in for the event.
 `.fun no` to opt-out of the event (default).
 `.fun return` they are teleported to their saved position and their saved position is deleted.
+
+# lua-bonus-buff
+## Admin Usage:
+Optionally adjust the chat message.
+
+## GM Usage:
+`.bonusbuff $buffname`
+Applies the selected buff to all players which are currently online.
+
+## Player Usage:
+Enjoy the buffs!
