@@ -155,9 +155,8 @@ function haS.StartEvent( Id )
         haS.SendHints()
 
         return true
-    else
-        return false
     end
+    return false
 end
 
 function haS.StopEvent()
