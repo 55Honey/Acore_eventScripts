@@ -67,6 +67,11 @@ haS.Conf = {
     ItemReward = {}
 }
 
+-- default conf for non-prepared hide-and-seek events
+haS.Conf.Entry[0] = 611001
+haS.Conf.CopperReward[0] = nil
+haS.Conf.ItemReward[0] = 34425  -- Clockwork Rocket Bot
+
 require "hideAndSeekConf"
 
 function haS.SplitString(inputstr, seperator)
@@ -95,8 +100,8 @@ function haS.Fireworks( _, _, _, worldobject )
     worldobject:CastSpell( player, haS.fireworkspells[ math.random(1, #haS.fireworkspells) ] )
 end
 
-function haS.OnHello( event, player, object )
-    if haS.Conf.CopperReward ~= nil and haS.Conf.ItemReward ~= nil then
+function haS.OnHello( _, player, _ )
+    if haS.Conf.CopperReward[haS.ActiveId] ~= nil and haS.Conf.ItemReward[haS.ActiveId] ~= nil then
         SendMail( 'Winner of the Hide and Seek Event', 'Congratulations, you\'ve won a fabulous prize!', player:GetGUIDLow(), 0, 61, 5, haS.Conf.CopperReward[haS.ActiveId], 0, haS.Conf.ItemReward[ haS.ActiveId ], 1 )
     elseif haS.Conf.CopperReward ~= nil and haS.Conf.ItemReward == nil then
         SendMail( 'Winner of the Hide and Seek Event', 'Congratulations, you\'ve won a fabulous prize!', player:GetGUIDLow(), 0, 61, 5, haS.Conf.CopperReward[haS.ActiveId], 0 )
@@ -131,8 +136,24 @@ function haS.AnnounceWinner( player )
     SendWorldMessage( 'Congratulations, ' .. player:GetName() .. '! You\'ve won the Hide and Seek Event!' )
 end
 
-function haS.StartEvent( Id )
-    if haS.Conf.Entry[Id] ~= nil and
+function haS.StartEvent( Id, player )
+    if Id == 0 then
+        if player == nil then
+            chatHandler:SendSysMessage( 'Id 0 requires a character to choose coordinates from. You can\'t use this from the console.')
+            return false
+        end
+
+        local Object = PerformIngameSpawn( 2, haS.Conf.Entry[0], player:GetMapId(), 0, player:GetX(), player:GetY(), player:GetZ(), player:GetO() )
+        haS.ObjectGuid = Object:GetGUID()
+        haS.ActiveMapId = player:GetMapId()
+
+        RegisterGameObjectGossipEvent( haS.Conf.Entry[0], GOSSIP_EVENT_ON_HELLO, haS.OnHello )
+        haS.ActiveId = 0
+        haS.CurrentHint = 0
+
+        return true
+
+    elseif haS.Conf.Entry[Id] ~= nil and
             haS.Conf.X[Id] ~= nil and
             haS.Conf.Entry[Id] ~= nil and
             haS.Conf.Y[Id] ~= nil and
@@ -168,7 +189,12 @@ function haS.StopEvent()
             return
         end
 
-        map = GetMapById( haS.Conf.MapId[ haS.ActiveId ] )
+        if haS.ActiveId == 0 then
+            map = GetMapById(haS.ActiveMapId)
+        else
+            map = GetMapById( haS.Conf.MapId[ haS.ActiveId ] )
+        end
+
         local Object = map:GetWorldObject( haS.ObjectGuid )
         if haS.ObjectGuid ~= nil then
             Object:RemoveFromWorld(false)
@@ -179,7 +205,7 @@ function haS.StopEvent()
 
 end
 
-function haS.OnCommand(_, _, command, chatHandler)
+function haS.OnCommand(_, player, command, chatHandler)
     local commandArray = {}
 
     --prevent players from using this, GM rank 2 is required.
@@ -200,9 +226,8 @@ function haS.OnCommand(_, _, command, chatHandler)
 
     if commandArray[2] == 'stop' then
         if haS.ActiveId ~= nil then
-            haS.StopEvent()
             chatHandler:SendSysMessage( 'Hide and Seek event ' .. haS.ActiveId .. 'stopped.' )
-            haS.ActiveId = nil
+            haS.StopEvent()
         else
             chatHandler:SendSysMessage( 'There is no Hide and Seek event in progress.' )
         end
@@ -210,7 +235,7 @@ function haS.OnCommand(_, _, command, chatHandler)
     end
 
     if commandArray[2] and type( tonumber(commandArray[2]) ) == 'number' then
-        if haS.StartEvent( tonumber(commandArray[2]) ) == true then
+        if haS.StartEvent( tonumber(commandArray[2]), player ) == true then
             chatHandler:SendSysMessage( 'Hide and Seek event ' .. commandArray[2] .. ' started.' )
         else
             chatHandler:SendSysMessage( 'Hide and Seek event ' .. commandArray[2] .. ' could not be started.' )
