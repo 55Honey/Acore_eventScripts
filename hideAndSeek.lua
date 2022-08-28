@@ -103,9 +103,9 @@ end
 function haS.OnHello( _, player, _ )
     if haS.Conf.CopperReward[haS.ActiveId] ~= nil and haS.Conf.ItemReward[haS.ActiveId] ~= nil then
         SendMail( 'Winner of the Hide and Seek Event', 'Congratulations, you\'ve won a fabulous prize!', player:GetGUIDLow(), 0, 61, 5, haS.Conf.CopperReward[haS.ActiveId], 0, haS.Conf.ItemReward[ haS.ActiveId ], 1 )
-    elseif haS.Conf.CopperReward ~= nil and haS.Conf.ItemReward == nil then
+    elseif haS.Conf.CopperReward[haS.ActiveId] ~= nil and haS.Conf.ItemReward[haS.ActiveId] == nil then
         SendMail( 'Winner of the Hide and Seek Event', 'Congratulations, you\'ve won a fabulous prize!', player:GetGUIDLow(), 0, 61, 5, haS.Conf.CopperReward[haS.ActiveId], 0 )
-    elseif haS.Conf.CopperReward == nil and haS.Conf.ItemReward ~= nil then
+    elseif haS.Conf.CopperReward[haS.ActiveId] == nil and haS.Conf.ItemReward[haS.ActiveId] ~= nil then
         SendMail( 'Winner of the Hide and Seek Event', 'Congratulations, you\'ve won a fabulous prize!', player:GetGUIDLow(), 0, 61, 5, 0, 0, haS.Conf.ItemReward[ haS.ActiveId ], 1 )
     end
 
