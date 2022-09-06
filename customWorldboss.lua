@@ -160,7 +160,7 @@ Config.defaultNpcText1 = 91101
 -- generic welcome text2
 Config.defaultNpcText2 = 91102
 -- activate permanent 5man only NPC
-Config.partySelectNpcActive = 1
+Config.partySelectNpcActive = 0
 -- Map where to spawn the exchange NPC
 Config.InstanceId = 0
 Config.MapId = 1
