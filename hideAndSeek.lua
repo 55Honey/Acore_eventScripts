@@ -101,6 +101,10 @@ function haS.Fireworks( _, _, _, worldobject )
 end
 
 function haS.OnHello( _, player, _ )
+    if haS.haS.ActiveId == nil then
+        return
+    end
+
     if haS.Conf.CopperReward[haS.ActiveId] ~= nil and haS.Conf.ItemReward[haS.ActiveId] ~= nil then
         SendMail( 'Winner of the Hide and Seek Event', 'Congratulations, you\'ve won a fabulous prize!', player:GetGUIDLow(), 0, 61, 5, haS.Conf.CopperReward[haS.ActiveId], 0, haS.Conf.ItemReward[ haS.ActiveId ], 1 )
     elseif haS.Conf.CopperReward[haS.ActiveId] ~= nil and haS.Conf.ItemReward[haS.ActiveId] == nil then
