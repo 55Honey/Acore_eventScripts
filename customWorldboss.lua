@@ -1905,7 +1905,13 @@ local function eS_CloseLua(eI_CloseLua)
         local npcObject
         local map
         map = GetMapById(Config.MapId)
+        if not map then
+            return
+        end
         npcObject = map:GetWorldObject(npcObjectGuid):ToCreature()
+        if not npcObject then
+            return
+        end
         npcObject:DespawnOrUnsummon(0)
     end
 end
