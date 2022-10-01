@@ -642,10 +642,97 @@ Config_bossYellPhase2[6] = "Bee bop. Reconfiguring!"
 -- yell for the boss when they cast on themself
 Config_bossSpellSelfYell[6] = "Adjusting Defenses. Stand back."
 
+------------------------------------------
+-- Begin of encounter 7 config
+------------------------------------------
+
+-- Database NPC entries. Must match the associated .sql file
+Config_bossEntry[7] = 1112061           --db entry of the boss creature
+Config_npcEntry[7] = 1112062            --db entry of the NPC creature to summon the boss
+Config_addEntry[7] = 1112063            --db entry of the add creature
+Config_npcText[7] = 91117               --gossip in npc_text to be told by the summoning NPC
+
+-- list of spells:
+Config_bossSpell1[7] = 15283            --directly applied to the tank-- 8second stun
+Config_bossSpell2[7] = nil              --on a random player within Config_bossSpell2MaxRange
+Config_bossSpell2MaxRange[7] = 50       --max range im m/y to check for targets for boss spell 2 (default 35)
+Config_bossSpell3[7] = 29484            --on the 2nd nearest player within 30m -- Web Spray
+Config_bossSpell4[7] = 59108            --on a random player within Config_bossSpell4MaxRange -- Glutinous Poison
+Config_bossSpell4Counter[7] = 10        --amount of casts to perform for spell 4. defaults to 1
+Config_bossSpell4MaxRange[7] = 30       --max range im m to check for targets for boss spell 4 (default 40)
+Config_bossSpell5[7] = 28741            --directly applied to the tank with adds alive --poison cone
+Config_bossSpell6[7] = 28741            --directly applied to the tank when adds are dead --poison cone
+Config_bossSpell7[7] = nil              --directly applied to the tank -
+Config_bossSpell8[7] = nil              --directly applied to the tank x seconds after spell 7 -
+Config_bossSpell8delay[7] = nil         --delay between spell 7 and 8. Must be smaller than timer7 / 2
+Config_bossSpellSelf[7] = 19712         --cast on boss while adds are still alive (Arcane Explosion)
+Config_bossSpellEnrage[7] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+
+Config_bossSpellTimer1[7] = 10000       -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[7] = 37000       -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[7] = 29000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer5[7] = 19000       -- This timer applies to Config_bossSpell5+6
+Config_bossSpellTimer7[7] = 22000       -- This timer applies to Config_bossSpell7+8 (in ms)
+Config_bossSpellEnrageTimer[7] = 90000
+Config_minPhaseForTimer7[7] = 3         -- From this phase on the boss will use Timer 7 to cast Spell 7+8. Will ignore it before.
+
+Config_bossSpellModifier1bp0[7] = nil      -- not required if nil
+Config_bossSpellModifier1bp1[7] = nil      -- not required if nil
+Config_bossSpellModifier2bp0[7] = nil      -- not required if nil
+Config_bossSpellModifier2bp1[7] = nil      -- not required if nil
+Config_bossSpellModifier3bp0[7] = nil      -- not required if nil
+Config_bossSpellModifier3bp1[7] = 250      -- web spray damage
+Config_bossSpellModifier4bp0[7] = 1000     -- base damage of Glutinous Poison
+Config_bossSpellModifier4bp1[7] = nil      -- not required if nil
+Config_bossSpellModifier5bp0[7] = 750      -- base damage of poison cone
+Config_bossSpellModifier5bp1[7] = nil      -- not required if nil
+Config_bossSpellModifier6bp0[7] = 1500     -- base damage of poison cone
+Config_bossSpellModifier6bp1[7] = nil      -- not required if nil
+Config_bossSpellModifier7bp0[7] = nil      -- not required if nil
+Config_bossSpellModifier7bp1[7] = nil      -- not required if nil
+Config_bossSpellModifier8bp0[7] = nil      -- not required if nil
+Config_bossSpellModifier8bp1[7] = nil      -- not required if nil
+
+Config_addHealthModifierParty[7] = 0.2     -- modifier to change health for party encounter. Value in the SQL applies for raid
+Config_addsAmount[7] = 4                   -- how many adds will spawn
+
+Config_addSpell1[7] = 12421             -- min range 30m, 1-3rd farthest target within 30m -- Mithril Grenade
+Config_addSpell2[7] = 23105             -- min range 45m, cast on tank
+Config_addSpell3[7] = nil               -- min range 0m
+Config_addSpell4[7] = 67891             -- cast on the boss (Direct full heal)
+Config_addSpellEnrage[7] = nil          -- Enrage after 300 seconds
+
+Config_addSpellTimer1[7] = 23000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer2[7] = 13000        -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[7] = 7000         -- This timer applies to Config_addSpell3
+Config_addSpellTimer4[7] = 12000        -- This timer applies to Config_addSpell4
+
+Config_addSpellModifier1bp0[7] = 714    -- not required if nil
+Config_addSpellModifier1bp1[7] = nil    -- not required if nil
+Config_addSpellModifier2bp0[7] = 500    -- not required if nil
+Config_addSpellModifier2bp1[7] = 1000   -- not required if nil
+Config_addSpellModifier3bp0[7] = 1000   -- not required if nil
+Config_addSpellModifier3bp1[7] = nil    -- not required if nil
+
+Config_aura1Add1[7] = 13022             -- an aura to add to the 1st add-- Fire and Arcane Reflect
+Config_aura2Add1[7] = 19595             -- another aura to add to the 1st add-- Shadow and Frost Reflect
+Config_aura1Add2[7] = 25777             -- an aura to add to the 2nd add--  Fire and Arcane Reflect
+Config_aura2Add2[7] = 19595             -- another aura to add to the 2nd add -- Shadow and Frost Reflect
+Config_aura1Add3[7] = 25777             -- an aura to add to all ads from the 3rd on-- Thorns
+Config_aura2Add3[7] = nil               -- another aura to add to all add from the 3rd on--
+
+Config_addSpell3Yell[7] = "Bow to your gods!"-- yell for the adds when Spell 3 is cast
+Config_addEnoughYell[7] = "Feel my Wrath!"   -- yell for the add at 33% and 66% hp
+Config_addEnoughSound[7] = 6763         -- sound to play when the add is at 33% and 66%
+Config_addSpell2Sound[7] = 721          -- sound to play when add casts spell 2
+--yell for the boss when all adds are dead
+Config_bossYellPhase2[7] = "Sssssszzzzzzzzz!"
+-- yell for the boss when they cast on themself
+Config_bossSpellSelfYell[7] = "SSSSSSSUFfffrrrrr!"
 
 
 ------------------------------------------
--- End of encounter 6
+-- End of encounter 7
 ------------------------------------------
 
 -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
@@ -1490,23 +1577,25 @@ function bossNPC.Event(event, delay, pCall, creature)
                             end
                             for m = 1, Config_bossSpell4Counter[eventInProgress] do
                                 local targetPlayer = players[nextPlayerIndex]
-                                if Config_bossSpellModifier4bp0[eventInProgress] ~= nil and Config_bossSpellModifier4bp1[eventInProgress] ~= nil then
-                                    local base1 = eS_getDifficultyModifier(Config_bossSpellModifier4bp0[eventInProgress])
-                                    local base2 = eS_getDifficultyModifier(Config_bossSpellModifier4bp1[eventInProgress])
-                                    creature:CastCustomSpell(targetPlayer, Config_bossSpell4[eventInProgress], false, base1, base2)
-                                elseif Config_bossSpellModifier4bp0[eventInProgress] ~= nil then
-                                    local base1 = eS_getDifficultyModifier(Config_bossSpellModifier4bp0[eventInProgress])
-                                    creature:CastCustomSpell(targetPlayer, Config_bossSpell4[eventInProgress], false, base1)
-                                elseif Config_bossSpellModifier4bp1[eventInProgress] ~= nil then
-                                    local base2 = eS_getDifficultyModifier(Config_bossSpellModifier4bp1[eventInProgress])
-                                    creature:CastCustomSpell(targetPlayer, Config_bossSpell4[eventInProgress], false, nil, base2)
-                                else
-                                    creature:CastSpell(targetPlayer, Config_bossSpell4[eventInProgress])
-                                end
-                                if nextPlayerIndex >= #players then
-                                    nextPlayerIndex = 1
-                                else
-                                    nextPlayerIndex = nextPlayerIndex + 1
+                                if targetPlayer then
+                                    if Config_bossSpellModifier4bp0[eventInProgress] ~= nil and Config_bossSpellModifier4bp1[eventInProgress] ~= nil then
+                                        local base1 = eS_getDifficultyModifier(Config_bossSpellModifier4bp0[eventInProgress])
+                                        local base2 = eS_getDifficultyModifier(Config_bossSpellModifier4bp1[eventInProgress])
+                                        creature:CastCustomSpell(targetPlayer, Config_bossSpell4[eventInProgress], false, base1, base2)
+                                    elseif Config_bossSpellModifier4bp0[eventInProgress] ~= nil then
+                                        local base1 = eS_getDifficultyModifier(Config_bossSpellModifier4bp0[eventInProgress])
+                                        creature:CastCustomSpell(targetPlayer, Config_bossSpell4[eventInProgress], false, base1)
+                                    elseif Config_bossSpellModifier4bp1[eventInProgress] ~= nil then
+                                        local base2 = eS_getDifficultyModifier(Config_bossSpellModifier4bp1[eventInProgress])
+                                        creature:CastCustomSpell(targetPlayer, Config_bossSpell4[eventInProgress], false, nil, base2)
+                                    else
+                                        creature:CastSpell(targetPlayer, Config_bossSpell4[eventInProgress])
+                                    end
+                                    if nextPlayerIndex >= #players then
+                                        nextPlayerIndex = 1
+                                    else
+                                        nextPlayerIndex = nextPlayerIndex + 1
+                                    end
                                 end
                             end
                             lastBossSpell3 = GetCurrTime()
