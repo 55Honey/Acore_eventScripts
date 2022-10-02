@@ -180,6 +180,7 @@ Config.PartyNpcSayText = 'What are you waiting for? Bring a party of five and st
 -- 4: Level 50, Crocolisk Bunbee / Aligator Pet
 -- 5: Level 60, Crocolisk Rundee / Aligator Guard
 -- 6: Level 60: One-Three-Three-Seven / Ragnarosqt
+-- 7: Level 60: Big Bad Bug / Bug's Bunny
 ------------------------------------------
 
 ------------------------------------------
