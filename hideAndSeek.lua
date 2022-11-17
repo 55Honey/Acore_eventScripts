@@ -101,7 +101,7 @@ function haS.Fireworks( _, _, _, worldobject )
 end
 
 function haS.OnHello( _, player, _ )
-    if haS.haS.ActiveId == nil then
+    if haS.ActiveId == nil then
         return
     end
 
