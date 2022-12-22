@@ -68,13 +68,13 @@ local initialMessage = {}
 local followupMessage = {}
 
 -- Config for the Gurubashi teleport event
-mapId['gurabashi'] = 0
-xCoord['gurabashi'] = -13207.77
-yCoord['gurabashi'] = 274.35
-zCoord['gurabashi'] = 38.23
-orientation['gurabashi'] = 4.22
-initialMessage['gurabashi'] = " minutes from now all players which reside in an open world map AND opt in will be teleported for an event. If you wish to participate type '.fun on'. There will be further announcements every minute."
-followupMessage['gurabashi'] = " all players in open world maps who sign up, will be teleported for an event. If you wish to opt in, please type '.fun on'."
+mapId['gurubashi'] = 0
+xCoord['gurubashi'] = -13207.77
+yCoord['gurubashi'] = 274.35
+zCoord['gurubashi'] = 38.23
+orientation['gurubashi'] = 4.22
+initialMessage['gurubashi'] = " minutes from now all players which reside in an open world map AND opt in will be teleported for an event. If you wish to participate type '.fun on'. There will be further announcements every minute."
+followupMessage['gurubashi'] = " all players in open world maps who sign up, will be teleported for an event. If you wish to opt in, please type '.fun on'."
 
 -- Config for the Halaa teleport event
 mapId['halaa'] = 530
@@ -197,7 +197,7 @@ local function ft_funEventAnnouncer(eventid, delay, repeats)
         else
             text2 = ' minutes'
         end
-        SendWorldMessage('In '..minutes..text2..followupMessage)
+        SendWorldMessage('In '..minutes..text2..followupMessage[eventName])
     else
         local allyPlayers = GetPlayersInWorld(TEAM_ALLIANCE)
         local hordePlayers = GetPlayersInWorld(TEAM_HORDE)
@@ -280,7 +280,7 @@ local function ft_command(event, player, command, chatHandler)
         eventName = commandArray[2]
         local repeats = 15
 
-        if commandArray[3] ~= nil then
+        if commandArray[3] ~= nil and tonumber(commandArray[3]) then
             repeats = tonumber(commandArray[3])
         end
 
@@ -294,7 +294,7 @@ local function ft_command(event, player, command, chatHandler)
             text2 = ' minutes'
         end
 
-        SendWorldMessage('In '..repeats..text2..initialMessage)
+        SendWorldMessage('In '..repeats..text2..initialMessage[eventName])
         return false
     end
 
