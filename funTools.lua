@@ -58,14 +58,32 @@ Config.Spell2 = 61734       -- Noblegarden Bunny. Applied after teleport. May be
 Config.AllowedMaps = {0,1,530,571}
 -- Allowed maps are: Eastern Kingdoms, Kalimdor, Outland (Including Belf and Spacegoat starting zones), Northrend
 
+
+local mapId = {}
+local xCoord = {}
+local yCoord = {}
+local zCoord = {}
+local orientation = {}
+local initialMessage = {}
+local followupMessage = {}
+
 -- Config for the Gurubashi teleport event
-local mapId = 0
-local xCoord = -13207.77
-local yCoord = 274.35
-local zCoord = 38.23
-local orientation = 4.22
-local gurubashiMessage = " minutes from now all players which reside in an open world map AND opt in will be teleported for an event. If you wish to participate type '.fun on'. There will be further announcements every minute."
-local eventMessage = " all players in open world maps who sign up, will be teleported for an event. If you wish to opt in, please type '.fun on'."
+mapId['gurabashi'] = 0
+xCoord['gurabashi'] = -13207.77
+yCoord['gurabashi'] = 274.35
+zCoord['gurabashi'] = 38.23
+orientation['gurabashi'] = 4.22
+initialMessage['gurabashi'] = " minutes from now all players which reside in an open world map AND opt in will be teleported for an event. If you wish to participate type '.fun on'. There will be further announcements every minute."
+followupMessage['gurabashi'] = " all players in open world maps who sign up, will be teleported for an event. If you wish to opt in, please type '.fun on'."
+
+-- Config for the Halaa teleport event
+mapId['halaa'] = 530
+xCoord['halaa'] = -1568.77
+yCoord['halaa'] = 7947.6
+zCoord['halaa'] = -13.23
+orientation['halaa'] = 1.29
+initialMessage['halaa'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Halaa for mass-PvP. If you wish to participate type '.fun on'. There will be further announcements every minute."
+followupMessage['halaa'] = " all players in open world maps who sign up, will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'."
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -84,6 +102,8 @@ local storedX = {}
 local storedY = {}
 local storedZ = {}
 local optIn = {}
+
+local eventName
 
 local function randomised(init)
     return math.random (-20, 20) + init
@@ -125,7 +145,10 @@ local function ft_storePos(player)
 end
 
 local function ft_teleportReminder(eventId, delay, repeats)
-    SendWorldMessage("Participants of the event can become revived and return to their original position by typing '.fun return'.")
+    SendWorldMessage("Participants of the event can become revived AND return back to the position before the event by typing '.fun return'.")
+    if repeats == 1 then
+        eventName = nil
+    end
 end
 
 local function ft_teleport(playerArray)
@@ -152,7 +175,7 @@ local function ft_teleport(playerArray)
                     playerArray[n]:CastSpell(playerArray[n], Config.Spell2, true)
                 end
 
-                playerArray[n]:Teleport(mapId, randomised(xCoord), randomised(yCoord), zCoord, orientation)
+                playerArray[n]:Teleport(mapId[eventName], randomised(xCoord)[eventName], randomised(yCoord)[eventName], zCoord[eventName], orientation[eventName])
                 playerArray[n]:RegisterEvent(ft_wipePos, 300000)
 
                 playerArray[n]:PlayDirectSound(2847, playerArray[n])
@@ -174,7 +197,7 @@ local function ft_funEventAnnouncer(eventid, delay, repeats)
         else
             text2 = ' minutes'
         end
-        SendWorldMessage('In '..minutes..text2..eventMessage)
+        SendWorldMessage('In '..minutes..text2..followupMessage)
     else
         local allyPlayers = GetPlayersInWorld(TEAM_ALLIANCE)
         local hordePlayers = GetPlayersInWorld(TEAM_HORDE)
@@ -191,9 +214,9 @@ local function ft_funEventAnnouncer(eventid, delay, repeats)
         end
 
         duration = GetCurrTime() - duration
-        print('Executing Gurubashi Teleport. Duration: '..duration..'ms')
+        print( 'Executing Event Teleport. Duration: '..duration..'ms. Participants: '..#allyPlayers+#hordePlayers )
 
-        CreateLuaEvent(ft_teleportReminder,15000,12)
+        CreateLuaEvent(ft_teleportReminder,30000,6)
         optIn = {}
     end
 end
@@ -206,10 +229,10 @@ local function ft_command(event, player, command, chatHandler)
     end
 
     if commandArray[2] == nil then
-        chatHandler:SendSysMessage("If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no'.")
+        chatHandler:SendSysMessage("If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'.")
     end
 
-    if commandArray[2] == 'no' then
+    if commandArray[2] == 'no' or commandArray[2] == 'off' then
         if player == nil then
             chatHandler:SendSysMessage("Can not use 'no' from the console. Requires player object.")
             return false
@@ -225,7 +248,7 @@ local function ft_command(event, player, command, chatHandler)
             return false
         end
         optIn[player:GetGUIDLow()] = 1
-        chatHandler:SendSysMessage("You've signed up for the event!")
+        chatHandler:SendSysMessage("You've signed up for the event! Use '.fun no' to opt out.")
         return false
     end
 
@@ -253,17 +276,14 @@ local function ft_command(event, player, command, chatHandler)
         return
     end
 
-    if commandArray[2] == 'gurubashi' then
-        if player == nil then
-            chatHandler:SendSysMessage("Can not use 'gurubashi' from the console. Requires player object.")
-            return false
-        end
-
+    if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' then
+        eventName = commandArray[2]
         local repeats = 15
 
         if commandArray[3] ~= nil then
             repeats = tonumber(commandArray[3])
         end
+
 
         CreateLuaEvent(ft_funEventAnnouncer, 60000, repeats )
 
@@ -274,10 +294,10 @@ local function ft_command(event, player, command, chatHandler)
             text2 = ' minutes'
         end
 
-        SendWorldMessage('In '..repeats..text2..gurubashiMessage)
+        SendWorldMessage('In '..repeats..text2..initialMessage)
         return false
-
     end
+
     return
 end
 
