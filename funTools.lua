@@ -182,6 +182,8 @@ local function ft_teleport(playerArray)
                 playerArray[n]:SendBroadcastMessage( message )
 
             end
+        else
+            playerArray[n]:SendBroadcastMessage( 'You can not participate from raids/dungeons/BGs/arenas.' )
         end
 
     end
