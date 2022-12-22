@@ -175,7 +175,7 @@ local function ft_teleport(playerArray)
                     playerArray[n]:CastSpell(playerArray[n], Config.Spell2, true)
                 end
 
-                playerArray[n]:Teleport(mapId[eventName], randomised(xCoord)[eventName], randomised(yCoord)[eventName], zCoord[eventName], orientation[eventName])
+                playerArray[n]:Teleport( mapId[eventName], randomised(xCoord[eventName]), randomised(yCoord[eventName]), zCoord[eventName], orientation[eventName] )
                 playerArray[n]:RegisterEvent(ft_wipePos, 300000)
 
                 playerArray[n]:PlayDirectSound(2847, playerArray[n])
