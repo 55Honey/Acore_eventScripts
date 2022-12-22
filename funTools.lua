@@ -66,6 +66,7 @@ local zCoord = {}
 local orientation = {}
 local initialMessage = {}
 local followupMessage = {}
+local pvpOn = {}
 
 -- Config for the Gurubashi teleport event
 mapId['gurubashi'] = 0
@@ -75,6 +76,7 @@ zCoord['gurubashi'] = 38.23
 orientation['gurubashi'] = 4.22
 initialMessage['gurubashi'] = " minutes from now all players which reside in an open world map AND opt in will be teleported for an event. If you wish to participate type '.fun on'. There will be further announcements every minute."
 followupMessage['gurubashi'] = " all players in open world maps who sign up, will be teleported for an event. If you wish to opt in, please type '.fun on'."
+pvpOn['gurubashi'] = false
 
 -- Config for the Halaa teleport event
 mapId['halaa'] = 530
@@ -84,6 +86,7 @@ zCoord['halaa'] = -13.23
 orientation['halaa'] = 1.29
 initialMessage['halaa'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Halaa for mass-PvP. If you wish to participate type '.fun on'. There will be further announcements every minute."
 followupMessage['halaa'] = " all players in open world maps who sign up, will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'."
+pvpOn['halaa'] = true
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -177,13 +180,16 @@ local function ft_teleport(playerArray)
 
                 playerArray[n]:Teleport( mapId[eventName], randomised(xCoord[eventName]), randomised(yCoord[eventName]), zCoord[eventName], orientation[eventName] )
                 playerArray[n]:RegisterEvent(ft_wipePos, 300000)
+                if pvpOn[eventName] then
+                    playerArray[n]:SetPvP( true )
+                end
 
                 playerArray[n]:PlayDirectSound(2847, playerArray[n])
                 playerArray[n]:SendBroadcastMessage( message )
-
+            else
+                playerArray[n]:SendBroadcastMessage( 'You can not participate from raids/dungeons/BGs/arenas.' )
             end
-        else
-            playerArray[n]:SendBroadcastMessage( 'You can not participate from raids/dungeons/BGs/arenas.' )
+
         end
 
     end
