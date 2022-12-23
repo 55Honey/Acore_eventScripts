@@ -213,6 +213,25 @@ local function ft_funEventAnnouncer(eventid, delay, repeats)
         local duration = GetCurrTime()
         math.randomseed (duration)
 
+        -- reduce the size of the player arrays to those who signed up only
+        for n = 1, #allyPlayers do
+            if optIn[allyPlayers[n]:GetGUIDLow()] == nil then
+                table.remove(allyPlayers, n)
+            end
+        end
+
+        for n = 1, #hordePlayers do
+            if optIn[hordePlayers[n]:GetGUIDLow()] == nil then
+                table.remove(hordePlayers, n)
+            end
+        end
+
+        if #allyPlayers > #hordePlayers then
+            -- todo: limit allyPlayers to hordePlayers * 1.5
+        else
+            -- todo: limit hordePlayers to allyPlayers * 1.5
+        end
+
         if allyPlayers ~= nil then
             ft_teleport(allyPlayers)
         end
@@ -246,7 +265,7 @@ local function ft_command(event, player, command, chatHandler)
             return false
         end
         optIn[player:GetGUIDLow()] = nil
-        chatHandler:SendSysMessage("You've chosen to not participate in the event this time.")
+        chatHandler:SendSysMessage("You've chosen to NOT participate in the event this time.")
         return false
     end
 
