@@ -67,6 +67,8 @@ local orientation = {}
 local initialMessage = {}
 local followupMessage = {}
 local pvpOn = {}
+local minLevel = {}
+local checkAmount = {}
 
 -- Config for the Gurubashi teleport event
 mapId['gurubashi'] = 0
@@ -74,9 +76,11 @@ xCoord['gurubashi'] = -13207.77
 yCoord['gurubashi'] = 274.35
 zCoord['gurubashi'] = 38.23
 orientation['gurubashi'] = 4.22
-initialMessage['gurubashi'] = " minutes from now all players which reside in an open world map AND opt in will be teleported for an event. If you wish to participate type '.fun on'. There will be further announcements every minute."
-followupMessage['gurubashi'] = " all players in open world maps who sign up, will be teleported for an event. If you wish to opt in, please type '.fun on'."
+initialMessage['gurubashi'] = " minutes from now all players which reside in an open world map AND opt in will be teleported for FFA-PvP. If you wish to participate type '.fun on'. There will be further announcements every minute."
+followupMessage['gurubashi'] = " all players in open world maps who sign up, will be teleported for FFA-PvP. If you wish to opt in, please type '.fun on'."
 pvpOn['gurubashi'] = false
+minLevel['gurubashi'] = nil -- it is ffa PvP, no need for a minimum level
+checkAmount['gurubashi'] = false
 
 -- Config for the Halaa teleport event
 mapId['halaa'] = 530
@@ -87,6 +91,8 @@ orientation['halaa'] = 1.29
 initialMessage['halaa'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Halaa for mass-PvP. If you wish to participate type '.fun on'. There will be further announcements every minute."
 followupMessage['halaa'] = " all players in open world maps who sign up, will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'."
 pvpOn['halaa'] = true
+minLevel['halaa'] = 58
+checkAmount['halaa'] = true
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -105,6 +111,8 @@ local storedX = {}
 local storedY = {}
 local storedZ = {}
 local optIn = {}
+local numExpectedAllies = 0
+local numExpectedHorde = 0
 
 local eventName
 
@@ -121,12 +129,35 @@ local function ft_hasValue(tab,val)
     return false
 end
 
-local function ft_wipePos(event, player)
-    storedMap[player:GetGUIDLow()] = nil
-    storedX[player:GetGUIDLow()] = nil
-    storedY[player:GetGUIDLow()] = nil
-    storedZ[player:GetGUIDLow()] = nil
-    optIn[player:GetGUIDLow()] = nil
+local function ft_wipePos( player )
+    if player then
+        --deduct 1 player from the expected number of participants
+        if player:GetTeam() == TEAM_ALLIANCE then
+            numExpectedAllies = numExpectedAllies - 1
+        elseif player:GetTeam() == TEAM_HORDE then
+            numExpectedHorde = numExpectedHorde - 1
+        end
+
+        -- safety check
+        if numExpectedAllies < 0 then numExpectedAllies = 0 end
+        if numExpectedHorde < 0 then numExpectedHorde = 0 end
+
+        --
+        player:SendBroadcastMessage("Your teleport has expired.")
+        storedMap[player:GetGUIDLow()] = nil
+        storedX[player:GetGUIDLow()] = nil
+        storedY[player:GetGUIDLow()] = nil
+        storedZ[player:GetGUIDLow()] = nil
+        optIn[player:GetGUIDLow()] = nil
+    end
+end
+
+local function ft_wipePosEvent( _, _, _, player )
+    ft_wipePos(player)
+end
+
+local function ft_wipePosLogout( _, player )
+    ft_wipePos(player)
 end
 
 local function splitString(inputstr, seperator)
@@ -179,7 +210,7 @@ local function ft_teleport(playerArray)
                 end
 
                 playerArray[n]:Teleport( mapId[eventName], randomised(xCoord[eventName]), randomised(yCoord[eventName]), zCoord[eventName], orientation[eventName] )
-                playerArray[n]:RegisterEvent(ft_wipePos, 300000)
+                playerArray[n]:RegisterEvent(ft_wipePosEvent, 300000)
                 if pvpOn[eventName] then
                     playerArray[n]:SetPvP( true )
                 end
@@ -207,44 +238,27 @@ local function ft_funEventAnnouncer(eventid, delay, repeats)
         end
         SendWorldMessage('In '..minutes..text2..followupMessage[eventName])
     else
-        local allyPlayers = GetPlayersInWorld(TEAM_ALLIANCE)
-        local hordePlayers = GetPlayersInWorld(TEAM_HORDE)
-
+        local Players = {}
         local duration = GetCurrTime()
         math.randomseed (duration)
 
-        -- reduce the size of the player arrays to those who signed up only
-        for n = 1, #allyPlayers do
-            if optIn[allyPlayers[n]:GetGUIDLow()] == nil then
-                table.remove(allyPlayers, n)
+        for ind,val in pairs(optIn) do
+            if val == 1 then
+                table.insert(Players, GetPlayerByGUID(ind))
             end
         end
 
-        for n = 1, #hordePlayers do
-            if optIn[hordePlayers[n]:GetGUIDLow()] == nil then
-                table.remove(hordePlayers, n)
-            end
-        end
-
-        if #allyPlayers > #hordePlayers then
-            -- todo: limit allyPlayers to hordePlayers * 1.5
-        else
-            -- todo: limit hordePlayers to allyPlayers * 1.5
-        end
-
-        if allyPlayers ~= nil then
-            ft_teleport(allyPlayers)
-        end
-
-        if hordePlayers ~= nil then
-            ft_teleport(hordePlayers)
+        if Players and #Players > 0 then
+            ft_teleport(Players)
         end
 
         duration = GetCurrTime() - duration
-        print( 'Executing Event Teleport. Duration: '..duration..'ms. Participants: '..#allyPlayers+#hordePlayers )
+        print( 'Executing Event Teleport. Duration: '..duration..'ms. Participants: '..#Players )
 
         CreateLuaEvent(ft_teleportReminder,30000,6)
         optIn = {}
+        numExpectedAllies = 0
+        numExpectedHorde = 0
     end
 end
 
@@ -270,12 +284,42 @@ local function ft_command(event, player, command, chatHandler)
     end
 
     if commandArray[2] == 'on' then
+        -- if player is nil, it's the console
         if player == nil then
             chatHandler:SendSysMessage("Can not use 'on' from the console. Requires player object.")
             return false
         end
+
+        -- don't allow players too low to participate
+        if minLevel[eventName] ~= nil then
+            if player:GetLevel() < minLevel[eventName] then
+                chatHandler:SendSysMessage("You are not high enough level to participate in this event. Minimum level is "..minLevel[eventName]..".")
+                return false
+            end
+        end
+
+        -- check if there are too many players from one faction
+        if checkAmount[eventName] == true then
+            if player:GetTeam() == TEAM_ALLIANCE then
+                if numExpectedAllies > 10 and numExpectedAllies > numExpectedHorde * 1.5 then
+                    chatHandler:SendSysMessage("There are too many players from the Alliance already. Care to join as Horde?")
+                    return false
+                end
+            elseif player:GetTeam() == TEAM_HORDE then
+                if numExpectedHorde > 10 and numExpectedHorde > numExpectedAllies * 1.5 then
+                    chatHandler:SendSysMessage("There are too many players from the Horde already. Care to join as Alliance?")
+                    return false
+                end
+            end
+        end
+
         optIn[player:GetGUIDLow()] = 1
         chatHandler:SendSysMessage("You've signed up for the event! Use '.fun no' to opt out.")
+        if player:GetTeam() == TEAM_ALLIANCE then
+            numExpectedAllies = numExpectedAllies + 1
+        else
+            numExpectedHorde = numExpectedHorde + 1
+        end
         return false
     end
 
@@ -290,7 +334,7 @@ local function ft_command(event, player, command, chatHandler)
             end
             player:CastSpell(player, 1706, true)
             player:Teleport(storedMap[player:GetGUIDLow()],storedX[player:GetGUIDLow()],storedY[player:GetGUIDLow()],storedZ[player:GetGUIDLow()],0)
-            ft_wipePos(_,player)
+            ft_wipePos( player )
             return false
         else
             chatHandler:SendSysMessage("There is no position saved for your character.")
@@ -329,4 +373,4 @@ local function ft_command(event, player, command, chatHandler)
 end
 
 RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, ft_command)
-RegisterPlayerEvent(PLAYER_EVENT_ON_LOGOUT, ft_wipePos)
+RegisterPlayerEvent(PLAYER_EVENT_ON_LOGOUT, ft_wipePosLogout)
