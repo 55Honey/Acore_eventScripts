@@ -78,16 +78,21 @@ zCoord['gurubashi'] = 38.23
 orientation['gurubashi'] = 4.22
 initialMessage['gurubashi'] = " minutes from now all players which reside in an open world map AND opt in will be teleported for FFA-PvP. If you wish to participate type '.fun on'. There will be further announcements every minute."
 followupMessage['gurubashi'] = " all players in open world maps who sign up, will be teleported for FFA-PvP. If you wish to opt in, please type '.fun on'."
-pvpOn['gurubashi'] = false
+pvpOn['gurubashi'] = false -- Don't turn World PvP on
 minLevel['gurubashi'] = nil -- it is ffa PvP, no need for a minimum level
 checkAmount['gurubashi'] = false
 
 -- Config for the Halaa teleport event
-mapId['halaa'] = 530
-xCoord['halaa'] = -1568.77
-yCoord['halaa'] = 7947.6
-zCoord['halaa'] = -13.23
-orientation['halaa'] = 1.29
+mapId['halaa_defender'] = 530
+xCoord['halaa_defender'] = -1568
+yCoord['halaa_defender'] = 7947
+zCoord['halaa_defender'] = -13
+orientation['halaa_defender'] = 1.29
+mapId['halaa_attacker'] = 530
+xCoord['halaa_attacker'] = -1908
+yCoord['halaa_attacker'] = 8038
+zCoord['halaa_attacker'] = -8
+orientation['halaa_attacker'] = 6
 initialMessage['halaa'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Halaa for mass-PvP. If you wish to participate type '.fun on'. There will be further announcements every minute."
 followupMessage['halaa'] = " all players in open world maps who sign up, will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'."
 pvpOn['halaa'] = true
@@ -115,6 +120,9 @@ local numExpectedAllies = 0
 local numExpectedHorde = 0
 
 local eventName
+local attacker          -- team Id
+local attackers = {}    -- array of attacking players low guids
+local defenders = {}    -- array of defending players low guids
 
 local function randomised(init)
     return math.random (-20, 20) + init
@@ -209,10 +217,23 @@ local function ft_teleport(playerArray)
                     playerArray[n]:CastSpell(playerArray[n], Config.Spell2, true)
                 end
 
-                playerArray[n]:Teleport( mapId[eventName], randomised(xCoord[eventName]), randomised(yCoord[eventName]), zCoord[eventName], orientation[eventName] )
-                playerArray[n]:RegisterEvent(ft_wipePosEvent, 300000)
+                -- if the event involves world PvP, there's gonna be attacker and defender. Else just summon everyone to the same place.
                 if pvpOn[eventName] then
+                    local target
+                    if playerArray[n]:GetTeam() == attacker then
+                        target= eventName..'_attacker'
+                        table.insert(attackers, playerArray[n]:GetGUIDLow())
+                    else
+                        target= eventName..'_defender'
+                        table.insert(defenders, playerArray[n]:GetGUIDLow())
+                    end
+
                     playerArray[n]:SetPvP( true )
+                    playerArray[n]:Teleport( mapId[target], randomised(xCoord[target]), randomised(yCoord[target]), zCoord[target], orientation[target] )
+
+                else
+                    playerArray[n]:Teleport( mapId[eventName], randomised(xCoord[eventName]), randomised(yCoord[eventName]), zCoord[eventName], orientation[eventName] )
+                    playerArray[n]:RegisterEvent(ft_wipePosEvent, 300000)
                 end
 
                 playerArray[n]:PlayDirectSound(2847, playerArray[n])
@@ -226,8 +247,93 @@ local function ft_teleport(playerArray)
     end
 end
 
-local function ft_funEventAnnouncer(eventid, delay, repeats)
+local function ft_startEvent()
+    local Players = {}
+    local duration = GetCurrTime()
+    math.randomseed (duration)
 
+    for ind,val in pairs(optIn) do
+        if val == 1 then
+            table.insert(Players, GetPlayerByGUID(ind))
+        end
+    end
+
+    -- For Halaa event only
+    if eventName == 'halaa' then
+        if numExpectedHorde > numExpectedAllies then
+            attacker = TEAM_HORDE
+            SetOwnerHalaa(0)
+        else
+            attacker = TEAM_ALLIANCE
+            SetOwnerHalaa(1)
+        end
+        SendWorldMessage('The battle for Halaa has begun!')
+    end
+
+    if Players and #Players > 0 then
+        ft_teleport(Players)
+    end
+
+    -- invite players to raids if it's world PvP
+    local raidMembers = 0
+    local leader = ''
+    if pvpOn[eventName] then
+        if attackers and #attackers > 0 then
+            for ind, val in pairs(attackers) do
+                if leader == '' then
+                    leader = val
+                    raidMembers = raidMembers + 1
+                end
+
+                if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
+                    GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                end
+                GetPlayerByGUID(leader):AddGroupMember(GetPlayerByGUID(val))
+                raidMembers = raidMembers + 1
+
+                if raidMember == 40 then
+                    leader = ''
+                    raidMembers = 0
+                end
+            end
+        end
+
+        leader = ''
+        raidMembers = 0
+
+        if defenders and #defenders > 0 then
+            for ind, val in pairs(defenders) do
+                if leader == '' then
+                    leader = val
+                    raidMembers = raidMembers + 1
+                end
+
+                if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
+                    GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                end
+                GetPlayerByGUID(leader):AddGroupMember(GetPlayerByGUID(val))
+                raidMembers = raidMembers + 1
+
+                if raidMember == 40 then
+                    leader = ''
+                    raidMembers = 0
+                end
+            end
+        end
+    end
+
+    duration = GetCurrTime() - duration
+    print( 'Executing Event Teleport. Duration: '..duration..'ms. Participants: '..#Players )
+
+    CreateLuaEvent(ft_teleportReminder,30000,6)
+    optIn = {}
+    numExpectedAllies = 0
+    numExpectedHorde = 0
+    attackers = {}
+    defenders = {}
+end
+
+local function ft_funEventAnnouncer(eventid, delay, repeats)
     if repeats > 1 then
         local minutes = repeats - 1
         local text2
@@ -238,27 +344,8 @@ local function ft_funEventAnnouncer(eventid, delay, repeats)
         end
         SendWorldMessage('In '..minutes..text2..followupMessage[eventName])
     else
-        local Players = {}
-        local duration = GetCurrTime()
-        math.randomseed (duration)
-
-        for ind,val in pairs(optIn) do
-            if val == 1 then
-                table.insert(Players, GetPlayerByGUID(ind))
-            end
-        end
-
-        if Players and #Players > 0 then
-            ft_teleport(Players)
-        end
-
-        duration = GetCurrTime() - duration
-        print( 'Executing Event Teleport. Duration: '..duration..'ms. Participants: '..#Players )
-
-        CreateLuaEvent(ft_teleportReminder,30000,6)
-        optIn = {}
-        numExpectedAllies = 0
-        numExpectedHorde = 0
+        -- start the event
+       ft_startEvent()
     end
 end
 
