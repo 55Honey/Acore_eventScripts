@@ -280,16 +280,26 @@ local function ft_startEvent()
     if pvpOn[eventName] then
         if attackers and #attackers > 0 then
             for ind, val in pairs(attackers) do
+
                 if leader == '' then
                     leader = val
                     raidMembers = raidMembers + 1
-                end
 
-                if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
-                    GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                elseif raidMembers == 1 then
+                    GetPlayerByGUID( leader ):GroupCreate( GetPlayerByGUID(val) )
+                    if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
+                        if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
+                            GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                        end
+                    end
+                    raidMembers = raidMembers + 1
+
+                else
+                    if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
+                        GetPlayerByGUID(leader):GetGroup():AddMember(GetPlayerByGUID(val))
+                        raidMembers = raidMembers + 1
+                    end
                 end
-                GetPlayerByGUID(leader):AddGroupMember(GetPlayerByGUID(val))
-                raidMembers = raidMembers + 1
 
                 if raidMember == 40 then
                     leader = ''
@@ -303,16 +313,26 @@ local function ft_startEvent()
 
         if defenders and #defenders > 0 then
             for ind, val in pairs(defenders) do
+
                 if leader == '' then
                     leader = val
                     raidMembers = raidMembers + 1
-                end
 
-                if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
-                    GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                elseif raidMembers == 1 then
+                    GetPlayerByGUID( leader ):GroupCreate( GetPlayerByGUID(val) )
+                    if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
+                        if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
+                            GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                        end
+                    end
+                    raidMembers = raidMembers + 1
+
+                else
+                    if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
+                        GetPlayerByGUID(leader):GetGroup():AddMember(GetPlayerByGUID(val))
+                        raidMembers = raidMembers + 1
+                    end
                 end
-                GetPlayerByGUID(leader):AddGroupMember(GetPlayerByGUID(val))
-                raidMembers = raidMembers + 1
 
                 if raidMember == 40 then
                     leader = ''
@@ -345,7 +365,7 @@ local function ft_funEventAnnouncer(eventid, delay, repeats)
         SendWorldMessage('In '..minutes..text2..followupMessage[eventName])
     else
         -- start the event
-       ft_startEvent()
+        ft_startEvent()
     end
 end
 
