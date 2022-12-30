@@ -510,7 +510,7 @@ local function ft_command(event, player, command, chatHandler)
     return
 end
 
-function ft_OnGameEventStart( _, gameeventid )
+local function ft_OnGameEventStart( _, gameeventid )
     if gameeventid == 73 then   --hourly bells
 
         local nowTable = os.date('*t')
