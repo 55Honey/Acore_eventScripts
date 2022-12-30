@@ -420,12 +420,14 @@ local function ft_command(event, player, command, chatHandler)
             end
         end
 
-        optIn[player:GetGUIDLow()] = 1
         chatHandler:SendSysMessage("You've signed up for the event! Use '.fun no' to opt out.")
-        if player:GetTeam() == TEAM_ALLIANCE then
-            numExpectedAllies = numExpectedAllies + 1
-        else
-            numExpectedHorde = numExpectedHorde + 1
+        if optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] ~= 1 then
+            optIn[player:GetGUIDLow()] = 1
+            if player:GetTeam() == TEAM_ALLIANCE then
+                numExpectedAllies = numExpectedAllies + 1
+            else
+                numExpectedHorde = numExpectedHorde + 1
+            end
         end
         return false
     end
