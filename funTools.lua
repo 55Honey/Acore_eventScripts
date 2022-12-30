@@ -47,18 +47,27 @@
 --               -  add this script to ../lua_scripts/
 ------------------------------------------------------------------------------------------------
 
+local function newAutotable( dim )
+    local MT = {};
+    for i=1, dim do
+        MT[i] = {__index = function(t, k)
+            if i < dim then
+                t[k] = setmetatable({}, MT[i+1])
+                return t[k];
+            end
+        end}
+    end
+
+    return setmetatable({}, MT[1]);
+end
+
+local GAME_EVENT_START = 34                     -- (event, gameeventid)
+
 ------------------------------------------
 -- Begin of config section
 ------------------------------------------
 
 local Config = {}
-
-Config.Spell1 = 71142       -- Rejuvenation with 6750 to 11250 ticks for 15s. Applied before teleport. May be nil.
-Config.Spell2 = 61734       -- Noblegarden Bunny. Applied after teleport. May be nil.
-Config.AllowedMaps = {0,1,530,571}
--- Allowed maps are: Eastern Kingdoms, Kalimdor, Outland (Including Belf and Spacegoat starting zones), Northrend
-
-
 local mapId = {}
 local xCoord = {}
 local yCoord = {}
@@ -69,6 +78,11 @@ local followupMessage = {}
 local pvpOn = {}
 local minLevel = {}
 local checkAmount = {}
+
+Config.Spell1 = 71142       -- Rejuvenation with 6750 to 11250 ticks for 15s. Applied before teleport. May be nil.
+Config.Spell2 = 61734       -- Noblegarden Bunny. Applied after teleport. May be nil.
+Config.AllowedMaps = {0,1,530,571}
+-- Allowed maps are: Eastern Kingdoms, Kalimdor, Outland (Including Belf and Spacegoat starting zones), Northrend
 
 -- Config for the Gurubashi teleport event
 mapId['gurubashi'] = 0
@@ -83,6 +97,23 @@ minLevel['gurubashi'] = nil -- it is ffa PvP, no need for a minimum level
 checkAmount['gurubashi'] = false
 
 -- Config for the Halaa teleport event
+Config.startTime = newAutotable(2)
+-- Config.startTime[weekday][hour]   Sunday = 1, Wednesday = 4, Saturday = 7, hour = 0-23
+-- [7][20] means every saturday at 20.00 / 8pm
+Config.startTime[1][2] = true
+Config.startTime[2][2] = true
+Config.startTime[3][2] = true
+Config.startTime[4][2] = true
+Config.startTime[5][2] = true
+Config.startTime[6][2] = true
+Config.startTime[7][2] = true
+Config.startTime[1][20] = true
+Config.startTime[2][20] = true
+Config.startTime[3][20] = true
+Config.startTime[4][20] = true
+Config.startTime[5][20] = true
+Config.startTime[6][20] = true
+Config.startTime[7][20] = true
 mapId['halaa_defender'] = 530
 xCoord['halaa_defender'] = -1568
 yCoord['halaa_defender'] = 7947
@@ -420,14 +451,12 @@ local function ft_command(event, player, command, chatHandler)
             end
         end
 
+        optIn[player:GetGUIDLow()] = 1
         chatHandler:SendSysMessage("You've signed up for the event! Use '.fun no' to opt out.")
-        if optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] ~= 1 then
-            optIn[player:GetGUIDLow()] = 1
-            if player:GetTeam() == TEAM_ALLIANCE then
-                numExpectedAllies = numExpectedAllies + 1
-            else
-                numExpectedHorde = numExpectedHorde + 1
-            end
+        if player:GetTeam() == TEAM_ALLIANCE then
+            numExpectedAllies = numExpectedAllies + 1
+        else
+            numExpectedHorde = numExpectedHorde + 1
         end
         return false
     end
@@ -481,5 +510,19 @@ local function ft_command(event, player, command, chatHandler)
     return
 end
 
-RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, ft_command)
-RegisterPlayerEvent(PLAYER_EVENT_ON_LOGOUT, ft_wipePosLogout)
+function ft_OnGameEventStart( _, gameeventid )
+    if gameeventid == 73 then   --hourly bells
+
+        local nowTable = os.date('*t')
+        local nowWDay = nowTable.wday
+        local nowHour = nowTable.hour
+
+        if Config.startTime[nowWDay][nowHour] == true then
+            RunCommand('.fun halaa 15')
+        end
+    end
+end
+
+RegisterPlayerEvent( PLAYER_EVENT_ON_COMMAND, ft_command )
+RegisterPlayerEvent( PLAYER_EVENT_ON_LOGOUT, ft_wipePosLogout )
+RegisterServerEvent( GAME_EVENT_START, ft_OnGameEventStart, 0 )
