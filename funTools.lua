@@ -140,7 +140,7 @@ local TEAM_ALLIANCE = 0
 local TEAM_HORDE = 1
 local TEAM_NEUTRAL = 2
 
-local message = "Party time! Greetings from Chromie and her helpers!"
+local message = "Party time! Have fun!"
 
 local storedMap = {}
 local storedX = {}
@@ -252,10 +252,10 @@ local function ft_teleport(playerArray)
                 if pvpOn[eventName] then
                     local target
                     if playerArray[n]:GetTeam() == attacker then
-                        target= eventName..'_attacker'
+                        target = eventName..'_attacker'
                         table.insert(attackers, playerArray[n]:GetGUIDLow())
                     else
-                        target= eventName..'_defender'
+                        target = eventName..'_defender'
                         table.insert(defenders, playerArray[n]:GetGUIDLow())
                     end
 
@@ -308,80 +308,91 @@ local function ft_startEvent()
     -- invite players to raids if it's world PvP
     local raidMembers = 0
     local leader = ''
-    if pvpOn[eventName] then
-        if attackers and #attackers > 0 then
-            for ind, val in pairs(attackers) do
+    CreateLuaEvent(function()
+        if pvpOn[eventName] then
+            if attackers and #attackers > 0 then
+                for ind, val in pairs(attackers) do
+                    local currentPlayer = GetPlayerByGUID(val)
+                    if currentPlayer:IsInGroup() then
+                        currentPlayer:RemoveFromGroup()
+                    end
 
-                if leader == '' then
-                    leader = val
-                    raidMembers = raidMembers + 1
+                    if leader == '' then
+                        leader = val
+                        raidMembers = raidMembers + 1
 
-                elseif raidMembers == 1 then
-                    GetPlayerByGUID( leader ):GroupCreate( GetPlayerByGUID(val) )
-                    if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
-                        if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
-                            GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                    elseif raidMembers == 1 then
+                        GetPlayerByGUID( leader ):GroupCreate( currentPlayer )
+                        if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
+                            if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
+                                GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                            end
+                        end
+                        raidMembers = raidMembers + 1
+
+                    else
+                        if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
+                            GetPlayerByGUID(leader):GetGroup():AddMember(currentPlayer)
+                            raidMembers = raidMembers + 1
                         end
                     end
-                    raidMembers = raidMembers + 1
 
-                else
-                    if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
-                        GetPlayerByGUID(leader):GetGroup():AddMember(GetPlayerByGUID(val))
-                        raidMembers = raidMembers + 1
+                    if raidMember == 40 then
+                        leader = ''
+                        raidMembers = 0
                     end
                 end
+            end
 
-                if raidMember == 40 then
-                    leader = ''
-                    raidMembers = 0
+            leader = ''
+            raidMembers = 0
+
+            if defenders and #defenders > 0 then
+                for ind, val in pairs(defenders) do
+                    local currentPlayer = GetPlayerByGUID(val)
+                    if currentPlayer:IsInGroup() then
+                        currentPlayer:RemoveFromGroup()
+                    end
+
+                    if leader == '' then
+                        leader = val
+                        raidMembers = raidMembers + 1
+
+                    elseif raidMembers == 1 then
+                        GetPlayerByGUID( leader ):GroupCreate( currentPlayer )
+                        if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
+                            if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
+                                GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                            end
+                        end
+                        raidMembers = raidMembers + 1
+
+                    else
+                        if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
+                            GetPlayerByGUID(leader):GetGroup():AddMember(currentPlayer)
+                            raidMembers = raidMembers + 1
+                        end
+                    end
+
+                    if raidMember == 40 then
+                        leader = ''
+                        raidMembers = 0
+                    end
                 end
             end
         end
 
-        leader = ''
-        raidMembers = 0
+        duration = GetCurrTime() - duration
 
-        if defenders and #defenders > 0 then
-            for ind, val in pairs(defenders) do
-
-                if leader == '' then
-                    leader = val
-                    raidMembers = raidMembers + 1
-
-                elseif raidMembers == 1 then
-                    GetPlayerByGUID( leader ):GroupCreate( GetPlayerByGUID(val) )
-                    if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
-                        if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
-                            GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
-                        end
-                    end
-                    raidMembers = raidMembers + 1
-
-                else
-                    if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
-                        GetPlayerByGUID(leader):GetGroup():AddMember(GetPlayerByGUID(val))
-                        raidMembers = raidMembers + 1
-                    end
-                end
-
-                if raidMember == 40 then
-                    leader = ''
-                    raidMembers = 0
-                end
-            end
-        end
-    end
-
-    duration = GetCurrTime() - duration
-    print( 'Executing Event Teleport. Duration: '..duration..'ms. Participants: '..#Players )
+        optIn = {}
+        numExpectedAllies = 0
+        numExpectedHorde = 0
+        attackers = {}
+        defenders = {}
+    end, 5000)
 
     CreateLuaEvent(ft_teleportReminder,30000,6)
-    optIn = {}
-    numExpectedAllies = 0
-    numExpectedHorde = 0
-    attackers = {}
-    defenders = {}
+    print( 'Executing Event Teleport. Duration: '..duration..'ms. Includes 5000ms delay. Participants: '..#Players )
 end
 
 local function ft_funEventAnnouncer(eventid, delay, repeats)
