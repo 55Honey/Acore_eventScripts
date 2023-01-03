@@ -62,6 +62,12 @@ The last Repetition will result in all players who are in open world and opt-in 
 - have their position stored
 - get teleported to Gurubashi Arena
 
+A similar event exists for Halaa:
+
+`.fun halaa [$repeats]`
+
+The perks are the same as Gurubashi, except that players will be put into raids according to their faction and teleported near or into Halaa in Nagrand.
+
 ## Player Usage:
 `.fun on` to opt-in for the event.
 `.fun no` to opt-out of the event (default).
