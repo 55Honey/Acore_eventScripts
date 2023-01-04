@@ -240,9 +240,11 @@ local function ft_storePos(player)
 end
 
 local function ft_teleportReminder(eventId, delay, repeats)
-    SendOptMessage("Participants of the event can become revived AND return back to the position before the event by typing '.fun return'.")
     if repeats == 1 then
+        SendOptMessage("'.fun return' is now deactivated.")
         eventName = nil
+    else
+        SendOptMessage("Participants of the event can become revived AND return back to the position before the event by typing '.fun return'.")
     end
 end
 
@@ -344,6 +346,10 @@ local function ft_startEvent()
                             currentPlayer:RemoveFromGroup()
                         end
 
+                        if pvpOn[eventName] then
+                            currentPlayer:SetPvP( true )
+                        end
+
                         if leader == '' then
                             leader = val
                             raidMembers = raidMembers + 1
@@ -380,6 +386,10 @@ local function ft_startEvent()
                     local currentPlayer = GetPlayerByGUID(val)
                     if currentPlayer:IsInGroup() then
                         currentPlayer:RemoveFromGroup()
+                    end
+
+                    if pvpOn[eventName] then
+                        currentPlayer:SetPvP( true )
                     end
 
                     if leader == '' then
