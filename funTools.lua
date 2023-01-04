@@ -171,7 +171,7 @@ end
 local function SendOptMessage(message)
     local players = GetPlayersInWorld(TEAM_ALLIANCE)
     for ind, val in pairs(players) do
-        local player = GetPlayerByGUID(val)
+        local player = val
         if player then
             if optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] ~= 0 then
                 player:SendBroadcastMessage(message)
@@ -181,7 +181,7 @@ local function SendOptMessage(message)
 
     local players = GetPlayersInWorld(TEAM_HORDE)
     for ind, val in pairs(players) do
-        local player = GetPlayerByGUID(val)
+        local player = val
         if player then
             if optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] ~= 0 then
                 player:SendBroadcastMessage(message)
