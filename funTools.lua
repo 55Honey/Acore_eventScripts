@@ -329,9 +329,11 @@ local function ft_startEvent()
         ft_teleport(Players)
     end
     PrintInfo( '===================================================================================================' )
-    PrintInfo( 'funTools.lua: Halaa event in progress.')
+    PrintInfo( 'funTools.lua: '..eventName..' event in progress.')
     PrintInfo( 'Attackers: '..#attackers..' Defenders: '..#defenders )
-    PrintInfo( 'Attacking Faction (0=Alliance, 1=Horde): '..attacker )
+    if attacker then
+        PrintInfo( 'Attacking Faction (0=Alliance, 1=Horde): '..attacker )
+    end
 
     -- invite players to raids if it's world PvP
     local raidMembers = 0
