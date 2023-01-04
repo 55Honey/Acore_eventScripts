@@ -173,7 +173,7 @@ local function SendOptMessage(message)
     for ind, val in pairs(players) do
         local player = val
         if player then
-            if optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] ~= 0 then
+            if not optIn[player:GetGUIDLow()] or (optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] ~= 0) then
                 player:SendBroadcastMessage(message)
             end
         end
@@ -183,7 +183,7 @@ local function SendOptMessage(message)
     for ind, val in pairs(players) do
         local player = val
         if player then
-            if optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] ~= 0 then
+            if not optIn[player:GetGUIDLow()] or (optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] ~= 0) then
                 player:SendBroadcastMessage(message)
             end
         end
