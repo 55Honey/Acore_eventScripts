@@ -90,8 +90,8 @@ xCoord['gurubashi'] = -13207.77
 yCoord['gurubashi'] = 274.35
 zCoord['gurubashi'] = 38.23
 orientation['gurubashi'] = 4.22
-initialMessage['gurubashi'] = " minutes from now all players which reside in an open world map AND opt in will be teleported for FFA-PvP. If you wish to participate type '.fun on'. There will be further announcements every minute."
-followupMessage['gurubashi'] = " all players in open world maps who sign up, will be teleported for FFA-PvP. If you wish to opt in, please type '.fun on'."
+initialMessage['gurubashi'] = " minutes from now all players which reside in an open world map AND opt in will be teleported for FFA-PvP. If you wish to participate type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+followupMessage['gurubashi'] = " all players in open world maps who sign up, will be teleported for FFA-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
 pvpOn['gurubashi'] = false -- Don't turn World PvP on
 minLevel['gurubashi'] = nil -- it is ffa PvP, no need for a minimum level
 checkAmount['gurubashi'] = false
@@ -124,8 +124,8 @@ xCoord['halaa_attacker'] = -1908
 yCoord['halaa_attacker'] = 8038
 zCoord['halaa_attacker'] = -8
 orientation['halaa_attacker'] = 6
-initialMessage['halaa'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Halaa for mass-PvP. If you wish to participate type '.fun on'. There will be further announcements every minute."
-followupMessage['halaa'] = " all players in open world maps who sign up, will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'."
+initialMessage['halaa'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+followupMessage['halaa'] = " all players in open world maps who sign up, will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
 pvpOn['halaa'] = true
 minLevel['halaa'] = 58
 checkAmount['halaa'] = true
@@ -166,6 +166,28 @@ local function ft_hasValue(tab,val)
         end
     end
     return false
+end
+
+local function SendOptMessage(message)
+    local players = GetPlayersInWorld(TEAM_ALLIANCE)
+    for ind, val in pairs(players) do
+        local player = GetPlayerByGUID(val)
+        if player then
+            if optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] ~= 0 then
+                player:SendBroadcastMessage(message)
+            end
+        end
+    end
+
+    local players = GetPlayersInWorld(TEAM_HORDE)
+    for ind, val in pairs(players) do
+        local player = GetPlayerByGUID(val)
+        if player then
+            if optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] ~= 0 then
+                player:SendBroadcastMessage(message)
+            end
+        end
+    end
 end
 
 local function ft_wipePos( player )
@@ -218,7 +240,7 @@ local function ft_storePos(player)
 end
 
 local function ft_teleportReminder(eventId, delay, repeats)
-    SendWorldMessage("Participants of the event can become revived AND return back to the position before the event by typing '.fun return'.")
+    SendOptMessage("Participants of the event can become revived AND return back to the position before the event by typing '.fun return'.")
     if repeats == 1 then
         eventName = nil
     end
@@ -228,7 +250,7 @@ local function ft_teleport(playerArray)
 
     for n = 1, #playerArray do
 
-        if optIn[playerArray[n]:GetGUIDLow()] ~= nil then
+        if optIn[playerArray[n]:GetGUIDLow()] == 1 then
             if ft_hasValue(Config.AllowedMaps,playerArray[n]:GetMapId()) then
 
                 if not playerArray[n]:IsAlive() then
@@ -413,7 +435,7 @@ local function ft_funEventAnnouncer(eventid, delay, repeats)
         else
             text2 = ' minutes'
         end
-        SendWorldMessage('In '..minutes..text2..followupMessage[eventName])
+        SendOptMessage('In '..minutes..text2..followupMessage[eventName])
     else
         -- start the event
         ft_startEvent()
@@ -428,7 +450,7 @@ local function ft_command(event, player, command, chatHandler)
     end
 
     if commandArray[2] == nil then
-        chatHandler:SendSysMessage("If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'.")
+        chatHandler:SendSysMessage("If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event.")
     end
 
     if commandArray[2] == 'no' or commandArray[2] == 'off' then
@@ -436,7 +458,7 @@ local function ft_command(event, player, command, chatHandler)
             chatHandler:SendSysMessage("Can not use 'no' from the console. Requires player object.")
             return false
         end
-        optIn[player:GetGUIDLow()] = nil
+        optIn[player:GetGUIDLow()] = 0
         chatHandler:SendSysMessage("You've chosen to NOT participate in the event this time.")
         return false
     end
@@ -472,7 +494,7 @@ local function ft_command(event, player, command, chatHandler)
         end
 
         optIn[player:GetGUIDLow()] = 1
-        chatHandler:SendSysMessage("You've signed up for the event! Use '.fun no' to opt out.")
+        chatHandler:SendSysMessage("You've signed up for the event! Use '.fun no' or '.fun off' to opt out.")
         if player:GetTeam() == TEAM_ALLIANCE then
             numExpectedAllies = numExpectedAllies + 1
         else
@@ -523,7 +545,7 @@ local function ft_command(event, player, command, chatHandler)
             text2 = ' minutes'
         end
 
-        SendWorldMessage('In '..repeats..text2..initialMessage[eventName])
+        SendOptMessage('In '..repeats..text2..initialMessage[eventName])
         return false
     end
 
