@@ -304,6 +304,10 @@ local function ft_startEvent()
     if Players and #Players > 0 then
         ft_teleport(Players)
     end
+    PrintInfo( '===================================================================================================' )
+    PrintInfo( 'funTools.lua: Halaa event in progress.')
+    PrintInfo( 'Attackers: '..#attackers..' Defenders: '..#defenders )
+    PrintInfo( 'Attacking Faction (0=Alliance, 1=Horde): '..attacker )
 
     -- invite players to raids if it's world PvP
     local raidMembers = 0
@@ -385,8 +389,11 @@ local function ft_startEvent()
         end
 
         duration = GetCurrTime() - duration
+        PrintInfo( 'Finished Event Teleport and invites. Duration: '..duration..'ms. Includes 5000ms delay. Participants: '..#Players )
+        PrintInfo( '===================================================================================================' )
 
         optIn = {}
+        attacker = nil
         numExpectedAllies = 0
         numExpectedHorde = 0
         attackers = {}
@@ -394,7 +401,7 @@ local function ft_startEvent()
     end, 5000)
 
     CreateLuaEvent(ft_teleportReminder,30000,6)
-    print( 'Executing Event Teleport. Duration: '..duration..'ms. Includes 5000ms delay. Participants: '..#Players )
+
 end
 
 local function ft_funEventAnnouncer(eventid, delay, repeats)
