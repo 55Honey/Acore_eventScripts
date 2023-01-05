@@ -191,7 +191,7 @@ local function SendOptMessage(message)
 end
 
 local function ft_wipePos( player )
-    if player then
+    if player and optIn[player:GetGUIDLow()] and optIn[player:GetGUIDLow()] == 1 then
         --deduct 1 player from the expected number of participants
         if player:GetTeam() == TEAM_ALLIANCE then
             numExpectedAllies = numExpectedAllies - 1
