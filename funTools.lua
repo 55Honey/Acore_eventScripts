@@ -386,8 +386,10 @@ local function ft_startEvent()
             if defenders and #defenders > 0 then
                 for ind, val in pairs(defenders) do
                     local currentPlayer = GetPlayerByGUID(val)
-                    if currentPlayer:IsInGroup() then
-                        currentPlayer:RemoveFromGroup()
+                    if currentPlayer then
+                        if currentPlayer:IsInGroup() then
+                            currentPlayer:RemoveFromGroup()
+                        end
                     end
 
                     if pvpOn[eventName] then
@@ -482,6 +484,11 @@ local function ft_command(event, player, command, chatHandler)
             return false
         end
 
+        if not eventName then
+            chatHandler:SendSysMessage("There is no event currently in progress.")
+            return false
+        end
+
         -- don't allow players too low to participate
         if minLevel[eventName] ~= nil then
             if player:GetLevel() < minLevel[eventName] then
@@ -494,12 +501,12 @@ local function ft_command(event, player, command, chatHandler)
         if checkAmount[eventName] == true then
             if player:GetTeam() == TEAM_ALLIANCE then
                 if numExpectedAllies > 10 and numExpectedAllies > numExpectedHorde * 1.5 then
-                    chatHandler:SendSysMessage("There are too many players from the Alliance already. Care to join as Horde?")
+                    chatHandler:SendSysMessage("There are too many players from the Alliance already. You can only use a character from the Horde faction to join now. Or try again in a bit.")
                     return false
                 end
             elseif player:GetTeam() == TEAM_HORDE then
                 if numExpectedHorde > 10 and numExpectedHorde > numExpectedAllies * 1.5 then
-                    chatHandler:SendSysMessage("There are too many players from the Horde already. Care to join as Alliance?")
+                    chatHandler:SendSysMessage("There are too many players from the Horde already. You can only use a character from the Alliance faction to join now. Or try again in a bit.")
                     return false
                 end
             end
