@@ -347,7 +347,6 @@ local function ft_startEvent()
                         if currentPlayer:IsInGroup() then
                             currentPlayer:RemoveFromGroup()
                         end
-
                         if pvpOn[eventName] then
                             currentPlayer:SetPvP( true )
                         end
@@ -390,10 +389,9 @@ local function ft_startEvent()
                         if currentPlayer:IsInGroup() then
                             currentPlayer:RemoveFromGroup()
                         end
-                    end
-
-                    if pvpOn[eventName] then
-                        currentPlayer:SetPvP( true )
+                        if pvpOn[eventName] then
+                            currentPlayer:SetPvP( true )
+                        end
                     end
 
                     if leader == '' then
