@@ -100,19 +100,19 @@ checkAmount['gurubashi'] = false
 Config.startTime = newAutotable(2)
 -- Config.startTime[weekday][hour]   Sunday = 1, Wednesday = 4, Saturday = 7, hour = 0-23
 -- [7][20] means every saturday at 20.00 / 8pm
-Config.startTime[1][2] = true
-Config.startTime[2][2] = true
-Config.startTime[3][2] = true
-Config.startTime[4][2] = true
-Config.startTime[5][2] = true
-Config.startTime[6][2] = true
-Config.startTime[7][2] = true
+-- Config.startTime[weekday][hour]   Sunday = 1, Wednesday = 4, Saturday = 7, hour = 0-23
+-- [7][20] means every saturday at 20.00 / 8pm
+Config.startTime[1][4] = true
+Config.startTime[3][4] = true
+Config.startTime[5][4] = true
+Config.startTime[7][4] = true
+Config.startTime[1][12] = true
+Config.startTime[3][12] = true
+Config.startTime[5][12] = true
+Config.startTime[7][12] = true
 Config.startTime[1][20] = true
-Config.startTime[2][20] = true
 Config.startTime[3][20] = true
-Config.startTime[4][20] = true
 Config.startTime[5][20] = true
-Config.startTime[6][20] = true
 Config.startTime[7][20] = true
 mapId['halaa_defender'] = 530
 xCoord['halaa_defender'] = -1568
