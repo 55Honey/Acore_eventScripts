@@ -392,31 +392,31 @@ local function ft_startEvent()
                         if pvpOn[eventName] then
                             currentPlayer:SetPvP( true )
                         end
-                    end
 
-                    if leader == '' then
-                        leader = val
-                        raidMembers = raidMembers + 1
+                        if leader == '' then
+                            leader = val
+                            raidMembers = raidMembers + 1
 
-                    elseif raidMembers == 1 then
-                        GetPlayerByGUID( leader ):GroupCreate( currentPlayer )
-                        if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
-                            if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
-                                GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                        elseif raidMembers == 1 then
+                            GetPlayerByGUID( leader ):GroupCreate( currentPlayer )
+                            if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
+                                if not GetPlayerByGUID(leader):GetGroup():IsRaidGroup() then
+                                    GetPlayerByGUID(leader):GetGroup():ConvertToRaid()
+                                end
+                            end
+                            raidMembers = raidMembers + 1
+
+                        else
+                            if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
+                                GetPlayerByGUID(leader):GetGroup():AddMember(currentPlayer)
+                                raidMembers = raidMembers + 1
                             end
                         end
-                        raidMembers = raidMembers + 1
 
-                    else
-                        if GetPlayerByGUID(leader) and GetPlayerByGUID(leader):GetGroup() then
-                            GetPlayerByGUID(leader):GetGroup():AddMember(currentPlayer)
-                            raidMembers = raidMembers + 1
+                        if raidMember == 40 then
+                            leader = ''
+                            raidMembers = 0
                         end
-                    end
-
-                    if raidMember == 40 then
-                        leader = ''
-                        raidMembers = 0
                     end
                 end
             end
