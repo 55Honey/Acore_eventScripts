@@ -470,6 +470,10 @@ local function ft_command(event, player, command, chatHandler)
             chatHandler:SendSysMessage("Can not use 'no' from the console. Requires player object.")
             return false
         end
+        if not eventName then
+            chatHandler:SendSysMessage("There is no event currently in progress.")
+            return false
+        end
         optIn[player:GetGUIDLow()] = 0
         chatHandler:SendSysMessage("You've chosen to NOT participate in the event this time.")
         return false
@@ -525,7 +529,7 @@ local function ft_command(event, player, command, chatHandler)
             chatHandler:SendSysMessage("Can not use 'return' from the console. Requires player object.")
             return false
         end
-        if storedMap[player:GetGUIDLow()] ~= nil then
+        if storedMap[player:GetGUIDLow()] and storedMap[player:GetGUIDLow()] == 1 then
             if not player:IsAlive() then
                 player:ResurrectPlayer(100)
             end
