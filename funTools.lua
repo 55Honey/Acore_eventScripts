@@ -96,24 +96,34 @@ pvpOn['gurubashi'] = false -- Don't turn World PvP on
 minLevel['gurubashi'] = nil -- it is ffa PvP, no need for a minimum level
 checkAmount['gurubashi'] = false
 
--- Config for the Halaa teleport event
+-- Config for the Autostarter of teleport events
 Config.startTime = newAutotable(2)
 -- Config.startTime[weekday][hour]   Sunday = 1, Wednesday = 4, Saturday = 7, hour = 0-23
 -- [7][20] means every saturday at 20.00 / 8pm
 -- Config.startTime[weekday][hour]   Sunday = 1, Wednesday = 4, Saturday = 7, hour = 0-23
 -- [7][20] means every saturday at 20.00 / 8pm
-Config.startTime[1][4] = true
-Config.startTime[3][4] = true
-Config.startTime[5][4] = true
-Config.startTime[7][4] = true
-Config.startTime[1][12] = true
-Config.startTime[3][12] = true
-Config.startTime[5][12] = true
-Config.startTime[7][12] = true
-Config.startTime[1][20] = true
-Config.startTime[3][20] = true
-Config.startTime[5][20] = true
-Config.startTime[7][20] = true
+Config.startTime[1][4] = 'halaa'
+Config.startTime[1][12] = 'halaa'
+Config.startTime[1][20] = 'halaa'
+Config.startTime[2][4] = 'hellfire'
+Config.startTime[2][12] = 'hellfire'
+Config.startTime[2][20] = 'hellfire'
+Config.startTime[3][4] = 'halaa'
+Config.startTime[3][12] = 'halaa'
+Config.startTime[3][20] = 'halaa'
+Config.startTime[4][4] = 'hellfire'
+Config.startTime[4][12] = 'hellfire'
+Config.startTime[4][20] = 'hellfire'
+Config.startTime[5][4] = 'halaa'
+Config.startTime[5][12] = 'halaa'
+Config.startTime[5][20] = 'halaa'
+Config.startTime[6][4] = 'hellfire'
+Config.startTime[6][12] = 'hellfire'
+Config.startTime[6][20] = 'hellfire'
+Config.startTime[7][4] = 'halaa'
+Config.startTime[7][12] = 'halaa'
+Config.startTime[7][20] = 'halaa'
+
 mapId['halaa_defender'] = 530
 xCoord['halaa_defender'] = -1568
 yCoord['halaa_defender'] = 7947
@@ -129,6 +139,22 @@ followupMessage['halaa'] = " all players in open world maps who sign up, will be
 pvpOn['halaa'] = true
 minLevel['halaa'] = 58
 checkAmount['halaa'] = true
+
+mapId['hellfire_defender'] = 530 -- defender is always ally for this event
+xCoord['hellfire_defender'] = -614
+yCoord['hellfire_defender'] = 3085
+zCoord['hellfire_defender'] = 15
+orientation['hellfire_defender'] = 1.29
+mapId['hellfire_attacker'] = 530 -- attacker is always horde for this event
+xCoord['hellfire_attacker'] = -76
+yCoord['hellfire_attacker'] = 3028
+zCoord['hellfire_attacker'] = 19
+orientation['hellfire_attacker'] = 1.35
+initialMessage['hellfire'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Hellfire for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+followupMessage['hellfire'] = " all players in open world maps who sign up, will be teleported to Hellfire for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+pvpOn['hellfire'] = true
+minLevel['hellfire'] = 58
+checkAmount[hellfire] = true
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -275,6 +301,12 @@ local function ft_teleport(playerArray)
                 -- if the event involves world PvP, there's gonna be attacker and defender. Else just summon everyone to the same place.
                 if pvpOn[eventName] then
                     local target
+
+                    -- Assign a dummy value, if the attacker isn't relevant for the event
+                    if not attacker then
+                        attacker = TEAM_HORDE
+                    end
+
                     if playerArray[n]:GetTeam() == attacker then
                         target = eventName..'_attacker'
                         table.insert(attackers, playerArray[n]:GetGUIDLow())
@@ -323,6 +355,11 @@ local function ft_startEvent()
             SetOwnerHalaa(1)
         end
         SendWorldMessage('The battle for Halaa has begun!')
+    end
+
+    -- For Hellfire event only
+    if eventName == 'hellfire' then
+        SendWorldMessage('The battle for Hellfire has begun!')
     end
 
     if Players and #Players > 0 then
@@ -548,7 +585,7 @@ local function ft_command(event, player, command, chatHandler)
         return
     end
 
-    if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' then
+    if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' or commandArray[2] == 'hellfire' then
         eventName = commandArray[2]
         local repeats = 15
 
@@ -580,8 +617,8 @@ local function ft_OnGameEventStart( _, gameeventid )
         local nowWDay = nowTable.wday
         local nowHour = nowTable.hour
 
-        if Config.startTime[nowWDay][nowHour] == true then
-            RunCommand('.fun halaa 15')
+        if Config.startTime[nowWDay][nowHour] ~= nil then
+            RunCommand('.fun '..Config.startTime[nowWDay][nowHour]..' 15')
         end
     end
 end
