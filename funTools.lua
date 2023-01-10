@@ -154,7 +154,7 @@ initialMessage['zangarmarsh'] = " minutes from now all players which reside in a
 followupMessage['zangarmarsh'] = " all players in open world maps who sign up, will be teleported to Zangarmarsh for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
 pvpOn['zangarmarsh'] = true
 minLevel['zangarmarsh'] = 58
-checkAmount[zangarmarsh] = true
+checkAmount['zangarmarsh'] = true
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
