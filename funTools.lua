@@ -105,21 +105,21 @@ Config.startTime = newAutotable(2)
 Config.startTime[1][4] = 'halaa'
 Config.startTime[1][12] = 'halaa'
 Config.startTime[1][20] = 'halaa'
-Config.startTime[2][4] = 'hellfire'
-Config.startTime[2][12] = 'hellfire'
-Config.startTime[2][20] = 'hellfire'
+Config.startTime[2][4] = 'zangarmarsh'
+Config.startTime[2][12] = 'zangarmarsh'
+Config.startTime[2][20] = 'zangarmarsh'
 Config.startTime[3][4] = 'halaa'
 Config.startTime[3][12] = 'halaa'
 Config.startTime[3][20] = 'halaa'
-Config.startTime[4][4] = 'hellfire'
-Config.startTime[4][12] = 'hellfire'
-Config.startTime[4][20] = 'hellfire'
+Config.startTime[4][4] = 'zangarmarsh'
+Config.startTime[4][12] = 'zangarmarsh'
+Config.startTime[4][20] = 'zangarmarsh'
 Config.startTime[5][4] = 'halaa'
 Config.startTime[5][12] = 'halaa'
 Config.startTime[5][20] = 'halaa'
-Config.startTime[6][4] = 'hellfire'
-Config.startTime[6][12] = 'hellfire'
-Config.startTime[6][20] = 'hellfire'
+Config.startTime[6][4] = 'zangarmarsh'
+Config.startTime[6][12] = 'zangarmarsh'
+Config.startTime[6][20] = 'zangarmarsh'
 Config.startTime[7][4] = 'halaa'
 Config.startTime[7][12] = 'halaa'
 Config.startTime[7][20] = 'halaa'
@@ -140,21 +140,21 @@ pvpOn['halaa'] = true
 minLevel['halaa'] = 58
 checkAmount['halaa'] = true
 
-mapId['hellfire_defender'] = 530 -- defender is always ally for this event
-xCoord['hellfire_defender'] = -614
-yCoord['hellfire_defender'] = 3085
-zCoord['hellfire_defender'] = 15
-orientation['hellfire_defender'] = 1.29
-mapId['hellfire_attacker'] = 530 -- attacker is always horde for this event
-xCoord['hellfire_attacker'] = -76
-yCoord['hellfire_attacker'] = 3028
-zCoord['hellfire_attacker'] = 19
-orientation['hellfire_attacker'] = 1.35
-initialMessage['hellfire'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Hellfire for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
-followupMessage['hellfire'] = " all players in open world maps who sign up, will be teleported to Hellfire for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
-pvpOn['hellfire'] = true
-minLevel['hellfire'] = 58
-checkAmount[hellfire] = true
+mapId['zangarmarsh_defender'] = 530 -- defender is always ally for this event
+xCoord['zangarmarsh_defender'] = 414
+yCoord['zangarmarsh_defender'] = 6160
+zCoord['zangarmarsh_defender'] = 27
+orientation['zangarmarsh_defender'] = 1.29
+mapId['zangarmarsh_attacker'] = 530 -- attacker is always horde for this event
+xCoord['zangarmarsh_attacker'] = 66
+yCoord['zangarmarsh_attacker'] = 7960
+zCoord['zangarmarsh_attacker'] = 33
+orientation['zangarmarsh_attacker'] = 4.95
+initialMessage['zangarmarsh'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Zangarmarsh for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+followupMessage['zangarmarsh'] = " all players in open world maps who sign up, will be teleported to Zangarmarsh for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+pvpOn['zangarmarsh'] = true
+minLevel['zangarmarsh'] = 58
+checkAmount[zangarmarsh] = true
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -357,9 +357,9 @@ local function ft_startEvent()
         SendWorldMessage('The battle for Halaa has begun!')
     end
 
-    -- For Hellfire event only
-    if eventName == 'hellfire' then
-        SendWorldMessage('The battle for Hellfire has begun!')
+    -- For zangarmarsh event only
+    if eventName == 'zangarmarsh' then
+        SendWorldMessage('The battle for Zangarmarsh has begun!')
     end
 
     if Players and #Players > 0 then
@@ -585,7 +585,7 @@ local function ft_command(event, player, command, chatHandler)
         return
     end
 
-    if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' or commandArray[2] == 'hellfire' then
+    if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' or commandArray[2] == 'zangarmarsh' then
         eventName = commandArray[2]
         local repeats = 15
 
