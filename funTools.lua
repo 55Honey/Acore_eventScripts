@@ -174,7 +174,7 @@ followupMessage['hellfire'] = " all players in open world maps who sign up, will
 pvpOn['hellfire'] = true
 minLevel['hellfire'] = 58
 checkAmount['hellfire'] = true
-graveyardZone['hellfire'] = 3521
+graveyardZone['hellfire'] = 3483
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -204,6 +204,8 @@ local attackers = {}    -- array of attacking players low guids
 local defenders = {}    -- array of defending players low guids
 
 local repopZone
+local repopEventName
+local repopAttacker
 
 local function randomised(init)
     return math.random (-20, 20) + init
@@ -298,6 +300,32 @@ local function ft_teleportReminder(eventId, delay, repeats)
     end
 end
 
+local function ft_teleportRepop(eventid, delay, repeats, worldobject)
+    if worldobject and worldobject:IsPlayer() then
+        if pvpOn[repopEventName] then
+            local target
+
+            -- Assign a dummy value, if the attacker isn't relevant for the event
+            if not repopAttacker then
+                repopAttacker = TEAM_HORDE
+            end
+
+            if worldobject:GetTeam() == repopAttacker then
+                target = repopEventName..'_attacker'
+            else
+                target = repopEventName..'_defender'
+            end
+
+            worldobject:SetPvP( true )
+            worldobject:Teleport( mapId[target], randomised(xCoord[target]), randomised(yCoord[target]), zCoord[target], orientation[target] )
+
+        else
+            worldobject:Teleport( mapId[repopEventName], randomised(xCoord[repopEventName]), randomised(yCoord[repopEventName]), zCoord[repopEventName], orientation[repopEventName] )
+
+        end
+    end
+end
+
 local function ft_resurrect(eventid, delay, repeats, worldobject)
     if worldobject and worldobject:IsPlayer() then
         worldobject:ResurrectPlayer(100)
@@ -307,15 +335,18 @@ end
 
 local function ft_repop(event, player)
     if player and player:GetZoneId() == repopZone and player:IsPvPFlagged() then
+        player:RegisterEvent(ft_teleportRepop, 28000, 1)
         player:RegisterEvent(ft_resurrect, 30000, 1)
         player:SendBroadcastMessage("You will be resurrected in 30 seconds.")
     end
 end
 
 local function ft_removeRepop(event, delay, repeats)
-    RemoveEventById(repopEventID)
-    repopEventID = nil
+    cancelRepopEvent()
+    cancelRepopEvent = nil
     repopZone = nil
+    repopEventName = nil
+    repopAttacker = nil
 end
 
 local function ft_teleport(playerArray)
@@ -390,21 +421,24 @@ local function ft_startEvent()
     end
 
     if graveyardZone[eventName] then
-        if repopEventID then
-            RemoveEventById( repopEventID )
+        if cancelRepopEvent then
+            cancelRepopEvent()
         end
-        repopEventID = CreateLuaEvent(ft_removeRepop, 1800000, 1)
+        CreateLuaEvent(ft_removeRepop, 1800000, 1)
         repopZone = graveyardZone[eventName]
-        repopEventID = RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, ft_repop)
+        repopEventName = eventName
+        cancelRepopEvent = RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, ft_repop)
     end
 
     -- For Halaa event only
     if eventName == 'halaa' then
         if numExpectedHorde > numExpectedAllies then
             attacker = TEAM_HORDE
+            repopAttacker = TEAM_HORDE
             SetOwnerHalaa(0)
         else
             attacker = TEAM_ALLIANCE
+            repopAttacker = TEAM_ALLIANCE
             SetOwnerHalaa(1)
         end
         SendWorldMessage('The battle for Halaa has begun!')
