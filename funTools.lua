@@ -78,6 +78,7 @@ local followupMessage = {}
 local pvpOn = {}
 local minLevel = {}
 local checkAmount = {}
+local graveyardZone = {}
 
 Config.Spell1 = 71142       -- Rejuvenation with 6750 to 11250 ticks for 15s. Applied before teleport. May be nil.
 Config.Spell2 = 61734       -- Noblegarden Bunny. Applied after teleport. May be nil.
@@ -139,32 +140,53 @@ followupMessage['halaa'] = " all players in open world maps who sign up, will be
 pvpOn['halaa'] = true
 minLevel['halaa'] = 58
 checkAmount['halaa'] = true
+graveyardZone['halaa'] = 3518
 
 mapId['zangarmarsh_defender'] = 530 -- defender is always ally for this event
-xCoord['zangarmarsh_defender'] = 414
-yCoord['zangarmarsh_defender'] = 6160
-zCoord['zangarmarsh_defender'] = 27
-orientation['zangarmarsh_defender'] = 1.29
+xCoord['zangarmarsh_defender'] = 230
+yCoord['zangarmarsh_defender'] = 6843
+zCoord['zangarmarsh_defender'] = 36
+orientation['zangarmarsh_defender'] = 1.6
 mapId['zangarmarsh_attacker'] = 530 -- attacker is always horde for this event
-xCoord['zangarmarsh_attacker'] = 66
-yCoord['zangarmarsh_attacker'] = 7960
-zCoord['zangarmarsh_attacker'] = 33
-orientation['zangarmarsh_attacker'] = 4.95
+xCoord['zangarmarsh_attacker'] = 291
+yCoord['zangarmarsh_attacker'] = 7353
+zCoord['zangarmarsh_attacker'] = 41
+orientation['zangarmarsh_attacker'] = 4.6
 initialMessage['zangarmarsh'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Zangarmarsh for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
 followupMessage['zangarmarsh'] = " all players in open world maps who sign up, will be teleported to Zangarmarsh for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
 pvpOn['zangarmarsh'] = true
 minLevel['zangarmarsh'] = 58
 checkAmount['zangarmarsh'] = true
+graveyardZone['zangarmarsh'] = 3521
+
+mapId['hellfire_defender'] = 530 -- defender is always ally for this event
+xCoord['hellfire_defender'] = -605
+yCoord['hellfire_defender'] = 3088
+zCoord['hellfire_defender'] = 22.2
+orientation['hellfire_defender'] = 1.2
+mapId['hellfire_attacker'] = 530 -- attacker is always horde for this event
+xCoord['hellfire_attacker'] = -86
+yCoord['hellfire_attacker'] = 3018
+zCoord['hellfire_attacker'] = 17.2
+orientation['hellfire_attacker'] = 1.33
+initialMessage['hellfire'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Hellfire Peninsula for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+followupMessage['hellfire'] = " all players in open world maps who sign up, will be teleported to Hellfire Peninsula for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+pvpOn['hellfire'] = true
+minLevel['hellfire'] = 58
+checkAmount['hellfire'] = true
+graveyardZone['hellfire'] = 3521
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
 ------------------------------------------
 
 local PLAYER_EVENT_ON_LOGOUT = 4            -- (event, player)
+local PLAYER_EVENT_ON_REPOP = 35            -- (event, player)
 local PLAYER_EVENT_ON_COMMAND = 42          -- (event, player, command, chatHandler) - player is nil if command used from console. Can return false
 local TEAM_ALLIANCE = 0
 local TEAM_HORDE = 1
 local TEAM_NEUTRAL = 2
+local POWER_MANA = 0
 
 local message = "Party time! Have fun!"
 
@@ -180,6 +202,8 @@ local eventName
 local attacker          -- team Id
 local attackers = {}    -- array of attacking players low guids
 local defenders = {}    -- array of defending players low guids
+
+local repopZone
 
 local function randomised(init)
     return math.random (-20, 20) + init
@@ -274,6 +298,26 @@ local function ft_teleportReminder(eventId, delay, repeats)
     end
 end
 
+local function ft_resurrect(eventid, delay, repeats, worldobject)
+    if worldobject and worldobject:IsPlayer() then
+        worldobject:ResurrectPlayer(100)
+        worldobject:SetPower( worldobject:GetMaxPower( POWER_MANA ), POWER_MANA )
+    end
+end
+
+local function ft_repop(event, player)
+    if player and player:GetZoneId() == repopZone and player:IsPvPFlagged() then
+        player:RegisterEvent(ft_resurrect, 30000, 1)
+        player:SendBroadcastMessage("You will be resurrected in 30 seconds.")
+    end
+end
+
+local function ft_removeRepop(event, delay, repeats)
+    RemoveEventById(repopEventID)
+    repopEventID = nil
+    repopZone = nil
+end
+
 local function ft_teleport(playerArray)
 
     for n = 1, #playerArray do
@@ -343,6 +387,15 @@ local function ft_startEvent()
         if val == 1 then
             table.insert(Players, GetPlayerByGUID(ind))
         end
+    end
+
+    if graveyardZone[eventName] then
+        if repopEventID then
+            RemoveEventById( repopEventID )
+        end
+        repopEventID = CreateLuaEvent(ft_removeRepop, 1800000, 1)
+        repopZone = graveyardZone[eventName]
+        repopEventID = RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, ft_repop)
     end
 
     -- For Halaa event only
