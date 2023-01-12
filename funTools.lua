@@ -294,6 +294,7 @@ end
 local function ft_teleportReminder(eventId, delay, repeats)
     if repeats == 1 then
         SendOptMessage("'.fun return' is now deactivated.")
+        optIn = {}
         eventName = nil
     else
         SendOptMessage("Participants of the event can become revived AND return back to the position before the event by typing '.fun return'.")
@@ -550,7 +551,6 @@ local function ft_startEvent()
         PrintInfo( 'Finished Event Teleport and invites. Duration: '..duration..'ms. Includes 5000ms delay. Participants: '..#Players )
         PrintInfo( '===================================================================================================' )
 
-        optIn = {}
         attacker = nil
         numExpectedAllies = 0
         numExpectedHorde = 0
