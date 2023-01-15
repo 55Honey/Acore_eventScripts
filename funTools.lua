@@ -337,13 +337,12 @@ local function ft_teleportRepop(eventid, delay, repeats, worldobject)
 
             if worldobject:GetTeam() == repopAttacker then
                 target = repopEventName..'_attacker'
+                if multipleAttackerSpawns[repopEventName] then
+                    local spawn = math.random(1, multipleAttackerSpawns[repopEventName])
+                    target = target..'_'..spawn
+                end
             else
                 target = repopEventName..'_defender'
-            end
-
-            if multipleAttackerSpawns[repopEventName] then
-                local spawn = math.random(1, multipleAttackerSpawns[repopEventName])
-                target = target..'_'..spawn
             end
 
             worldobject:SetPvP( true )
@@ -416,14 +415,13 @@ local function ft_teleport(playerArray)
                     if playerArray[n]:GetTeam() == attacker then
                         target = eventName..'_attacker'
                         table.insert(attackers, playerArray[n]:GetGUIDLow())
+                        if multipleAttackerSpawns[eventName] then
+                            local spawn = math.random(1, multipleAttackerSpawns[eventName])
+                            target = target..'_'..spawn
+                        end
                     else
                         target = eventName..'_defender'
                         table.insert(defenders, playerArray[n]:GetGUIDLow())
-                    end
-
-                    if multipleAttackerSpawns[eventName] then
-                        local spawn = math.random(1, multipleAttackerSpawns[eventName])
-                        target = target..'_'..spawn
                     end
 
                     playerArray[n]:SetPvP( true )
