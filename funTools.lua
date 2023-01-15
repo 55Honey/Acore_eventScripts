@@ -78,6 +78,8 @@ local followupMessage = {}
 local pvpOn = {}
 local minLevel = {}
 local checkAmount = {}
+local graveyardZone = {}
+local multipleAttackerSpawns = {}
 
 Config.Spell1 = 71142       -- Rejuvenation with 6750 to 11250 ticks for 15s. Applied before teleport. May be nil.
 Config.Spell2 = 61734       -- Noblegarden Bunny. Applied after teleport. May be nil.
@@ -96,49 +98,119 @@ pvpOn['gurubashi'] = false -- Don't turn World PvP on
 minLevel['gurubashi'] = nil -- it is ffa PvP, no need for a minimum level
 checkAmount['gurubashi'] = false
 
--- Config for the Halaa teleport event
+-- Config for the Autostarter of teleport events
 Config.startTime = newAutotable(2)
 -- Config.startTime[weekday][hour]   Sunday = 1, Wednesday = 4, Saturday = 7, hour = 0-23
 -- [7][20] means every saturday at 20.00 / 8pm
 -- Config.startTime[weekday][hour]   Sunday = 1, Wednesday = 4, Saturday = 7, hour = 0-23
 -- [7][20] means every saturday at 20.00 / 8pm
-Config.startTime[1][4] = true
-Config.startTime[3][4] = true
-Config.startTime[5][4] = true
-Config.startTime[7][4] = true
-Config.startTime[1][12] = true
-Config.startTime[3][12] = true
-Config.startTime[5][12] = true
-Config.startTime[7][12] = true
-Config.startTime[1][20] = true
-Config.startTime[3][20] = true
-Config.startTime[5][20] = true
-Config.startTime[7][20] = true
+Config.startTime[1][4] = 'halaa'
+Config.startTime[1][12] = 'halaa'
+Config.startTime[1][20] = 'halaa'
+Config.startTime[3][4] = 'halaa'
+Config.startTime[3][12] = 'halaa'
+Config.startTime[3][20] = 'halaa'
+Config.startTime[4][4] = 'hellfire'
+Config.startTime[4][12] = 'hellfire'
+Config.startTime[4][20] = 'hellfire'
+Config.startTime[5][4] = 'halaa'
+Config.startTime[5][12] = 'halaa'
+Config.startTime[5][20] = 'halaa'
+Config.startTime[6][4] = 'zangarmarsh'
+Config.startTime[6][12] = 'zangarmarsh'
+Config.startTime[6][20] = 'zangarmarsh'
+Config.startTime[7][4] = 'halaa'
+Config.startTime[7][12] = 'halaa'
+Config.startTime[7][20] = 'halaa'
+
+-- Config for the Halaa teleport event
 mapId['halaa_defender'] = 530
 xCoord['halaa_defender'] = -1568
 yCoord['halaa_defender'] = 7947
 zCoord['halaa_defender'] = -13
 orientation['halaa_defender'] = 1.29
-mapId['halaa_attacker'] = 530
-xCoord['halaa_attacker'] = -1908
-yCoord['halaa_attacker'] = 8038
-zCoord['halaa_attacker'] = -8
-orientation['halaa_attacker'] = 6
+
+mapId['halaa_attacker_1'] = 530
+xCoord['halaa_attacker_1'] = -1908
+yCoord['halaa_attacker_1'] = 8038
+zCoord['halaa_attacker_1'] = -8
+orientation['halaa_attacker_1'] = 6
+
+mapId['halaa_attacker_2'] = 530
+xCoord['halaa_attacker_2'] = -1482
+yCoord['halaa_attacker_2'] = 8194
+zCoord['halaa_attacker_2'] = -7
+orientation['halaa_attacker_2'] = 4.6
+
+mapId['halaa_attacker_3'] = 530
+xCoord['halaa_attacker_3'] = -1314
+yCoord['halaa_attacker_3'] = 7706
+zCoord['halaa_attacker_3'] = 6
+orientation['halaa_attacker_3'] = 2.16
+
+mapId['halaa_attacker_4'] = 530
+xCoord['halaa_attacker_4'] = -1708
+yCoord['halaa_attacker_4'] = 7671
+zCoord['halaa_attacker_4'] = -6
+orientation['halaa_attacker_4'] = 0.3
+
 initialMessage['halaa'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
 followupMessage['halaa'] = " all players in open world maps who sign up, will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
 pvpOn['halaa'] = true
 minLevel['halaa'] = 58
 checkAmount['halaa'] = true
+graveyardZone['halaa'] = 3518
+multipleAttackerSpawns['halaa'] = 4
+
+-- Config for the Zangarmarsh teleport event
+mapId['zangarmarsh_defender'] = 530 -- defender is always ally for this event
+xCoord['zangarmarsh_defender'] = 151
+yCoord['zangarmarsh_defender'] = 6715
+zCoord['zangarmarsh_defender'] = 34
+orientation['zangarmarsh_defender'] = 0.9
+mapId['zangarmarsh_attacker'] = 530 -- attacker is always horde for this event
+xCoord['zangarmarsh_attacker'] = 70
+yCoord['zangarmarsh_attacker'] = 7423
+zCoord['zangarmarsh_attacker'] = 29
+orientation['zangarmarsh_attacker'] = 5.8
+initialMessage['zangarmarsh'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Zangarmarsh for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+followupMessage['zangarmarsh'] = " all players in open world maps who sign up, will be teleported to Zangarmarsh for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+pvpOn['zangarmarsh'] = true
+minLevel['zangarmarsh'] = 58
+checkAmount['zangarmarsh'] = true
+graveyardZone['zangarmarsh'] = 3521
+multipleAttackerSpawns['zangarmarsh'] = nil
+
+-- Config for the Hellfire teleport event
+mapId['hellfire_defender'] = 530 -- defender is always ally for this event
+xCoord['hellfire_defender'] = -605
+yCoord['hellfire_defender'] = 3088
+zCoord['hellfire_defender'] = 22.2
+orientation['hellfire_defender'] = 1.2
+mapId['hellfire_attacker'] = 530 -- attacker is always horde for this event
+xCoord['hellfire_attacker'] = -86
+yCoord['hellfire_attacker'] = 3018
+zCoord['hellfire_attacker'] = 17.2
+orientation['hellfire_attacker'] = 1.33
+initialMessage['hellfire'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Hellfire Peninsula for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+followupMessage['hellfire'] = " all players in open world maps who sign up, will be teleported to Hellfire Peninsula for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
+pvpOn['hellfire'] = true
+minLevel['hellfire'] = 58
+checkAmount['hellfire'] = true
+graveyardZone['hellfire'] = 3483
+multipleAttackerSpawns['hellfire'] = nil
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
 ------------------------------------------
 
 local PLAYER_EVENT_ON_LOGOUT = 4            -- (event, player)
+local PLAYER_EVENT_ON_REPOP = 35            -- (event, player)
 local PLAYER_EVENT_ON_COMMAND = 42          -- (event, player, command, chatHandler) - player is nil if command used from console. Can return false
 local TEAM_ALLIANCE = 0
 local TEAM_HORDE = 1
 local TEAM_NEUTRAL = 2
+local POWER_MANA = 0
 
 local message = "Party time! Have fun!"
 
@@ -154,6 +226,10 @@ local eventName
 local attacker          -- team Id
 local attackers = {}    -- array of attacking players low guids
 local defenders = {}    -- array of defending players low guids
+
+local repopZone
+local repopEventName
+local repopAttacker
 
 local function randomised(init)
     return math.random (-20, 20) + init
@@ -242,10 +318,66 @@ end
 local function ft_teleportReminder(eventId, delay, repeats)
     if repeats == 1 then
         SendOptMessage("'.fun return' is now deactivated.")
+        optIn = {}
         eventName = nil
     else
         SendOptMessage("Participants of the event can become revived AND return back to the position before the event by typing '.fun return'.")
     end
+end
+
+local function ft_teleportRepop(eventid, delay, repeats, worldobject)
+    if worldobject and worldobject:IsPlayer() then
+        if pvpOn[repopEventName] then
+            local target
+
+            -- Assign a dummy value, if the attacker isn't relevant for the event
+            if not repopAttacker then
+                repopAttacker = TEAM_HORDE
+            end
+
+            if worldobject:GetTeam() == repopAttacker then
+                target = repopEventName..'_attacker'
+            else
+                target = repopEventName..'_defender'
+            end
+
+            if multipleAttackerSpawns[repopEventName] then
+                local spawn = math.random(1, multipleAttackerSpawns[repopEventName])
+                target = target..'_'..spawn
+            end
+
+            worldobject:SetPvP( true )
+            worldobject:Teleport( mapId[target], randomised(xCoord[target]), randomised(yCoord[target]), zCoord[target], orientation[target] )
+
+        else
+            worldobject:Teleport( mapId[repopEventName], randomised(xCoord[repopEventName]), randomised(yCoord[repopEventName]), zCoord[repopEventName], orientation[repopEventName] )
+
+        end
+    end
+end
+
+local function ft_resurrect(eventid, delay, repeats, worldobject)
+    if worldobject and worldobject:IsPlayer() then
+        worldobject:ResurrectPlayer(100)
+        worldobject:SetPower( worldobject:GetMaxPower( POWER_MANA ), POWER_MANA )
+    end
+end
+
+local function ft_repop(event, player)
+    if player and player:GetZoneId() == repopZone and player:IsPvPFlagged() then
+        player:RegisterEvent(ft_teleportRepop, 28000, 1)
+        player:RegisterEvent(ft_resurrect, 30000, 1)
+        player:SendBroadcastMessage("You will be resurrected in 30 seconds. Turn PvP off before releasing your spirit to avoid this.")
+    end
+end
+
+local function ft_removeRepop(event, delay, repeats)
+    cancelRepopEvent()
+    cancelRepopEvent = nil
+    SendWorldMessage('The event Battle for '..repopEventName..' has ended. See you next time!')
+    repopZone = nil
+    repopEventName = nil
+    repopAttacker = nil
 end
 
 local function ft_teleport(playerArray)
@@ -275,12 +407,23 @@ local function ft_teleport(playerArray)
                 -- if the event involves world PvP, there's gonna be attacker and defender. Else just summon everyone to the same place.
                 if pvpOn[eventName] then
                     local target
+
+                    -- Assign a dummy value, if the attacker isn't relevant for the event
+                    if not attacker then
+                        attacker = TEAM_HORDE
+                    end
+
                     if playerArray[n]:GetTeam() == attacker then
                         target = eventName..'_attacker'
                         table.insert(attackers, playerArray[n]:GetGUIDLow())
                     else
                         target = eventName..'_defender'
                         table.insert(defenders, playerArray[n]:GetGUIDLow())
+                    end
+
+                    if multipleAttackerSpawns[eventName] then
+                        local spawn = math.random(1, multipleAttackerSpawns[eventName])
+                        target = target..'_'..spawn
                     end
 
                     playerArray[n]:SetPvP( true )
@@ -294,7 +437,7 @@ local function ft_teleport(playerArray)
                 playerArray[n]:PlayDirectSound(2847, playerArray[n])
                 playerArray[n]:SendBroadcastMessage( message )
             else
-                playerArray[n]:SendBroadcastMessage( 'You can not participate from raids/dungeons/BGs/arenas.' )
+                playerArray[n]:SendBroadcastMessage( 'You can not participate in the event from raids/dungeons/BGs/arenas. Get out before the teleport next time. You may join by traveling manually.' )
             end
 
         end
@@ -313,16 +456,33 @@ local function ft_startEvent()
         end
     end
 
+    if graveyardZone[eventName] then
+        if cancelRepopEvent then
+            cancelRepopEvent()
+        end
+        CreateLuaEvent(ft_removeRepop, 1800000, 1)
+        repopZone = graveyardZone[eventName]
+        repopEventName = eventName
+        cancelRepopEvent = RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, ft_repop)
+    end
+
     -- For Halaa event only
     if eventName == 'halaa' then
         if numExpectedHorde > numExpectedAllies then
             attacker = TEAM_HORDE
+            repopAttacker = TEAM_HORDE
             SetOwnerHalaa(0)
         else
             attacker = TEAM_ALLIANCE
+            repopAttacker = TEAM_ALLIANCE
             SetOwnerHalaa(1)
         end
         SendWorldMessage('The battle for Halaa has begun!')
+    end
+
+    -- For zangarmarsh event only
+    if eventName == 'zangarmarsh' then
+        SendWorldMessage('The battle for Zangarmarsh has begun!')
     end
 
     if Players and #Players > 0 then
@@ -426,7 +586,6 @@ local function ft_startEvent()
         PrintInfo( 'Finished Event Teleport and invites. Duration: '..duration..'ms. Includes 5000ms delay. Participants: '..#Players )
         PrintInfo( '===================================================================================================' )
 
-        optIn = {}
         attacker = nil
         numExpectedAllies = 0
         numExpectedHorde = 0
@@ -548,7 +707,17 @@ local function ft_command(event, player, command, chatHandler)
         return
     end
 
-    if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' then
+    if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' or commandArray[2] == 'zangarmarsh' then
+
+        if eventName then
+            chatHandler:SendSysMessage("There is already an event called "..eventName.." in progress. Please wait for it to finish.")
+            return false
+        end
+        if repopEventName then
+            chatHandler:SendSysMessage("There is still an event called "..repopEventName.." in progress. Please wait for it to finish.")
+            return false
+        end
+
         eventName = commandArray[2]
         local repeats = 15
 
@@ -580,8 +749,8 @@ local function ft_OnGameEventStart( _, gameeventid )
         local nowWDay = nowTable.wday
         local nowHour = nowTable.hour
 
-        if Config.startTime[nowWDay][nowHour] == true then
-            RunCommand('.fun halaa 15')
+        if Config.startTime[nowWDay][nowHour] ~= nil then
+            RunCommand('.fun '..Config.startTime[nowWDay][nowHour]..' 15')
         end
     end
 end
