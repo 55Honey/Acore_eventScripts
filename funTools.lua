@@ -326,7 +326,7 @@ local function ft_teleportReminder(eventId, delay, repeats)
 end
 
 local function ft_teleportRepop(eventid, delay, repeats, worldobject)
-    if worldobject and worldobject:IsPlayer() then
+    if worldobject and worldobject:IsPlayer() and repopEventName then
         if pvpOn[repopEventName] then
             local target
 
