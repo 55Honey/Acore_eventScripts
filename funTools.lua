@@ -367,13 +367,14 @@ local function ft_repop(event, player)
     if player and player:GetZoneId() == repopZone and player:IsPvPFlagged() then
         player:RegisterEvent(ft_teleportRepop, 28000, 1)
         player:RegisterEvent(ft_resurrect, 30000, 1)
-        player:SendBroadcastMessage("You will be resurrected in 30 seconds.")
+        player:SendBroadcastMessage("You will be resurrected in 30 seconds. Turn PvP off before releasing your spirit to avoid this.")
     end
 end
 
 local function ft_removeRepop(event, delay, repeats)
     cancelRepopEvent()
     cancelRepopEvent = nil
+    SendWorldMessage('The event Battle for '..repopEventName..' has ended. See you next time!')
     repopZone = nil
     repopEventName = nil
     repopAttacker = nil
@@ -436,7 +437,7 @@ local function ft_teleport(playerArray)
                 playerArray[n]:PlayDirectSound(2847, playerArray[n])
                 playerArray[n]:SendBroadcastMessage( message )
             else
-                playerArray[n]:SendBroadcastMessage( 'You can not participate from raids/dungeons/BGs/arenas.' )
+                playerArray[n]:SendBroadcastMessage( 'You can not participate in the event from raids/dungeons/BGs/arenas. Get out before the teleport next time. You may join by traveling manually.' )
             end
 
         end
