@@ -79,6 +79,7 @@ local pvpOn = {}
 local minLevel = {}
 local checkAmount = {}
 local graveyardZone = {}
+local multipleAttackerSpawns = {}
 
 Config.Spell1 = 71142       -- Rejuvenation with 6750 to 11250 ticks for 15s. Applied before teleport. May be nil.
 Config.Spell2 = 61734       -- Noblegarden Bunny. Applied after teleport. May be nil.
@@ -106,15 +107,12 @@ Config.startTime = newAutotable(2)
 Config.startTime[1][4] = 'halaa'
 Config.startTime[1][12] = 'halaa'
 Config.startTime[1][20] = 'halaa'
-Config.startTime[2][4] = 'zangarmarsh'
-Config.startTime[2][12] = 'zangarmarsh'
-Config.startTime[2][20] = 'zangarmarsh'
 Config.startTime[3][4] = 'halaa'
 Config.startTime[3][12] = 'halaa'
 Config.startTime[3][20] = 'halaa'
-Config.startTime[4][4] = 'zangarmarsh'
-Config.startTime[4][12] = 'zangarmarsh'
-Config.startTime[4][20] = 'zangarmarsh'
+Config.startTime[4][4] = 'hellfire'
+Config.startTime[4][12] = 'hellfire'
+Config.startTime[4][20] = 'hellfire'
 Config.startTime[5][4] = 'halaa'
 Config.startTime[5][12] = 'halaa'
 Config.startTime[5][20] = 'halaa'
@@ -125,23 +123,46 @@ Config.startTime[7][4] = 'halaa'
 Config.startTime[7][12] = 'halaa'
 Config.startTime[7][20] = 'halaa'
 
+-- Config for the Halaa teleport event
 mapId['halaa_defender'] = 530
 xCoord['halaa_defender'] = -1568
 yCoord['halaa_defender'] = 7947
 zCoord['halaa_defender'] = -13
 orientation['halaa_defender'] = 1.29
-mapId['halaa_attacker'] = 530
-xCoord['halaa_attacker'] = -1908
-yCoord['halaa_attacker'] = 8038
-zCoord['halaa_attacker'] = -8
-orientation['halaa_attacker'] = 6
+
+mapId['halaa_attacker_1'] = 530
+xCoord['halaa_attacker_1'] = -1908
+yCoord['halaa_attacker_1'] = 8038
+zCoord['halaa_attacker_1'] = -8
+orientation['halaa_attacker_1'] = 6
+
+mapId['halaa_attacker_2'] = 530
+xCoord['halaa_attacker_2'] = -1482
+yCoord['halaa_attacker_2'] = 8194
+zCoord['halaa_attacker_2'] = -7
+orientation['halaa_attacker_2'] = 4.6
+
+mapId['halaa_attacker_3'] = 530
+xCoord['halaa_attacker_3'] = -1314
+yCoord['halaa_attacker_3'] = 7706
+zCoord['halaa_attacker_3'] = 6
+orientation['halaa_attacker_3'] = 2.16
+
+mapId['halaa_attacker_4'] = 530
+xCoord['halaa_attacker_4'] = -1708
+yCoord['halaa_attacker_4'] = 7671
+zCoord['halaa_attacker_4'] = -6
+orientation['halaa_attacker_4'] = 0.3
+
 initialMessage['halaa'] = " minutes from now all players which reside in an open world map AND opt in will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
 followupMessage['halaa'] = " all players in open world maps who sign up, will be teleported to Halaa for mass-PvP. If you wish to opt in, please type '.fun on'. You can change your decision and opt out by typing '.fun no' or '.fun off'. This also hides most event-related messages for this event."
 pvpOn['halaa'] = true
 minLevel['halaa'] = 58
 checkAmount['halaa'] = true
 graveyardZone['halaa'] = 3518
+multipleAttackerSpawns['halaa'] = 4
 
+-- Config for the Zangarmarsh teleport event
 mapId['zangarmarsh_defender'] = 530 -- defender is always ally for this event
 xCoord['zangarmarsh_defender'] = 151
 yCoord['zangarmarsh_defender'] = 6715
@@ -158,7 +179,9 @@ pvpOn['zangarmarsh'] = true
 minLevel['zangarmarsh'] = 58
 checkAmount['zangarmarsh'] = true
 graveyardZone['zangarmarsh'] = 3521
+multipleAttackerSpawns['zangarmarsh'] = nil
 
+-- Config for the Hellfire teleport event
 mapId['hellfire_defender'] = 530 -- defender is always ally for this event
 xCoord['hellfire_defender'] = -605
 yCoord['hellfire_defender'] = 3088
@@ -175,6 +198,7 @@ pvpOn['hellfire'] = true
 minLevel['hellfire'] = 58
 checkAmount['hellfire'] = true
 graveyardZone['hellfire'] = 3483
+multipleAttackerSpawns['hellfire'] = nil
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -317,6 +341,11 @@ local function ft_teleportRepop(eventid, delay, repeats, worldobject)
                 target = repopEventName..'_defender'
             end
 
+            if multipleAttackerSpawns[repopEventName] then
+                local spawn = math.random(1, multipleAttackerSpawns[repopEventName])
+                target = target..'_'..spawn
+            end
+
             worldobject:SetPvP( true )
             worldobject:Teleport( mapId[target], randomised(xCoord[target]), randomised(yCoord[target]), zCoord[target], orientation[target] )
 
@@ -389,6 +418,11 @@ local function ft_teleport(playerArray)
                     else
                         target = eventName..'_defender'
                         table.insert(defenders, playerArray[n]:GetGUIDLow())
+                    end
+
+                    if multipleAttackerSpawns[eventName] then
+                        local spawn = math.random(1, multipleAttackerSpawns[eventName])
+                        target = target..'_'..spawn
                     end
 
                     playerArray[n]:SetPvP( true )
@@ -673,6 +707,16 @@ local function ft_command(event, player, command, chatHandler)
     end
 
     if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' or commandArray[2] == 'zangarmarsh' then
+
+        if eventName then
+            chatHandler:SendSysMessage("There is already an event called "..eventName.." in progress. Please wait for it to finish.")
+            return false
+        end
+        if repopEventName then
+            chatHandler:SendSysMessage("There is still an event called "..repopEventName.." in progress. Please wait for it to finish.")
+            return false
+        end
+
         eventName = commandArray[2]
         local repeats = 15
 
