@@ -80,6 +80,7 @@ local minLevel = {}
 local checkAmount = {}
 local graveyardZone = {}
 local multipleAttackerSpawns = {}
+local switchSpawnPointsWhenObjectiveTaken = {}
 
 Config.Spell1 = 71142       -- Rejuvenation with 6750 to 11250 ticks for 15s. Applied before teleport. May be nil.
 Config.Spell2 = 61734       -- Noblegarden Bunny. Applied after teleport. May be nil.
@@ -161,6 +162,8 @@ minLevel['halaa'] = 58
 checkAmount['halaa'] = true
 graveyardZone['halaa'] = 3518
 multipleAttackerSpawns['halaa'] = 4
+switchSpawnPointsWhenObjectiveTaken['halaa'] = true
+
 
 -- Config for the Zangarmarsh teleport event
 mapId['zangarmarsh_defender'] = 530 -- defender is always ally for this event
@@ -180,6 +183,7 @@ minLevel['zangarmarsh'] = 58
 checkAmount['zangarmarsh'] = true
 graveyardZone['zangarmarsh'] = 3521
 multipleAttackerSpawns['zangarmarsh'] = nil
+switchSpawnPointsWhenObjectiveTaken['zangarmarsh'] = nil
 
 -- Config for the Hellfire teleport event
 mapId['hellfire_defender'] = 530 -- defender is always ally for this event
@@ -199,6 +203,7 @@ minLevel['hellfire'] = 58
 checkAmount['hellfire'] = true
 graveyardZone['hellfire'] = 3483
 multipleAttackerSpawns['hellfire'] = nil
+switchSpawnPointsWhenObjectiveTaken['hellfire'] = nil
 
 ------------------------------------------
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
@@ -335,6 +340,16 @@ local function ft_teleportRepop(eventid, delay, repeats, worldobject)
                 repopAttacker = TEAM_HORDE
             end
 
+            if switchSpawnPointsWhenObjectiveTaken then
+                if GetOwnerHalaa() == repopAttacker then
+                    if repopAttacker == TEAM_HORDE then
+                        repopAttacker = TEAM_ALLIANCE
+                    else
+                        repopAttacker = TEAM_HORDE
+                    end
+                end
+            end
+
             if worldobject:GetTeam() == repopAttacker then
                 target = repopEventName..'_attacker'
                 if multipleAttackerSpawns[repopEventName] then
@@ -469,11 +484,11 @@ local function ft_startEvent()
         if numExpectedHorde > numExpectedAllies then
             attacker = TEAM_HORDE
             repopAttacker = TEAM_HORDE
-            SetOwnerHalaa(0)
+            SetOwnerHalaa(TEAM_ALLIANCE)
         else
             attacker = TEAM_ALLIANCE
             repopAttacker = TEAM_ALLIANCE
-            SetOwnerHalaa(1)
+            SetOwnerHalaa(TEAM_HORDE)
         end
         SendWorldMessage('The battle for Halaa has begun!')
     end
