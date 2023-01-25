@@ -458,6 +458,15 @@ local function ft_teleport(playerArray)
     end
 end
 
+local function IsAnEvent(string)
+    for k, _ in pairs(pvpOn) do
+        if string == k then
+            return true
+        end
+    end
+    return false
+end
+
 local function ft_startEvent()
     local Players = {}
     local duration = GetCurrTime()
@@ -720,7 +729,7 @@ local function ft_command(event, player, command, chatHandler)
         return
     end
 
-    if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' or commandArray[2] == 'zangarmarsh' or commandArray[2] == 'hellfire' then
+    if IsAnEvent(commandArray[2]) then
 
         if eventName then
             chatHandler:SendSysMessage("There is already an event called "..eventName.." in progress. Please wait for it to finish.")
