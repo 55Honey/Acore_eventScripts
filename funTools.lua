@@ -720,7 +720,7 @@ local function ft_command(event, player, command, chatHandler)
         return
     end
 
-    if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' or commandArray[2] == 'zangarmarsh' then
+    if commandArray[2] == 'gurubashi' or commandArray[2] == 'halaa' or commandArray[2] == 'zangarmarsh' or commandArray[2] == 'hellfire' then
 
         if eventName then
             chatHandler:SendSysMessage("There is already an event called "..eventName.." in progress. Please wait for it to finish.")
