@@ -240,6 +240,10 @@ local function randomised(init)
     return math.random (-20, 20) + init
 end
 
+local function ft_firstToUpper(str)
+    return (str:gsub("^%l", string.upper))
+end
+
 local function ft_hasValue(tab,val)
     for index, value in ipairs(tab) do
         if value == val then
@@ -249,7 +253,7 @@ local function ft_hasValue(tab,val)
     return false
 end
 
-local function SendOptMessage(message)
+local function ft_sendOptMessage(message)
     local players = GetPlayersInWorld(TEAM_ALLIANCE)
     for ind, val in pairs(players) do
         local player = val
@@ -322,11 +326,11 @@ end
 
 local function ft_teleportReminder(eventId, delay, repeats)
     if repeats == 1 then
-        SendOptMessage("'.fun return' is now deactivated.")
+        ft_sendOptMessage("'.fun return' is now deactivated.")
         optIn = {}
         eventName = nil
     else
-        SendOptMessage("Participants of the event can become revived AND return back to the position before the event by typing '.fun return'.")
+        ft_sendOptMessage("Participants of the event can become revived AND return back to the position before the event by typing '.fun return'.")
     end
 end
 
@@ -388,7 +392,7 @@ end
 local function ft_removeRepop(event, delay, repeats)
     cancelRepopEvent()
     cancelRepopEvent = nil
-    SendWorldMessage('The event Battle for '..repopEventName..' has ended. See you next time!')
+    SendWorldMessage('The event Battle for '..ft_firstToUpper(repopEventName)..' has ended. See you next time!')
     repopZone = nil
     repopEventName = nil
     repopAttacker = nil
@@ -606,7 +610,7 @@ local function ft_startEvent()
         defenders = {}
     end, 5000)
 
-    CreateLuaEvent(ft_teleportReminder,30000,6)
+    CreateLuaEvent(ft_teleportReminder,60000,3)
 
 end
 
@@ -619,7 +623,7 @@ local function ft_funEventAnnouncer(eventid, delay, repeats)
         else
             text2 = ' minutes'
         end
-        SendOptMessage('In '..minutes..text2..followupMessage[eventName])
+        ft_sendOptMessage('In '..minutes..text2..followupMessage[eventName])
     else
         -- start the event
         ft_startEvent()
@@ -748,7 +752,7 @@ local function ft_command(event, player, command, chatHandler)
             text2 = ' minutes'
         end
 
-        SendOptMessage('In '..repeats..text2..initialMessage[eventName])
+        ft_sendOptMessage('In '..repeats..text2..initialMessage[eventName])
         return false
     end
 
