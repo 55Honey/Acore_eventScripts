@@ -181,6 +181,7 @@ Config.PartyNpcSayText = 'What are you waiting for? Bring a party of five and st
 -- 5: Level 60, Crocolisk Rundee / Aligator Guard
 -- 6: Level 60: One-Three-Three-Seven / Ragnarosqt
 -- 7: Level 60: Big Bad Bug / Bug's Bunny
+-- 8: Level 70: El Diablo / Diablo Fanatic
 ------------------------------------------
 
 ------------------------------------------
@@ -731,9 +732,97 @@ Config_bossYellPhase2[7] = "Sssssszzzzzzzzz!"
 -- yell for the boss when they cast on themself
 Config_bossSpellSelfYell[7] = "SSSSSSSUFfffrrrrr!"
 
+------------------------------------------
+-- Begin of encounter 8 config
+------------------------------------------
+
+-- Database NPC entries. Must match the associated .sql file
+Config_bossEntry[8] = 1112071           --db entry of the boss creature
+Config_npcEntry[8] = 1112072            --db entry of the NPC creature to summon the boss
+Config_addEntry[8] = 1112073            --db entry of the add creature
+Config_npcText[8] = 91118                --gossip in npc_text to be told by the summoning NPC
+
+-- list of spells:
+Config_bossSpell1[8] = 35759            --directly applied to the tank-- instant fire damage + dot
+Config_bossSpell2[8] = nil              --on a random player within Config_bossSpell2MaxRange
+Config_bossSpell2MaxRange[8] = 50       --max range im m/y to check for targets for boss spell 2 (default 35)
+Config_bossSpell3[8] = 69528            --on the 2nd nearest player within 30m -- deals damage to target and damage to nearby additional target
+Config_bossSpell4[8] = nil              --on a random player within Config_bossSpell4MaxRange
+Config_bossSpell4Counter[8] = 10        --amount of casts to perform for spell 4. defaults to 1
+Config_bossSpell4MaxRange[8] = 30       --max range im m to check for targets for boss spell 4 (default 40)
+Config_bossSpell5[8] = nil              --directly applied to the tank with adds alive 
+Config_bossSpell6[8] = 70866            --directly applied to the tank when adds are dead --shadow blast (knockback + movement speed reduce)
+Config_bossSpell7[8] = 46469            --directly applied to the tank --melt armor 2000 for 30 secs
+Config_bossSpell8[8] = nil              --directly applied to the tank x seconds after spell 7 -
+Config_bossSpell8delay[8] = nil         --delay between spell 7 and 8. Must be smaller than timer7 / 2
+Config_bossSpellSelf[8] = 13022         --cast on boss while adds are still alive fire+arcane reflect
+Config_bossSpellEnrage[8] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
+
+Config_bossSpellTimer1[8] = 10000       -- This timer applies to Config_bossSpell1
+Config_bossSpellTimer2[8] = 37000       -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[8] = 12000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer5[8] = 20000       -- This timer applies to Config_bossSpell5+6
+Config_bossSpellTimer7[8] = 40000       -- This timer applies to Config_bossSpell7+8 (in ms)
+Config_bossSpellEnrageTimer[8] = 90000
+Config_minPhaseForTimer7[8] = 3         -- From this phase on the boss will use Timer 7 to cast Spell 7+8. Will ignore it before.
+
+Config_bossSpellModifier1bp0[8] = 5000     -- should be instant damage ??? @55Honey
+Config_bossSpellModifier1bp1[8] = 2500     -- dot damage for fire spell
+Config_bossSpellModifier2bp0[8] = nil      -- not required if nil
+Config_bossSpellModifier2bp1[8] = nil      -- not required if nil
+Config_bossSpellModifier3bp0[8] = 2000     -- damage to main target
+Config_bossSpellModifier3bp1[8] = 2000     -- damage to secondary target
+Config_bossSpellModifier4bp0[8] = nil      -- not required if nil
+Config_bossSpellModifier4bp1[8] = nil      -- not required if nil
+Config_bossSpellModifier5bp0[8] = nil      -- not required if nil
+Config_bossSpellModifier5bp1[8] = nil      -- not required if nil
+Config_bossSpellModifier6bp0[8] = 3000     -- base damage of shadow blast
+Config_bossSpellModifier6bp1[8] = nil      -- not required if nil
+Config_bossSpellModifier7bp0[8] = nil      -- not required if nil
+Config_bossSpellModifier7bp1[8] = nil      -- not required if nil
+Config_bossSpellModifier8bp0[8] = nil      -- not required if nil
+Config_bossSpellModifier8bp1[8] = nil      -- not required if nil
+
+Config_addHealthModifierParty[8] = 0.2     -- modifier to change health for party encounter. Value in the SQL applies for raid
+Config_addsAmount[8] = 6                   -- how many adds will spawn
+
+Config_addSpell1[8] = 38085             -- min range 30m, 1-3rd farthest target within 30m -- Shadow Blast (just damage)
+Config_addSpell2[8] = 36541              -- min range 45m, cast on tank -- Curse of Burning Shadows (deals shadow damage when fire damage is taken)
+Config_addSpell3[8] = nil               -- min range 0m
+Config_addSpell4[8] = 37274             -- cast on the boss PI
+Config_addSpellEnrage[8] = nil          -- Enrage after 300 seconds
+
+Config_addSpellTimer1[8] = 23000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer2[8] = 13000        -- This timer applies to Config_addSpell2
+Config_addSpellTimer3[8] = 7000         -- This timer applies to Config_addSpell3
+Config_addSpellTimer4[8] = 12000        -- This timer applies to Config_addSpell4
+
+Config_addSpellModifier1bp0[8] = 3000   -- damage modifier
+Config_addSpellModifier1bp1[8] = nil    -- not required if nil
+Config_addSpellModifier2bp0[8] = nil    -- not required if nil
+Config_addSpellModifier2bp1[8] = nil    -- not required if nil
+Config_addSpellModifier3bp0[8] = nil    -- not required if nil
+Config_addSpellModifier3bp1[8] = nil    -- not required if nil
+
+Config_aura1Add1[8] = nil               -- an aura to add to the 1st add-- Fire and Arcane Reflect
+Config_aura2Add1[8] = nil               -- another aura to add to the 1st add-- Shadow and Frost Reflect
+Config_aura1Add2[8] = nil               -- an aura to add to the 2nd add--  Fire and Arcane Reflect
+Config_aura2Add2[8] = nil               -- another aura to add to the 2nd add -- Shadow and Frost Reflect
+Config_aura1Add3[8] = nil               -- an aura to add to all ads from the 3rd on-- Thorns
+Config_aura2Add3[8] = nil               -- another aura to add to all add from the 3rd on--
+
+Config_addSpell4Yell[8] = "Finish them... master"-- yell for the adds when Spell 4 is cast
+Config_addEnoughYell[8] = "I will die a thousand times for my liege"   -- yell for the add at 33% and 66% hp
+Config_addEnoughSound[8] = 10897        -- sound to play when the add is at 33% and 66%
+Config_addSpell4Sound[8] = 3            -- sound to play when add casts spell 2
+--yell for the boss when all adds are dead
+Config_bossYellPhase2[8] = "They were in my way anyway!"
+-- yell for the boss when they cast on themself
+Config_bossSpellSelfYell[8] = "Die!"
+
 
 ------------------------------------------
--- End of encounter 7
+-- End of encounter 8
 ------------------------------------------
 
 -- these are the fireworks to be cast randomly for 20s when an encounter was beaten
