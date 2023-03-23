@@ -789,13 +789,13 @@ Config_addsAmount[8] = 6                   -- how many adds will spawn
 Config_addSpell1[8] = 38085             -- min range 30m, 1-3rd farthest target within 30m -- Shadow Blast (just damage)
 Config_addSpell2[8] = 36541              -- min range 45m, cast on tank -- Curse of Burning Shadows (deals shadow damage when fire damage is taken)
 Config_addSpell3[8] = nil               -- min range 0m
-Config_addSpell4[8] = 37274             -- cast on the boss PI
+Config_addSpell4[8] = 37479             -- cast on the boss Shadow Mend (heals boss for large amount)
 Config_addSpellEnrage[8] = nil          -- Enrage after 300 seconds
 
 Config_addSpellTimer1[8] = 23000        -- This timer applies to Config_addSpell1
 Config_addSpellTimer2[8] = 13000        -- This timer applies to Config_addSpell2
 Config_addSpellTimer3[8] = 7000         -- This timer applies to Config_addSpell3
-Config_addSpellTimer4[8] = 12000        -- This timer applies to Config_addSpell4
+Config_addSpellTimer4[8] = 10000        -- This timer applies to Config_addSpell4
 
 Config_addSpellModifier1bp0[8] = 3000   -- damage modifier
 Config_addSpellModifier1bp1[8] = nil    -- not required if nil
@@ -804,15 +804,15 @@ Config_addSpellModifier2bp1[8] = nil    -- not required if nil
 Config_addSpellModifier3bp0[8] = nil    -- not required if nil
 Config_addSpellModifier3bp1[8] = nil    -- not required if nil
 
-Config_aura1Add1[8] = nil               -- an aura to add to the 1st add-- Fire and Arcane Reflect
-Config_aura2Add1[8] = nil               -- another aura to add to the 1st add-- Shadow and Frost Reflect
-Config_aura1Add2[8] = nil               -- an aura to add to the 2nd add--  Fire and Arcane Reflect
-Config_aura2Add2[8] = nil               -- another aura to add to the 2nd add -- Shadow and Frost Reflect
-Config_aura1Add3[8] = nil               -- an aura to add to all ads from the 3rd on-- Thorns
-Config_aura2Add3[8] = nil               -- another aura to add to all add from the 3rd on--
+Config_aura1Add1[8] = nil               -- an aura to add to the 1st add
+Config_aura2Add1[8] = nil               -- another aura to add to the 1st ad
+Config_aura1Add2[8] = nil               -- an aura to add to the 2nd add
+Config_aura2Add2[8] = nil               -- another aura to add to the 2nd add
+Config_aura1Add3[8] = nil               -- an aura to add to all ads from the 3rd on
+Config_aura2Add3[8] = nil               -- another aura to add to all add from the 3rd on
 
-Config_addSpell4Yell[8] = "Finish them... master"-- yell for the adds when Spell 4 is cast
-Config_addEnoughYell[8] = "I will die a thousand times for my liege"   -- yell for the add at 33% and 66% hp
+Config_addSpell4Yell[8] = "Bathe in the shadows... master!"-- yell for the adds when Spell 4 is cast
+Config_addEnoughYell[8] = "I will die a thousand times for my lord!"   -- yell for the add at 33% and 66% hp
 Config_addEnoughSound[8] = 10897        -- sound to play when the add is at 33% and 66%
 Config_addSpell4Sound[8] = 3            -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
