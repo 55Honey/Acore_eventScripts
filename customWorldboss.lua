@@ -811,7 +811,7 @@ Config_aura2Add2[8] = nil               -- another aura to add to the 2nd add
 Config_aura1Add3[8] = nil               -- an aura to add to all ads from the 3rd on
 Config_aura2Add3[8] = nil               -- another aura to add to all add from the 3rd on
 
-Config_addSpell4Yell[8] = "Bathe in the shadows... master!"            -- yell for the adds when Spell 4 is cast
+Config_addSpell3Yell[8] = "Bathe in the shadows... master!"            -- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[8] = "I will die a thousand times for my lord!"   -- yell for the add at 33% and 66% hp
 Config_addEnoughSound[8] = 10897        -- sound to play when the add is at 33% and 66%
 Config_addSpell4Sound[8] = 3            -- sound to play when add casts spell 2
