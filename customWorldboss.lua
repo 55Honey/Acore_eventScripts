@@ -787,7 +787,7 @@ Config_addHealthModifierParty[8] = 0.2     -- modifier to change health for part
 Config_addsAmount[8] = 6                   -- how many adds will spawn
 
 Config_addSpell1[8] = 38085             -- min range 30m, 1-3rd farthest target within 30m -- Shadow Blast (just damage)
-Config_addSpell2[8] = 36541              -- min range 45m, cast on tank -- Curse of Burning Shadows (deals shadow damage when fire damage is taken)
+Config_addSpell2[8] = 36541             -- min range 45m, cast on tank -- Curse of Burning Shadows (deals shadow damage when fire damage is taken)
 Config_addSpell3[8] = nil               -- min range 0m
 Config_addSpell4[8] = 37479             -- cast on the boss Shadow Mend (heals boss for large amount)
 Config_addSpellEnrage[8] = nil          -- Enrage after 300 seconds
