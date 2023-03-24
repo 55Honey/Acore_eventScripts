@@ -787,7 +787,7 @@ Config_addHealthModifierParty[8] = 0.2     -- modifier to change health for part
 Config_addsAmount[8] = 6                   -- how many adds will spawn
 
 Config_addSpell1[8] = 38085             -- min range 30m, 1-3rd farthest target within 30m -- Shadow Blast (just damage)
-Config_addSpell2[8] = 36541              -- min range 45m, cast on tank -- Curse of Burning Shadows (deals shadow damage when fire damage is taken)
+Config_addSpell2[8] = 36541             -- min range 45m, cast on tank -- Curse of Burning Shadows (deals shadow damage when fire damage is taken)
 Config_addSpell3[8] = nil               -- min range 0m
 Config_addSpell4[8] = 37479             -- cast on the boss Shadow Mend (heals boss for large amount)
 Config_addSpellEnrage[8] = nil          -- Enrage after 300 seconds
@@ -811,7 +811,7 @@ Config_aura2Add2[8] = nil               -- another aura to add to the 2nd add
 Config_aura1Add3[8] = nil               -- an aura to add to all ads from the 3rd on
 Config_aura2Add3[8] = nil               -- another aura to add to all add from the 3rd on
 
-Config_addSpell4Yell[8] = "Bathe in the shadows... master!"-- yell for the adds when Spell 4 is cast
+Config_addSpell4Yell[8] = "Bathe in the shadows... master!"            -- yell for the adds when Spell 4 is cast
 Config_addEnoughYell[8] = "I will die a thousand times for my lord!"   -- yell for the add at 33% and 66% hp
 Config_addEnoughSound[8] = 10897        -- sound to play when the add is at 33% and 66%
 Config_addSpell4Sound[8] = 3            -- sound to play when add casts spell 2
