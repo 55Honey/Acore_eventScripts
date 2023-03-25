@@ -784,7 +784,7 @@ Config_bossSpellModifier8bp0[8] = nil      -- not required if nil
 Config_bossSpellModifier8bp1[8] = nil      -- not required if nil
 
 Config_addHealthModifierParty[8] = 0.2     -- modifier to change health for party encounter. Value in the SQL applies for raid
-Config_addsAmount[8] = 6                   -- how many adds will spawn
+Config_addsAmount[8] = 2                   -- how many adds will spawn
 
 Config_addSpell1[8] = 38085             -- min range 30m, 1-3rd farthest target within 30m -- Shadow Blast (just damage)
 Config_addSpell2[8] = 36541             -- min range 45m, cast on tank -- Curse of Burning Shadows (deals shadow damage when fire damage is taken)
@@ -797,7 +797,7 @@ Config_addSpellTimer2[8] = 13000        -- This timer applies to Config_addSpell
 Config_addSpellTimer3[8] = 7000         -- This timer applies to Config_addSpell3
 Config_addSpellTimer4[8] = 10000        -- This timer applies to Config_addSpell4
 
-Config_addSpellModifier1bp0[8] = 3000   -- damage modifier
+Config_addSpellModifier1bp0[8] = 750    -- damage modifier
 Config_addSpellModifier1bp1[8] = nil    -- not required if nil
 Config_addSpellModifier2bp0[8] = nil    -- not required if nil
 Config_addSpellModifier2bp1[8] = nil    -- not required if nil
