@@ -1,11 +1,11 @@
 DELETE FROM `creature_template` WHERE `entry` IN
-(1112001,1112002,1112003,1112011,1112012,1112013,1112021,1112022,1112023,1112031,1112032,1112033,1112041,1112042,1112043,1112051,1112052,1112053,1112061,1112062,1112063,1112071,1112072,1112073,1112999);
-DELETE FROM `npc_text` WHERE `ID` IN (91101,91102,91111,91112,91113,91114,91115,91116,91117,91118);
-DELETE FROM `gossip_menu` WHERE `MenuID` IN (62001,62002,62003,62004,62005,62006,62007,62008);
+(1112001,1112002,1112003,1112011,1112012,1112013,1112021,1112022,1112023,1112031,1112032,1112033,1112041,1112042,1112043,1112051,1112052,1112053,1112061,1112062,1112063,1112071,1112072,1112073,1112081,1112082,1112083,1112999);
+DELETE FROM `npc_text` WHERE `ID` IN (91101,91102,91111,91112,91113,91114,91115,91116,91117,91118,91119);
+DELETE FROM `gossip_menu` WHERE `MenuID` IN (62001,62002,62003,62004,62005,62006,62007,62008,62009);
 DELETE FROM `creature_equip_template` WHERE `CreatureID` IN
-(1112011,1112021,1112031,1112041,1112051,1112061,1112071);
+(1112011,1112021,1112031,1112041,1112051,1112061,1112071,1112081);
 DELETE FROM `creature_template_movement` WHERE `CreatureId` IN
-(1112001,1112002,1112003,1112011,1112012,1112013,1112021,1112022,1112023,1112031,1112032,1112033,1112041,1112042,1112043,1112051,1112052,1112053,1112061,1112062,1112063,1112071,1112072,1112073,1111112999);
+(1112001,1112002,1112003,1112011,1112012,1112013,1112021,1112022,1112023,1112031,1112032,1112033,1112041,1112042,1112043,1112051,1112052,1112053,1112061,1112062,1112063,1112071,1112072,1112073,1112081,1112082,1112083,1111112999);
 
 
 INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `DamageModifier`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES
@@ -58,7 +58,13 @@ INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entr
 -- Custom Chromie 8:
 (1112072, 0, 0, 0, 0, 0, 10008, 0, 0, 0, 'Chromie', '', 62008, 63, 63, 0, 35, 1, 1, 1.14286, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 33536, 2048, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1.35, 1, 1, 0, 0, 1, 0, 0, 2, '', 0),
 -- Event 8 Add:
-(1112073, 0, 0, 0, 0, 0, 11798, 0, 0, 0, 'Diablo Fanatic', '', 0, 72, 72, 0, 63, 0, 1, 1.14286, 0, 1, 0, 15, 2000, 2000, 1, 1, 8, 0, 2048, 0, 7, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, '', 1, 1, 800, 100, 1, 0, 0, 1, 545458712, 0, 256, '', 0);
+(1112073, 0, 0, 0, 0, 0, 11798, 0, 0, 0, 'Diablo Fanatic', '', 0, 72, 72, 0, 63, 0, 1, 1.14286, 0, 1, 0, 15, 2000, 2000, 1, 1, 8, 0, 2048, 0, 7, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, '', 1, 1, 800, 100, 1, 0, 0, 1, 545458712, 0, 256, '', 0),
+-- Event 9 Boss:
+(1112081, 0, 0, 0, 0, 0, 10992, 0, 0, 0, 'Tagilla', 'The Bindingless', 0, 70, 70, 0, 63, 0, 1, 1.14286, 8, 3, 0, 30, 2000, 2000, 1, 1, 1, 32832, 2048, 0, 7, 0, 0, 0, 0, 7, 4, 0, 0, 0, 0, 0, 0, 0, '', 1, 1, 2000, 100, 1, 0, 0, 1, 667631231, 0, 0, '', 0),
+-- Custom Chromie 9:
+(1112082, 0, 0, 0, 0, 0, 10008, 0, 0, 0, 'Chromie', '', 62009, 63, 63, 0, 35, 1, 1, 1.14286, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 33536, 2048, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1.35, 1, 1, 0, 0, 1, 0, 0, 2, '', 0),
+-- Event 9 Add:
+(1112083, 0, 0, 0, 0, 0, 11798, 0, 0, 0, 'Draenei Enh Shammy', 'not Toriul', 0, 72, 72, 0, 63, 0, 1, 1.14286, 0, 1, 0, 15, 2000, 2000, 1, 1, 8, 0, 2048, 0, 7, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, '', 1, 1, 800, 100, 1, 0, 0, 1, 545458712, 0, 256, '', 0);
 
 -- Npc_text
 SET @NPC_TEXT = 'Greetings, $n. One of the invaders of the timeline is in a nearby timenode. I might be able to make them visible for your eyes and vulnerable to your magic and weapons, but i can not aid you in this fight while i am maintaining the spell. Are you ready to face the worst this timeline has to deal with?\n';
@@ -82,13 +88,15 @@ INSERT INTO `gossip_menu` (`MenuID`, `TextID`) VALUES
 (62005, 91115),
 (62006, 91116),
 (62007, 91117),
-(62008, 91118);
+(62008, 91118),
+(62009, 91119);
 
 INSERT INTO `creature_equip_template` (`CreatureID`, `ID`, `ItemID1`, `ItemID2`, `ItemID3`, `VerifiedBuild`) VALUES
 (1112011, 1, 41175, 0, 0, 18019),
 (1112021, 1, 7682, 0, 0, 18019),
 (1112031, 1, 7682, 0, 0, 18019),
-(1112041, 1, 7682, 0, 0, 18019);
+(1112041, 1, 7682, 0, 0, 18019),
+(1112081, 2, 19019, 32375, 0, 18019); -- should equip bulwark of azzi and TF
 
 -- insert new movement type adjustments since their old inhabit type was 3 for ground and water
 INSERT INTO `creature_template_movement` (`CreatureId`, `Ground`, `Swim`, `Flight`, `Rooted`, `Chase`, `Random`, `InteractionPauseTimer`) VALUES
@@ -115,4 +123,7 @@ INSERT INTO `creature_template_movement` (`CreatureId`, `Ground`, `Swim`, `Fligh
 (1112063, 1, 1, 0, 0, 0, 0, NULL), -- Event 7 Add
 (1112071, 1, 1, 0, 0, 0, 0, NULL), -- Event 8 Boss
 (1112072, 1, 1, 0, 0, 0, 0, NULL), -- Custom Chromie 8
-(1112073, 1, 1, 0, 0, 0, 0, NULL); -- Event 8 Add
+(1112073, 1, 1, 0, 0, 0, 0, NULL), -- Event 8 Add
+(1112081, 1, 1, 0, 0, 0, 0, NULL), -- Event 9 Boss
+(1112082, 1, 1, 0, 0, 0, 0, NULL), -- Custom Chromie 9
+(1112083, 1, 1, 0, 0, 0, 0, NULL); -- Event 9 Add
