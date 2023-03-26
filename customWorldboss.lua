@@ -864,7 +864,7 @@ Config_bossSpellModifier3bp0[9] = nil      -- not required if nil
 Config_bossSpellModifier3bp1[9] = nil      -- not required if nil
 Config_bossSpellModifier4bp0[9] = nil      -- nil required because stun
 Config_bossSpellModifier4bp1[9] = nil      -- same idea
-Config_bossSpellModifier5bp0[9] = 20000    -- total damage? needs checking
+Config_bossSpellModifier5bp0[9] = 2000     -- tick damage
 Config_bossSpellModifier5bp1[9] = nil      -- not required if nil
 Config_bossSpellModifier6bp0[9] = nil      -- not required if nil
 Config_bossSpellModifier6bp1[9] = nil      -- not required if nil
@@ -874,7 +874,7 @@ Config_bossSpellModifier8bp0[9] = nil      -- not required if nil
 Config_bossSpellModifier8bp1[9] = nil      -- not required if nil
 
 Config_addHealthModifierParty[9] = 0.2     -- modifier to change health for party encounter. Value in the SQL applies for raid
-Config_addsAmount[9] = 4                   -- how many adds will spawn
+Config_addsAmount[9] = 1                   -- how many adds will spawn
 
 Config_addSpell1[9] = 40536             -- min range 30m, 1-3rd farthest target within 30m -- Chain lightning
 Config_addSpell2[9] = 56352             -- min range 45m, cast on tank -- Storm punch (wep damage) and dot
