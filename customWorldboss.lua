@@ -830,43 +830,43 @@ Config_bossSpellSelfYell[8] = "Die!"
 Config_bossEntry[9] = 1112081           --db entry of the boss creature
 Config_npcEntry[9] = 1112082            --db entry of the NPC creature to summon the boss
 Config_addEntry[9] = 1112083            --db entry of the add creature
-Config_npcText[9] = 91119                --gossip in npc_text to be told by the summoning NPC
+Config_npcText[9] = 91119               --gossip in npc_text to be told by the summoning NPC
 
 -- list of spells:
-Config_bossSpell1[9] = 35759            --directly applied to the tank-- instant fire damage + dot
-Config_bossSpell2[9] = nil              --on a random player within Config_bossSpell2MaxRange
+Config_bossSpell1[9] = 46033            --directly applied to the tank-- Judgement of Wrath damage every 3 secs
+Config_bossSpell2[9] = 37259            --on a random player within Config_bossSpell2MaxRange -- Hammer of Wrath to people below 50% health (dunno if it will work at higher health depends on spell handling ofc)
 Config_bossSpell2MaxRange[9] = 50       --max range im m/y to check for targets for boss spell 2 (default 35)
-Config_bossSpell3[9] = 69528            --on the 2nd nearest player within 30m -- deals damage to target and damage to nearby additional target
-Config_bossSpell4[9] = nil              --on a random player within Config_bossSpell4MaxRange
-Config_bossSpell4Counter[9] = 10        --amount of casts to perform for spell 4. defaults to 1
-Config_bossSpell4MaxRange[9] = 30       --max range im m to check for targets for boss spell 4 (default 40)
-Config_bossSpell5[9] = nil              --directly applied to the tank with adds alive 
-Config_bossSpell6[9] = 70866            --directly applied to the tank when adds are dead --shadow blast (knockback + movement speed reduce)
-Config_bossSpell7[9] = 46469            --directly applied to the tank --melt armor 2000 for 30 secs
-Config_bossSpell8[9] = nil              --directly applied to the tank x seconds after spell 7 -
+Config_bossSpell3[9] = nil              --on the 2nd nearest player within 30m
+Config_bossSpell4[9] = 39077            --on a random player within Config_bossSpell4MaxRange -- Hammer of Justice on 3 targets
+Config_bossSpell4Counter[9] = 3         --amount of casts to perform for spell 4. defaults to 1
+Config_bossSpell4MaxRange[9] = 25       --max range im m to check for targets for boss spell 4 (default 40)
+Config_bossSpell5[9] = 69930            --directly applied to the tank with adds alive -- consecration when the adds are alive
+Config_bossSpell6[9] = nil              --directly applied to the tank when adds are dead
+Config_bossSpell7[9] = nil              --directly applied to the tank
+Config_bossSpell8[9] = nil              --directly applied to the tank x seconds after spell 7
 Config_bossSpell8delay[9] = nil         --delay between spell 7 and 8. Must be smaller than timer7 / 2
-Config_bossSpellSelf[9] = 13022         --cast on boss while adds are still alive fire+arcane reflect
+Config_bossSpellSelf[9] = 59025         --cast on boss while adds are still alive -- lightning shield
 Config_bossSpellEnrage[9] = 54356       --cast on boss once after Config_bossSpellEnrageTimer ms have passed-- Soft Enrage
 
 Config_bossSpellTimer1[9] = 10000       -- This timer applies to Config_bossSpell1
-Config_bossSpellTimer2[9] = 37000       -- This timer applies to Config_bossSpell2
-Config_bossSpellTimer3[9] = 12000       -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
-Config_bossSpellTimer5[9] = 20000       -- This timer applies to Config_bossSpell5+6
+Config_bossSpellTimer2[9] = 15000       -- This timer applies to Config_bossSpell2
+Config_bossSpellTimer3[9] = 9000        -- This timer applies to Config_bossSpellSelf in phase 1 and Config_bossSpell3+4 randomly later
+Config_bossSpellTimer5[9] = 17000       -- This timer applies to Config_bossSpell5+6
 Config_bossSpellTimer7[9] = 40000       -- This timer applies to Config_bossSpell7+8 (in ms)
 Config_bossSpellEnrageTimer[9] = 90000
 Config_minPhaseForTimer7[9] = 3         -- From this phase on the boss will use Timer 7 to cast Spell 7+8. Will ignore it before.
 
-Config_bossSpellModifier1bp0[9] = 5000     -- should be instant damage ??? @55Honey
-Config_bossSpellModifier1bp1[9] = 2500     -- dot damage for fire spell
-Config_bossSpellModifier2bp0[9] = nil      -- not required if nil
+Config_bossSpellModifier1bp0[9] = 6000     -- instant damage
+Config_bossSpellModifier1bp1[9] = nil      -- not required if nil
+Config_bossSpellModifier2bp0[9] = 4000     -- instant damage
 Config_bossSpellModifier2bp1[9] = nil      -- not required if nil
-Config_bossSpellModifier3bp0[9] = 2000     -- damage to main target
-Config_bossSpellModifier3bp1[9] = 2000     -- damage to secondary target
-Config_bossSpellModifier4bp0[9] = nil      -- not required if nil
-Config_bossSpellModifier4bp1[9] = nil      -- not required if nil
-Config_bossSpellModifier5bp0[9] = nil      -- not required if nil
+Config_bossSpellModifier3bp0[9] = nil      -- not required if nil
+Config_bossSpellModifier3bp1[9] = nil      -- not required if nil
+Config_bossSpellModifier4bp0[9] = nil      -- nil required because stun
+Config_bossSpellModifier4bp1[9] = nil      -- same idea
+Config_bossSpellModifier5bp0[9] = 20000    -- total damage? needs checking
 Config_bossSpellModifier5bp1[9] = nil      -- not required if nil
-Config_bossSpellModifier6bp0[9] = 3000     -- base damage of shadow blast
+Config_bossSpellModifier6bp0[9] = nil      -- not required if nil
 Config_bossSpellModifier6bp1[9] = nil      -- not required if nil
 Config_bossSpellModifier7bp0[9] = nil      -- not required if nil
 Config_bossSpellModifier7bp1[9] = nil      -- not required if nil
@@ -874,23 +874,23 @@ Config_bossSpellModifier8bp0[9] = nil      -- not required if nil
 Config_bossSpellModifier8bp1[9] = nil      -- not required if nil
 
 Config_addHealthModifierParty[9] = 0.2     -- modifier to change health for party encounter. Value in the SQL applies for raid
-Config_addsAmount[9] = 2                   -- how many adds will spawn
+Config_addsAmount[9] = 4                   -- how many adds will spawn
 
-Config_addSpell1[9] = 38085             -- min range 30m, 1-3rd farthest target within 30m -- Shadow Blast (just damage)
-Config_addSpell2[9] = 36541             -- min range 45m, cast on tank -- Curse of Burning Shadows (deals shadow damage when fire damage is taken)
+Config_addSpell1[9] = 40536             -- min range 30m, 1-3rd farthest target within 30m -- Chain lightning
+Config_addSpell2[9] = 56352             -- min range 45m, cast on tank -- Storm punch (wep damage) and dot
 Config_addSpell3[9] = nil               -- min range 0m
-Config_addSpell4[9] = 37479             -- cast on the boss Shadow Mend (heals boss for large amount)
+Config_addSpell4[9] = 37599             -- cast on the boss Bloodlust (30%)
 Config_addSpellEnrage[9] = nil          -- Enrage after 300 seconds
 
-Config_addSpellTimer1[9] = 23000        -- This timer applies to Config_addSpell1
+Config_addSpellTimer1[9] = 15000        -- This timer applies to Config_addSpell1
 Config_addSpellTimer2[9] = 13000        -- This timer applies to Config_addSpell2
 Config_addSpellTimer3[9] = 7000         -- This timer applies to Config_addSpell3
 Config_addSpellTimer4[9] = 10000        -- This timer applies to Config_addSpell4
 
-Config_addSpellModifier1bp0[9] = 750    -- damage modifier
-Config_addSpellModifier1bp1[9] = nil    -- not required if nil
-Config_addSpellModifier2bp0[9] = nil    -- not required if nil
-Config_addSpellModifier2bp1[9] = nil    -- not required if nil
+Config_addSpellModifier1bp0[9] = 1500   -- damage modifier
+Config_addSpellModifier1bp1[9] = 500    -- damage after jump?
+Config_addSpellModifier2bp0[9] = 2000   -- not required if nil
+Config_addSpellModifier2bp1[9] = 500    -- not required if nil
 Config_addSpellModifier3bp0[9] = nil    -- not required if nil
 Config_addSpellModifier3bp1[9] = nil    -- not required if nil
 
@@ -903,8 +903,8 @@ Config_aura2Add3[9] = nil               -- another aura to add to all add from t
 
 Config_addSpell3Yell[9] = "BINDING! BINDING!"                    -- yell for the adds when Spell 3 is cast
 Config_addEnoughYell[9] = "It will drop next time, I promise!"   -- yell for the add at 33% and 66% hp
-Config_addEnoughSound[9] = 10897        -- sound to play when the add is at 33% and 66%
-Config_addSpell2Sound[9] = 3            -- sound to play when add casts spell 2
+Config_addEnoughSound[9] = 8990         -- sound to play when the add is at 33% and 66%
+Config_addSpell2Sound[9] = 9514         -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
 Config_bossYellPhase2[9] = "Give me my bindings!"
 -- yell for the boss when they cast on themself
