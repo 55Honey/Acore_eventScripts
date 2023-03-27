@@ -182,7 +182,7 @@ Config.PartyNpcSayText = 'What are you waiting for? Bring a party of five and st
 -- 6: Level 60: One-Three-Three-Seven / Ragnarosqt
 -- 7: Level 60: Big Bad Bug / Bug's Bunny
 -- 8: Level 70: El Diablo / Diablo Fanatic
--- 9: Level 70: Tagilla / Draenei Enh Shammy
+-- 9: Level 70: Tagilla / Toriul
 ------------------------------------------
 
 ------------------------------------------
@@ -901,8 +901,8 @@ Config_aura2Add2[9] = nil               -- another aura to add to the 2nd add
 Config_aura1Add3[9] = nil               -- an aura to add to all ads from the 3rd on
 Config_aura2Add3[9] = nil               -- another aura to add to all add from the 3rd on
 
-Config_addSpell3Yell[9] = "BINDING! BINDING!"                    -- yell for the adds when Spell 3 is cast
-Config_addEnoughYell[9] = "It will drop next time, I promise!"   -- yell for the add at 33% and 66% hp
+Config_addSpell3Yell[9] = "BINDING! BINDING!"                      -- yell for the adds when Spell 3 is cast
+Config_addEnoughYell[9] = "It will drop next time... I promise!"   -- yell for the add at 33% and 66% hp
 Config_addEnoughSound[9] = 8990         -- sound to play when the add is at 33% and 66%
 Config_addSpell2Sound[9] = 9514         -- sound to play when add casts spell 2
 --yell for the boss when all adds are dead
