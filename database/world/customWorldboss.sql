@@ -3,7 +3,7 @@ DELETE FROM `creature_template` WHERE `entry` IN
 DELETE FROM `npc_text` WHERE `ID` IN (91101,91102,91111,91112,91113,91114,91115,91116,91117,91118,91119);
 DELETE FROM `gossip_menu` WHERE `MenuID` IN (62001,62002,62003,62004,62005,62006,62007,62008,62009);
 DELETE FROM `creature_equip_template` WHERE `CreatureID` IN
-(1112011,1112021,1112031,1112041,1112051,1112061,1112071,1112081);
+(1112011,1112021,1112031,1112041,1112051,1112061,1112071,1112081, 1112083);
 DELETE FROM `creature_template_movement` WHERE `CreatureId` IN
 (1112001,1112002,1112003,1112011,1112012,1112013,1112021,1112022,1112023,1112031,1112032,1112033,1112041,1112042,1112043,1112051,1112052,1112053,1112061,1112062,1112063,1112071,1112072,1112073,1112081,1112082,1112083,1111112999);
 
@@ -97,7 +97,8 @@ INSERT INTO `creature_equip_template` (`CreatureID`, `ID`, `ItemID1`, `ItemID2`,
 (1112021, 1, 7682, 0, 0, 18019),
 (1112031, 1, 7682, 0, 0, 18019),
 (1112041, 1, 7682, 0, 0, 18019),
-(1112081, 1, 19019, 32375, 0, 18019); -- should equip bulwark of azzi and TF
+(1112081, 1, 19019, 32375, 0, 18019), -- should equip bulwark of azzi and TF
+(1112083, 1, 17112, 17068, 0, 18019); -- should equip add with Empyrean and Deathbringer
 
 -- insert new movement type adjustments since their old inhabit type was 3 for ground and water
 INSERT INTO `creature_template_movement` (`CreatureId`, `Ground`, `Swim`, `Flight`, `Rooted`, `Chase`, `Random`, `InteractionPauseTimer`) VALUES
