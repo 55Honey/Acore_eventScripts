@@ -705,7 +705,7 @@ local function ft_command(event, player, command, chatHandler)
             chatHandler:SendSysMessage("Can not use 'return' from the console. Requires player object.")
             return false
         end
-        if storedMap[player:GetGUIDLow()] and storedMap[player:GetGUIDLow()] == 1 then
+        if storedMap[player:GetGUIDLow()] ~= nil and storedMap[player:GetGUIDLow()] >= 1 then
             if not player:IsAlive() then
                 player:ResurrectPlayer(100)
             end
