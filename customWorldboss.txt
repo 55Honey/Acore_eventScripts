@@ -773,9 +773,8 @@ local RAID_IN_PROGRESS = 2
 local ELUNA_EVENT_ON_LUA_STATE_CLOSE = 16
 
 --local variables
-local cancelGossipEvent
 local eventInProgress
-local bossfightInProgress
+local fightType
 local difficulty                            -- difficulty is set when using .startevent and it is meant for a range of 1-10
 local addsDownCounter
 local phase
@@ -949,7 +948,7 @@ end
 
 local function eS_onHello(event, player, creature)
     if player == nil then return end
-    if bossfightInProgress ~= nil then
+    if fightType ~= nil then
         player:SendBroadcastMessage("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration())
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config_npcEntry[eventInProgress], 0)
         player:GossipSendMenu(Config_npcText[eventInProgress], creature, 0)
@@ -964,7 +963,7 @@ end
 
 local function eS_onPartyOnlyHello(event, player, creature)
     if player == nil then return end
-    if bossfightInProgress ~= nil then
+    if fightType ~= nil then
         player:SendBroadcastMessage("Some heroes are still fighting the enemies of time since "..eS_getEncounterDuration())
         player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", Config.partySelectNpc, 0)
         player:GossipSendMenu(Config.defaultNpcText1, creature, 0)
@@ -997,10 +996,10 @@ local function awardScore()
             CharDBExecute('REPLACE INTO `'..Config.customDbName..'`.`eventscript_score` VALUES ('..accountId..', '..scoreEarned[accountId]..', '..scoreTotal[accountId]..');');
             local gameTime = (tonumber(tostring(GetGameTime())))
             local playerLowGuid = GetGUIDLow(playerGuid)
-            CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..bossfightInProgress..', '..eS_getTimeSince(encounterStartTime)..');');
+            CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..fightType..', '..GetTimeDiff(encounterStartTime)..');');
         end
     end
-    bossfightInProgress = nil
+    fightType = nil
 end
 
 local function storeEncounter()
@@ -1009,10 +1008,10 @@ local function storeEncounter()
             local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
             local gameTime = (tonumber(tostring(GetGameTime())))
             local playerLowGuid = GetGUIDLow(playerGuid)
-            CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..bossfightInProgress..', '..eS_getTimeSince(encounterStartTime)..');');
+            CharDBExecute('INSERT IGNORE INTO `'..Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..difficulty..', '..fightType..', '..GetTimeDiff(encounterStartTime)..');');
         end
     end
-    bossfightInProgress = nil
+    fightType = nil
 end
 
 local function eS_chromieGossip(event, player, object, sender, intid, code, menu_id)
@@ -1031,7 +1030,7 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         player:GossipComplete()
     elseif intid == 1 then
 
-        if bossfightInProgress ~= nil then
+        if fightType ~= nil then
             player:SendBroadcastMessage("There is already a fight in progress.")
             player:GossipComplete()
             return
@@ -1062,7 +1061,7 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
             end
         end
         --start 5man encounter
-        bossfightInProgress = PARTY_IN_PROGRESS
+        fightType = PARTY_IN_PROGRESS
         spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
         spawnedCreature[1]:SetPhaseMask(2)
         spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
@@ -1090,7 +1089,7 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
 
     elseif intid == 2 then
 
-        if bossfightInProgress ~= nil then
+        if fightType ~= nil then
             player:SendBroadcastMessage("There is already a fight in progress.")
             player:GossipComplete()
             return
@@ -1124,7 +1123,7 @@ local function eS_chromieGossip(event, player, object, sender, intid, code, menu
         end
 
         --start raid encounter
-        bossfightInProgress = RAID_IN_PROGRESS
+        fightType = RAID_IN_PROGRESS
 
         spawnedBoss = player:SpawnCreature(Config_bossEntry[eventInProgress], x, y, z+2, o)
         spawnedBoss:SetPhaseMask(2)
@@ -1224,7 +1223,7 @@ local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, c
     else
         difficulty = partyEvent[accountId]
         partyEvent[accountId] = intid - 100
-        if bossfightInProgress ~= nil then
+        if fightType ~= nil then
             player:SendBroadcastMessage("There is already a fight in progress.")
             player:GossipComplete()
             return
@@ -1261,7 +1260,7 @@ local function eS_chromiePartyOnlyGossip(event, player, object, sender, intid, c
         local o = player:GetO()
 
         --start 5man encounter
-        bossfightInProgress = PARTY_IN_PROGRESS
+        fightType = PARTY_IN_PROGRESS
         spawnedCreature[1]= player:SpawnCreature(Config_addEntry[eventInProgress], x, y, z, o)
         spawnedCreature[1]:SetPhaseMask(2)
         spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * eS_getSize(difficulty))
@@ -1433,7 +1432,7 @@ function bossNPC.reset(event, creature)
         elseif Config.storeRaid == 1 then
             storeEncounter()
         else
-            bossfightInProgress = nil
+            fightType = nil
         end
         SendWorldMessage("The raid encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
         CreateLuaEvent(eS_castFireworks, 1000, 20)
@@ -1451,7 +1450,7 @@ function bossNPC.reset(event, creature)
             end
         end
         playersInRaid = {}
-        bossfightInProgress = nil
+        fightType = nil
     end
     creature:DespawnOrUnsummon(0)
     addsDownCounter = nil
@@ -1461,8 +1460,8 @@ function bossNPC.Event(event, delay, pCall, creature)
     if creature:IsCasting() == true then return end
 
     if Config_bossSpellEnrageTimer[eventInProgress] ~= nil and Config_bossSpellEnrage[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_bossSpellEnrageTimer[eventInProgress]) < eS_getTimeSince(encounterStartTime) then
-            if phase == 2 and eS_getTimeSince(encounterStartTime) > Config_bossSpellEnrageTimer[eventInProgress] then
+        if eS_getDifficultyTimer(Config_bossSpellEnrageTimer[eventInProgress]) < GetTimeDiff(encounterStartTime) then
+            if phase == 2 and GetTimeDiff(encounterStartTime) > Config_bossSpellEnrageTimer[eventInProgress] then
                 phase = 3
                 creature:SendUnitYell("FEEL MY WRATH!", 0 )
                 creature:CastSpell(creature, Config_bossSpellEnrage[eventInProgress])
@@ -1472,7 +1471,7 @@ function bossNPC.Event(event, delay, pCall, creature)
     end
 
     if Config_bossSpellTimer3[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < eS_getTimeSince(lastBossSpell3) then
+        if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < GetTimeDiff(lastBossSpell3) then
             if addsDownCounter < Config_addsAmount[eventInProgress] then
                 if Config_bossSpellSelf[eventInProgress] ~= nil then
                     if Config_bossSpellSelfYell[eventInProgress] ~= nil then
@@ -1492,7 +1491,7 @@ function bossNPC.Event(event, delay, pCall, creature)
     end
 
     if Config_bossSpellTimer1[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_bossSpellTimer1[eventInProgress]) < eS_getTimeSince(lastBossSpell1) then
+        if eS_getDifficultyTimer(Config_bossSpellTimer1[eventInProgress]) < GetTimeDiff(lastBossSpell1) then
             if Config_bossSpell1[eventInProgress] ~= nil then
                 if Config_bossSpellModifier1bp0[eventInProgress] ~= nil and Config_bossSpellModifier1bp1[eventInProgress] ~= nil then
                     local base1 = eS_getDifficultyModifier(Config_bossSpellModifier1bp0[eventInProgress])
@@ -1514,7 +1513,7 @@ function bossNPC.Event(event, delay, pCall, creature)
     end
 
     if Config_bossSpellTimer2[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_bossSpellTimer2[eventInProgress]) < eS_getTimeSince(lastBossSpell2) then
+        if eS_getDifficultyTimer(Config_bossSpellTimer2[eventInProgress]) < GetTimeDiff(lastBossSpell2) then
             if Config_bossSpell2[eventInProgress] ~= nil then
                 if (math.random(1, 100) <= 50) then
                     if Config_bossSpell2MaxRange[eventInProgress] == nil then
@@ -1544,7 +1543,7 @@ function bossNPC.Event(event, delay, pCall, creature)
     end
 
     if Config_bossSpellTimer3[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < eS_getTimeSince(lastBossSpell3) then
+        if eS_getDifficultyTimer(Config_bossSpellTimer3[eventInProgress]) < GetTimeDiff(lastBossSpell3) then
             if phase > 1 then
                 local players = creature:GetPlayersInRange(30)
                 if #players > 1 then
@@ -1627,7 +1626,7 @@ function bossNPC.Event(event, delay, pCall, creature)
     end
 
     if Config_bossSpellTimer5[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_bossSpellTimer5[eventInProgress]) < eS_getTimeSince(lastBossSpell5) then
+        if eS_getDifficultyTimer(Config_bossSpellTimer5[eventInProgress]) < GetTimeDiff(lastBossSpell5) then
             if phase == 1 then
                 if Config_bossSpell5[eventInProgress] ~= nil then
                     if Config_bossSpellModifier5bp0[eventInProgress] ~= nil and Config_bossSpellModifier5bp1[eventInProgress] ~= nil then
@@ -1674,7 +1673,7 @@ function bossNPC.Event(event, delay, pCall, creature)
     if Config_bossSpellTimer7[eventInProgress] ~= nil and phase >= Config_minPhaseForTimer7[eventInProgress] then
         if nextBossSpell8Delay ~= nil then
             if Config_bossSpell8[eventInProgress] ~= nil then
-                if Config_bossSpell8delay[eventInProgress] < eS_getTimeSince(nextBossSpell8Delay) then
+                if Config_bossSpell8delay[eventInProgress] < GetTimeDiff(nextBossSpell8Delay) then
                     if Config_bossSpellModifier8bp0[eventInProgress] ~= nil and Config_bossSpellModifier8bp1[eventInProgress] ~= nil then
                         local base1 = eS_getDifficultyModifier(Config_bossSpellModifier8bp0[eventInProgress])
                         local base2 = eS_getDifficultyModifier(Config_bossSpellModifier8bp1[eventInProgress])
@@ -1694,7 +1693,7 @@ function bossNPC.Event(event, delay, pCall, creature)
             end
         end
 
-        if eS_getDifficultyTimer(Config_bossSpellTimer7[eventInProgress]) < eS_getTimeSince(lastBossSpell7) then
+        if eS_getDifficultyTimer(Config_bossSpellTimer7[eventInProgress]) < GetTimeDiff(lastBossSpell7) then
             if Config_bossSpell7[eventInProgress] ~= nil then
                 if Config_bossSpellModifier7bp0[eventInProgress] ~= nil and Config_bossSpellModifier7bp1[eventInProgress] ~= nil then
                     local base1 = eS_getDifficultyModifier(Config_bossSpellModifier7bp0[eventInProgress])
@@ -1733,7 +1732,7 @@ function addNPC.onEnterCombat(event, creature, target)
     end
     addphase = 1
 
-    if bossfightInProgress == PARTY_IN_PROGRESS then
+    if fightType == PARTY_IN_PROGRESS then
         lastAddSpell1[1] = encounterStartTime
         lastAddSpell2[1] = encounterStartTime
         lastAddSpell3[1] = encounterStartTime
@@ -1751,7 +1750,7 @@ end
 function addNPC.Event(event, delay, pCall, creature)
     if creature:IsCasting() == true then return end
 
-    if bossfightInProgress == PARTY_IN_PROGRESS and Config_addSpell1[eventInProgress] ~= nil then  -- only for the party version
+    if fightType == PARTY_IN_PROGRESS and Config_addSpell1[eventInProgress] ~= nil then  -- only for the party version
         if addphase == 1 and creature:GetHealthPct() < 67 then
             addphase = 2
         elseif addphase == 2 and creature:GetHealthPct() < 34 then
@@ -1780,8 +1779,8 @@ function addNPC.Event(event, delay, pCall, creature)
 
 
     if Config_addSpellEnrage[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config.addEnrageTimer) < eS_getTimeSince(encounterStartTime)then
-            if phase == 2 and eS_getTimeSince(encounterStartTime) > Config_addSpellEnrage[eventInProgress] then
+        if eS_getDifficultyTimer(Config.addEnrageTimer) < GetTimeDiff(encounterStartTime)then
+            if phase == 2 and GetTimeDiff(encounterStartTime) > Config_addSpellEnrage[eventInProgress] then
                 phase = 3
                 creature:SendUnitYell("FEEL MY WRATH!", 0 )
                 creature:CastSpell(creature, Config_addSpellEnrage[eventInProgress])
@@ -1793,7 +1792,7 @@ function addNPC.Event(event, delay, pCall, creature)
     local randomTimer = math.random(0,1000)
 
     if Config_addSpellTimer1[eventInProgress] ~= nil and Config_addSpell1[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_addSpellTimer1[eventInProgress]) < randomTimer + eS_getTimeSince(lastAddSpell1[n]) then
+        if eS_getDifficultyTimer(Config_addSpellTimer1[eventInProgress]) < randomTimer + GetTimeDiff(lastAddSpell1[n]) then
             local random = math.random(0, 2)
             local players = creature:GetPlayersInRange(30)
             if #players > 1 then
@@ -1833,7 +1832,7 @@ function addNPC.Event(event, delay, pCall, creature)
     end
 
     if Config_addSpellTimer2[eventInProgress] ~= nil and Config_addSpell2[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_addSpellTimer2[eventInProgress]) < randomTimer + (eS_getTimeSince(lastAddSpell2[n])) then
+        if eS_getDifficultyTimer(Config_addSpellTimer2[eventInProgress]) < randomTimer + (GetTimeDiff(lastAddSpell2[n])) then
             if Config_addSpell2Sound[eventInProgress] ~= nil then
                 creature:PlayDirectSound(Config_addSpell2Sound[eventInProgress])
             end
@@ -1856,7 +1855,7 @@ function addNPC.Event(event, delay, pCall, creature)
     end
 
     if Config_addSpellTimer3[eventInProgress] ~= nil and Config_addSpell3[eventInProgress] ~= nil then
-        if eS_getDifficultyTimer(Config_addSpellTimer3[eventInProgress]) < randomTimer + eS_getTimeSince(lastAddSpell3[n]) then
+        if eS_getDifficultyTimer(Config_addSpellTimer3[eventInProgress]) < randomTimer + GetTimeDiff(lastAddSpell3[n]) then
             if Config_addSpell3Yell[eventInProgress] ~= nil then
                 creature:SendUnitYell(Config_addSpell3Yell[eventInProgress], 0 )
             end
@@ -1878,9 +1877,9 @@ function addNPC.Event(event, delay, pCall, creature)
         end
     end
 
-    if bossfightInProgress == RAID_IN_PROGRESS then
+    if fightType == RAID_IN_PROGRESS then
         if Config_addSpellTimer4[eventInProgress] ~= nil and Config_addSpell4[eventInProgress] ~= nil then
-            if eS_getDifficultyTimer(Config_addSpellTimer4[eventInProgress]) < randomTimer + eS_getTimeSince(lastAddSpell4[n]) then
+            if eS_getDifficultyTimer(Config_addSpellTimer4[eventInProgress]) < randomTimer + GetTimeDiff(lastAddSpell4[n]) then
                 local map = creature:GetMap()
                 if map ~= nil then
                     if  map:GetWorldObject(spawnedBossGuid) ~= nil then
@@ -1897,11 +1896,11 @@ end
 
 function addNPC.reset(event, creature)
     local player
-    if bossfightInProgress == PARTY_IN_PROGRESS then
+    if fightType == PARTY_IN_PROGRESS then
         eS_checkInCombat()
     end
     creature:RemoveEvents()
-    if bossfightInProgress == PARTY_IN_PROGRESS then
+    if fightType == PARTY_IN_PROGRESS then
         if creature:IsDead() == true then
             local playerListString
             CreateLuaEvent(eS_castFireworks, 1000, 20)
@@ -1925,7 +1924,7 @@ function addNPC.reset(event, creature)
             elseif Config.storeParty == 1 then
                 storeEncounter()
             else
-                bossfightInProgress = nil
+                fightType = nil
             end
             SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty "..difficulty.." in "..eS_getEncounterDuration().." by: "..playerListString..". Congratulations!")
             playersForFireworks = playersInRaid
@@ -1942,7 +1941,7 @@ function addNPC.reset(event, creature)
                 end
             end
             playersInRaid = {}
-            bossfightInProgress = nil
+            fightType = nil
         end
     else
         if creature:IsDead() == true then
