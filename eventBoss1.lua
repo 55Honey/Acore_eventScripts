@@ -36,7 +36,7 @@ local addNPC = {}
 --------------------------------------------------------------------------------------
 
 local encounterId = 1
-print('register 1')
+
 ebs.encounter[encounterId] = {
     --                type          entry  map   x        y       z       o  despawnTime
     ["npc"] = { TYPE_CREATURE, 1112002, 1, 5507.3, -3685.5, 1594.3, 1.97, 0 },          -- gossip NPC for players to interact with
@@ -60,7 +60,7 @@ end
 
 function bossNPC.PullIn( eventid, delay, repeats, creature )
     local target = creature:GetAITarget( SELECT_TARGET_FARTHEST, true, nil, -20 )
-    creature:CastSpell( target, 60105, false )
+    creature:CastSpell( target, 59395, true )
 end
 
 function bossNPC.Pool( eventid, delay, repeats, creature )
@@ -74,8 +74,9 @@ end
 function bossNPC.onEnterCombat( event, creature, target )
     creature:CallAssistance()
     creature:CallForHelp( 200 )
+    local difficulty = creature:GetData('ebs_difficulty')
     -- add custom scripting below
-    creature:RegisterEvent( bossNPC.Fire, 10000, 0 )
+    creature:RegisterEvent( bossNPC.Fire, GetTimer( 10000, difficulty ), 0 )
 end
 
 function bossNPC.reset( event, creature )
@@ -99,36 +100,39 @@ function addNPC.HealBoss( eventid, delay, repeats, add )
             else
                 add:SendUnitYell( "Don't you dare harm the master!", 0 )
             end
-            add:SetImmuneTo( MECHANIC_INTERRUPT, true )
+            --add:SetImmuneTo( MECHANIC_INTERRUPT, true )
             add:CastCustomSpell( boss, 30878, false, nil, 1000000 )
-            add:RegisterEvent( addNPC.RemoveInterrupt, 3000, 1 )
+            --add:RegisterEvent( addNPC.RemoveInterrupt, 3000, 1 )
         end
     end
 end
 
 function addNPC.Splash( eventid, delay, repeats, add )
-    add:CastSpell( add:GetVictim(), 32014, false )
-    print('addNPC.Splash')
+    add:CastCustomSpell( add:GetVictim(), 32014, false, nil, 150 )
 end
 
 function addNPC.onEnterCombat( event, creature, target )
     creature:CallAssistance()
     creature:CallForHelp( 200 )
+    local difficulty = creature:GetData('ebs_difficulty')
     -- add custom scripting below
-    print('addNPC.onEnterCombat')
     creature:RegisterEvent( addNPC.HealBoss, { 10000, 15000 }, 0 )
-    creature:RegisterEvent( addNPC.Splash, { 10000, 15000 }, 0 )
-    creature:RegisterEvent( bossNPC.PullIn, { 10000, 15000 }, 0 )
+    creature:RegisterEvent( addNPC.Splash, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
+    if difficulty >= 3 or creature:GetData('ebs_mode') == PARTY_IN_PROGRESS then
+        creature:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
+    end
 end
 
 function addNPC.reset( event, creature )
     creature:RemoveEvents()
+    local difficulty = creature:GetData('ebs_difficulty')
     -- add custom scripting below
     if creature:IsDead() then
         if ebs.has_value( ebs.spawnedBossGuid, creature:GetGUID() ) then
             slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
         end
         if ebs.fightType[ slotId ] ~= RAID_IN_PROGRESS then
+            ebs.addReset( event, creature )
             return
         end
 
@@ -140,8 +144,8 @@ function addNPC.reset( event, creature )
             local boss = creature:GetOwner()
             if boss then
                 boss:SendUnitYell( "You will pay for your actions!", 0 )
-                boss:RegisterEvent( bossNPC.PullIn, { 4000, 6000 }, 0 )
-                boss:RegisterEvent( bossNPC.Pool, { 10000, 12000}, 0 )
+                boss:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 4000, difficulty ), 6000 }, 0 )
+                boss:RegisterEvent( bossNPC.Pool, { ebs.GetTimer( 10000, difficulty ), 12000}, 0 )
             end
         end
     end
