@@ -36,7 +36,7 @@ local addNPC = {}
 --------------------------------------------------------------------------------------
 
 local encounterId = 1
-
+print('register 1')
 ebs.encounter[encounterId] = {
     --                type          entry  map   x        y       z       o  despawnTime
     ["npc"] = { TYPE_CREATURE, 1112002, 1, 5507.3, -3685.5, 1594.3, 1.97, 0 },          -- gossip NPC for players to interact with
@@ -49,7 +49,7 @@ ebs.encounter[encounterId] = {
 
 --------------------------------------------------------------------------------------
 
-local addDownCounter = 0
+local addDownCounter = {}
 
 function bossNPC.Fire( eventid, delay, repeats, creature )
     local target = creature:GetAITarget( SELECT_TARGET_RANDOM, true, nil, -20 )
@@ -60,6 +60,7 @@ end
 
 function bossNPC.PullIn( eventid, delay, repeats, creature )
     local target = creature:GetAITarget( SELECT_TARGET_FARTHEST, true, nil, -20 )
+    creature:CastSpell( target, 60105, false )
 end
 
 function bossNPC.Pool( eventid, delay, repeats, creature )
@@ -80,6 +81,9 @@ end
 function bossNPC.reset( event, creature )
     creature:RemoveEvents()
     -- add custom scripting below
+
+    -- add custom scripting above
+    ebs.bossReset(event, creature)
 end
 
 function addNPC.RemoveInterrupt( eventid, delay, repeats, add )
@@ -103,23 +107,36 @@ function addNPC.HealBoss( eventid, delay, repeats, add )
 end
 
 function addNPC.Splash( eventid, delay, repeats, add )
-    add:CastSpell( add, 32014, false )
+    add:CastSpell( add:GetVictim(), 32014, false )
+    print('addNPC.Splash')
 end
 
 function addNPC.onEnterCombat( event, creature, target )
     creature:CallAssistance()
     creature:CallForHelp( 200 )
     -- add custom scripting below
-    creature:RegisterEvent(addNPC.HealBoss, {10000, 15000}, 0)
-    creature:RegisterEvent(addNPC.Splash, {20000, 25000}, 0)
+    print('addNPC.onEnterCombat')
+    creature:RegisterEvent( addNPC.HealBoss, { 10000, 15000 }, 0 )
+    creature:RegisterEvent( addNPC.Splash, { 10000, 15000 }, 0 )
+    creature:RegisterEvent( bossNPC.PullIn, { 10000, 15000 }, 0 )
 end
 
 function addNPC.reset( event, creature )
     creature:RemoveEvents()
     -- add custom scripting below
     if creature:IsDead() then
-        addDownCounter = addDownCounter + 1
-        if addDownCounter == ebs.encounter[ encounterId ].addAmount then
+        if ebs.has_value( ebs.spawnedBossGuid, creature:GetGUID() ) then
+            slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
+        end
+        if ebs.fightType[ slotId ] ~= RAID_IN_PROGRESS then
+            return
+        end
+
+        if not addDownCounter[ slotId ] then
+            addDownCounter[ slotId ] = 0
+        end
+        addDownCounter[ slotId ] = addDownCounter[ slotId ] + 1
+        if addDownCounter[ slotId ] == ebs.encounter[ encounterId ].addAmount then
             local boss = creature:GetOwner()
             if boss then
                 boss:SendUnitYell( "You will pay for your actions!", 0 )
@@ -128,7 +145,8 @@ function addNPC.reset( event, creature )
             end
         end
     end
-
+    -- add custom scripting above
+    ebs.addReset( event, creature )
 end
 
 RegisterCreatureEvent( ebs.encounter[ encounterId ].bossEntry, 1, bossNPC.onEnterCombat )

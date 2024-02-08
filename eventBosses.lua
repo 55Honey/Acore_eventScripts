@@ -199,7 +199,7 @@ function ebs.isParticipating(player)
         return false
     end
     for _,v in pairs(playersInGroup) do
-        if ebs.has_value(playersInGroup[v], player:GetGUID()) and player:GetPhaseMask() ~= 1 then
+        if ebs.has_value(v, player:GetGUID()) and player:GetPhaseMask() ~= 1 then
             return true
         end
     end
@@ -224,10 +224,10 @@ function ebs.getSize(difficulty)
     return value
 end
 
-function ebs.checkInCombat(encounterId)
+function ebs.checkInCombat(slotId)
     --check if all players are in combat
     local player
-    for _, v in pairs(playersInGroup[encounterId]) do
+    for _, v in pairs(playersInGroup[slotId]) do
         player = GetPlayerByGUID(v)
         if player ~= nil then
             if player:IsInCombat() == false and player:GetPhaseMask() == 2 then
@@ -241,8 +241,8 @@ function ebs.checkInCombat(encounterId)
     end
 end
 
-function ebs.getEncounterDuration(encounterId)
-    local dt = GetTimeDiff(encounterStartTime(encounterId))
+function ebs.getEncounterDuration(slotId)
+    local dt = GetTimeDiff(encounterStartTime(slotId))
     return string.format("%.2d:%.2d", (dt / 1000 / 60) % 60, (dt / 1000) % 60)
 end
 
@@ -263,9 +263,9 @@ function ebs.getLastSuccessfulDifficulty(playerGUID)
     end
 end
 
-function ebs.awardScore(encounterId)
-    local score = ebs.Config.baseScore + (ebs.Config.additionalScore * ebs.phaseIdDifficulty[encounterId])
-    for _, playerGuid in pairs(playersInGroup[encounterId]) do
+function ebs.awardScore(slotId)
+    local score = ebs.Config.baseScore + (ebs.Config.additionalScore * ebs.phaseIdDifficulty[slotId])
+    for _, playerGuid in pairs(playersInGroup[slotId]) do
         if  GetPlayerByGUID(playerGuid) ~= nil then
             local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
             if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
@@ -275,18 +275,18 @@ function ebs.awardScore(encounterId)
             CharDBExecute('REPLACE INTO `'..ebs.Config.customDbName..'`.`eventscript_score` VALUES ('..accountId..', '..scoreEarned[accountId]..', '..scoreTotal[accountId]..');');
             local gameTime = (tonumber(tostring(GetGameTime())))
             local playerLowGuid = GetGUIDLow(playerGuid)
-            CharDBExecute('INSERT IGNORE INTO `'..ebs.Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..ebs.phaseIdDifficulty[encounterId]..', '..ebs.fightType[encounterId]..', '..GetTimeDiff(encounterStartTime[encounterId])..');');
+            CharDBExecute('INSERT IGNORE INTO `'..ebs.Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..ebs.phaseIdDifficulty[slotId]..', '..ebs.fightType[slotId]..', '..GetTimeDiff(encounterStartTime[slotId])..');');
         end
     end
 end
 
-function ebs.storeEncounter(encounterId)
-    for _, playerGuid in pairs(playersInGroup[encounterId]) do
+function ebs.storeEncounter(slotId)
+    for _, playerGuid in pairs(playersInGroup[slotId]) do
         if  GetPlayerByGUID(playerGuid) ~= nil then
             local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
             local gameTime = (tonumber(tostring(GetGameTime())))
             local playerLowGuid = GetGUIDLow(playerGuid)
-            CharDBExecute('INSERT IGNORE INTO `'..ebs.Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..ebs.phaseIdDifficulty[encounterId]..', '..ebs.fightType[encounterId]..', '..GetTimeDiff(encounterStartTime[encounterId])..');');
+            CharDBExecute('INSERT IGNORE INTO `'..ebs.Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..ebs.phaseIdDifficulty[slotId]..', '..ebs.fightType[slotId]..', '..GetTimeDiff(encounterStartTime[slotId])..');');
         end
     end
 end
@@ -311,7 +311,7 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
     if player == nil then return end
 
     local group = player:GetGroup()
-    local slot = ebs.getFreeSlot()
+    local slotId = ebs.getFreeSlot()
     if intid == 0 then
         local accountId = player:GetAccountId()
         if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
@@ -323,7 +323,7 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
     end
 
     if intid == 1 or intid == 2 then
-        if slot == nil then
+        if slotId == nil then
             --todo: change broadcast message to whisper
             player:SendBroadcastMessage("Too many heroes are already fighting the enemies of time. Please hold on until i can support more timewalking magic.")
             player:GossipComplete()
@@ -345,6 +345,7 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
         end
     end
 
+    local spawnType, entry, mapId, x, y, z, o, despawnTime = table.unpack(ebs.encounter[eventInProgress].npc)
     if intid == 1 then
         if group:IsRaidGroup() == true then
             --todo: change broadcast message to whisper
@@ -352,28 +353,28 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
             player:GossipComplete()
             return
         end
+        groupPlayers = group:GetMembers()
 
         --start 5man encounter
-        ebs.fightType[slot] = PARTY_IN_PROGRESS
-        ebs.phaseIdDifficulty[slot] = ebs.getLastSuccessfulDifficulty(player:GetGUID(),ebs.fightType)
-
-        spawnedCreature[1]= player:SpawnCreature(ebs.encounter[eventInProgress].addEntry, x, y, z, o)
-        spawnedCreature[1]:SetPhaseMask(ebs.Config.eventPhase[slot])
-        spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * ebs.getSize(slot))
-        ebs.spawnedBossGuid[slot] = spawnedCreature[1]
+        ebs.fightType[slotId] = PARTY_IN_PROGRESS
+        ebs.phaseIdDifficulty[slotId] = ebs.getLastSuccessfulDifficulty(player:GetGUID(),ebs.fightType)
+        spawnedCreature[1]= object:SpawnCreature(ebs.encounter[eventInProgress].addEntry, x, y, z+2, o, spawnType, despawnTime)
+        spawnedCreature[1]:SetPhaseMask(ebs.Config.eventPhase[slotId])
+        spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * ebs.getSize(slotId))
+        ebs.spawnedBossGuid[slotId] = spawnedCreature[1]
 
         local maxHealth = ebs.encounter[eventInProgress].addHealthModifierParty * spawnedCreature[1]:GetMaxHealth()
         local health = ebs.encounter[eventInProgress].addHealthModifierParty * spawnedCreature[1]:GetHealth()
         spawnedCreature[1]:SetMaxHealth(maxHealth)
         spawnedCreature[1]:SetHealth(health)
 
-        encounterStartTime[slot] = GetCurrTime()
+        encounterStartTime[slotId] = GetCurrTime()
 
         for n, v in pairs(groupPlayers) do
             if v:GetDistance(player) ~= nil then
                 if v:GetDistance(player) < 80 then
-                    v:SetPhaseMask(ebs.Config.eventPhase[slot])
-                    playersInGroup[slot][n] = v:GetGUID()
+                    v:SetPhaseMask(ebs.Config.eventPhase[slotId])
+                    playersInGroup[slotId][n] = v:GetGUID()
                     spawnedCreature[1]:SetInCombatWith(v)
                     v:SetInCombatWith(spawnedCreature[1])
                     spawnedCreature[1]:AddThreat(v, 1)
@@ -391,35 +392,34 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
             player:GossipComplete()
             return
         end
-
         groupPlayers = group:GetMembers()
 
         --start raid encounter
-        ebs.fightType[slot] = RAID_IN_PROGRESS
-        ebs.phaseIdDifficulty[slot] = ebs.getLastSuccessfulDifficulty(player:GetGUID(),ebs.fightType[slot])
+        ebs.fightType[slotId] = RAID_IN_PROGRESS
+        ebs.phaseIdDifficulty[slotId] = ebs.getLastSuccessfulDifficulty(player:GetGUID(),ebs.fightType[slotId])
 
-        spawnedBoss = object:SpawnCreature(ebs.encounter[eventInProgress].bossEntry, x, y, z+2, o)
-        spawnedBoss:SetPhaseMask(ebs.Config.eventPhase[slot])
-        spawnedBoss:SetScale(spawnedBoss:GetScale() * ebs.getSize(ebs.phaseIdDifficulty[slot]))
-        ebs.spawnedBossGuid[slot] = spawnedBoss:GetGUID()
+        spawnedBoss = object:SpawnCreature(ebs.encounter[eventInProgress].bossEntry, x, y, z+2, o, spawnType, despawnTime)
+        spawnedBoss:SetPhaseMask(ebs.Config.eventPhase[slotId])
+        spawnedBoss:SetScale(spawnedBoss:GetScale() * ebs.getSize(ebs.phaseIdDifficulty[slotId]))
+        ebs.spawnedBossGuid[slotId] = spawnedBoss:GetGUID()
 
-        if ebs.encounter[encounterId].addAmount > 0 then
-            for c = 1, ebs.encounter[encounterId].addAmount do
+        if ebs.encounter[slotId].addAmount > 0 then
+            for c = 1, ebs.encounter[slotId].addAmount do
                 local randomX = (math.sin(math.random(1,360)) * 15)
                 local randomY = (math.sin(math.random(1,360)) * 15)
-                spawnedCreature[c] = spawnedBoss:SpawnCreature(ebs.encounter[slot].addEntry, x + randomX, y + randomY, z+2, o)
-                spawnedCreature[c]:SetPhaseMask(ebs.Config.eventPhase[slot])
-                spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * ebs.getSize(ebs.phaseIdDifficulty[slot]))
+                spawnedCreature[c] = spawnedBoss:SpawnCreature(ebs.encounter[slotId].addEntry, x + randomX, y + randomY, z+2, o)
+                spawnedCreature[c]:SetPhaseMask(ebs.Config.eventPhase[slotId])
+                spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * ebs.getSize(ebs.phaseIdDifficulty[slotId]))
             end
         end
 
-        encounterStartTime[slot] = GetCurrTime()
+        encounterStartTime[slotId] = GetCurrTime()
 
         for n, v in pairs(groupPlayers) do
             if v:GetDistance(player) ~= nil then
                 if v:GetDistance(player) < 80 then
-                    v:SetPhaseMask(ebs.Config.eventPhase[slot])
-                    playersInGroup[slot][n] = v:GetGUID()
+                    v:SetPhaseMask(ebs.Config.eventPhase[slotId])
+                    playersInGroup[slotId][n] = v:GetGUID()
                     spawnedBoss:SetInCombatWith(v)
                     v:SetInCombatWith(spawnedBoss)
                     spawnedBoss:AddThreat(v, 1)
@@ -512,10 +512,10 @@ function ebs.command(event, player, command, chatHandler)
     return
 end
 
-function ebs.returnPlayers(slot)
+function ebs.returnPlayers(slotId)
     local player
     local playerListString
-    for _, v in pairs(playersInGroup[slot]) do
+    for _, v in pairs(playersInGroup[slotId]) do
         player = GetPlayerByGUID(v)
         if player then
             player:SetPhaseMask(1)
@@ -532,99 +532,80 @@ function ebs.returnPlayers(slot)
     return playerListString
 end
 
-function ebs.finishPlayers(slot)
+function ebs.finishPlayers(slotId)
     local player
-    for _, v in pairs(playersInGroup[slot]) do
+    for _, v in pairs(playersInGroup[slotId]) do
         player = GetPlayerByGUID(v)
         if player then
             player:RegisterEvent(ebs.castFireworks, 1000, 20)
-            if not ebs.clearedDifficulty[GetGUIDLow(v)] or ebs.clearedDifficulty[GetGUIDLow(v)] < ebs.phaseIdDifficulty[slot] then
-                ebs.clearedDifficulty[GetGUIDLow(v)] = ebs.phaseIdDifficulty[slot]
+            if not ebs.clearedDifficulty[GetGUIDLow(v)] or ebs.clearedDifficulty[GetGUIDLow(v)] < ebs.phaseIdDifficulty[slotId] then
+                ebs.clearedDifficulty[GetGUIDLow(v)] = ebs.phaseIdDifficulty[slotId]
             end
         end
     end
 end
 
 function ebs.bossReset(event, creature)
-    local slot = 0
+    local slotId = 0
     if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUID()) then
-        slot = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
+        slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
     end
 
-    if slot == 0 then
-        PrintError("eventBosses.lua: A Boss encounter ended without a valid slot Id.")
+    if slotId == 0 then
+        PrintError("eventBosses.lua: A Boss encounter ended without a valid slotId.")
         return
     end
-    ebs.spawnedBossGuid[slot] = nil
+    ebs.spawnedBossGuid[slotId] = nil
 
     if creature:IsDead() == true then
-        local playerListString = ebs.returnPlayers(slot)
+        local playerListString = ebs.returnPlayers(slotId)
         if Config.rewardRaid == 1 then
-            ebs.awardScore(slot)
+            ebs.awardScore(slotId)
         elseif Config.storeRaid == 1 then
-            ebs.storeEncounter(slot)
+            ebs.storeEncounter(slotId)
         end
-        SendWorldMessage("The raid encounter "..creature:GetName().." was completed on difficulty " .. ebs.phaseIdDifficulty[slot] ..
+        SendWorldMessage("The raid encounter "..creature:GetName().." was completed on difficulty " .. ebs.phaseIdDifficulty[slotId] ..
                 " in " .. ebs.getEncounterDuration().." by: "..playerListString..". Congratulations!")
-        ebs.finnishPlayers(slot)
-        playersInGroup[slot] = {}
+        ebs.finnishPlayers(slotId)
+        playersInGroup[slotId] = {}
     else
-        ebs.returnPlayers(slot)
-        playersInGroup[slot] = {}
-        ebs.fightType[slot] = nil
+        ebs.returnPlayers(slotId)
+        playersInGroup[slotId] = {}
+        ebs.fightType[slotId] = nil
     end
     creature:DespawnOrUnsummon(0)
 end
 
 function ebs.addReset(event, creature)
-    local slot = 0
+    local slotId = 0
     if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUID()) then
-        slot = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
+        slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
     end
-    if ebs.fightType[slot] ~= PARTY_IN_PROGRESS then
+    if ebs.fightType[slotId] ~= PARTY_IN_PROGRESS then
         return
     end
 
-    if slot == 0 then
-        PrintError("eventBosses.lua: A Boss encounter ended without a valid slot Id.")
+    if slotId == 0 then
+        PrintError("eventBosses.lua: A Boss encounter ended without a valid slotId.")
         return
     end
 
-    ebs.spawnedBossGuid[slot] = nil
+    ebs.spawnedBossGuid[slotId] = nil
 
     if creature:IsDead() == true then
-        local playerListString = ebs.returnPlayers(slot)
+        local playerListString = ebs.returnPlayers(slotId)
         if ebs.Config.rewardParty == 1 then
-            awardScore(slot)
+            awardScore(slotId)
         elseif ebs.Config.storeParty == 1 then
-            storeEncounter(slot)
+            storeEncounter(slotId)
         end
-        SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty " .. ebs.phaseIdDifficulty[slot] ..
+        SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty " .. ebs.phaseIdDifficulty[slotId] ..
                 " in " ..ebs.getEncounterDuration().." by: "..playerListString..". Congratulations!")
-        ebs.finnishPlayers(slot)
-        playersInGroup[slot] = {}
-        ebs.fightType[slot] = nil
+        ebs.finnishPlayers(slotId)
+        playersInGroup[slotId] = {}
+        ebs.fightType[slotId] = nil
     end
     creature:DespawnOrUnsummon(0)
-end
-
-function ebs.initBossEvents()
-    for k,v in pairs(ebs.encounter) do
-        RegisterCreatureEvent(v.bossEntry, 2, ebs.bossReset) -- OnLeaveCombat
-        RegisterCreatureEvent(v.bossEntry, 4, ebs.bossReset) -- OnDied
-    end
-end
-
-function ebs.initAddEvents()
-    for k,v in pairs(ebs.encounter) do
-        RegisterCreatureEvent(v.addEntry, 2, ebs.addReset) -- OnLeaveCombat
-        RegisterCreatureEvent(v.addEntry, 4, ebs.addReset) -- OnDied
-    end
-end
-
-function ebs.init(_)
-    ebs.initBossEvents()
-    ebs.initAddEvents()
 end
 
 function ebs.closeLua(_)
@@ -654,5 +635,3 @@ RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, ebs.resetPlayers)
 RegisterPlayerEvent(PLAYER_EVENT_ON_LOGOUT, ebs.resetPlayers)
 
 RegisterServerEvent(ELUNA_EVENT_ON_LUA_STATE_CLOSE, ebs.closeLua, 0)
---wait until all other scripts are loaded until creating events
-RegisterServerEvent(ELUNA_EVENT_ON_LUA_STATE_OPEN, ebs.init, 0)
