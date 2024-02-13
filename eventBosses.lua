@@ -585,7 +585,9 @@ function ebs.bossReset(event, creature)
         PrintError("eventBosses.lua: A Boss encounter ended without a valid slotId.")
         return
     end
+
     ebs.spawnedBossGuid[slotId] = nil
+
     local playerListString = ebs.returnPlayers(slotId)
     if creature:IsDead() == true then
         ebs.finishPlayers(slotId)
@@ -604,14 +606,15 @@ function ebs.addReset(event, creature)
     if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUID()) then
         slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
     end
-    if ebs.fightType[slotId] ~= PARTY_IN_PROGRESS then
-        return
-    end
 
     if slotId == 0 then
         PrintError("eventBosses.lua: A Boss encounter ended without a valid slotId.")
         return
     end
+    if ebs.fightType[slotId] ~= PARTY_IN_PROGRESS then
+        return
+    end
+
     ebs.spawnedBossGuid[slotId] = nil
 
     local playerListString = ebs.returnPlayers(slotId)
