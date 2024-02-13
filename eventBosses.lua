@@ -56,7 +56,7 @@ ebs.Config = {
     ["additionalScore"] = 10,
     ["rewardRaid"] = 1,
     ["storeRaid"] = 1,
-    ["rewardParty"] = 0,
+    ["rewardParty"] = 1,
     ["storeParty"] = 1
 }
 
@@ -263,9 +263,9 @@ function ebs.getFreeSlot()
     return 1
 end
 
-function ebs.getLastSuccessfulDifficulty(playerGUID, fightType)
-    if ebs.clearedDifficulty[playerGUID] then
-        local difficulty = ebs.clearedDifficulty[playerGUID][fightType]
+function ebs.getLastSuccessfulDifficulty(accountId, fightType)
+    if ebs.clearedDifficulty[accountId] then
+        local difficulty = ebs.clearedDifficulty[accountId][fightType]
         if difficulty then
             return difficulty
         end
@@ -274,14 +274,28 @@ function ebs.getLastSuccessfulDifficulty(playerGUID, fightType)
 end
 
 function ebs.awardScore(slotId)
-    local score = ebs.Config.baseScore + (ebs.Config.additionalScore * ebs.phaseIdDifficulty[slotId])
     for _, playerGuid in pairs(ebs.playersInGroup[slotId]) do
-        if  GetPlayerByGUID(playerGuid) then
+        local player GetPlayerByGUID(playerGuid)
+        if player then
+            local totalscore
+            local basescore
             local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
+
             if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
             if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
-            scoreEarned[accountId] = scoreEarned[accountId] + score
-            scoreTotal[accountId] = scoreTotal[accountId] + score
+            local oldScore = scoreEarned[accountId]
+
+            if ebs.fightType[slotId] == PARTY_IN_PROGRESS and ebs.Config.rewardParty == 1 then
+                basescore = ebs.Config.baseScore + ebs.Config.additionalScore * ebs.GetLastSuccessfulDifficulty(accountId, PARTY_IN_PROGRESS)
+            end
+
+            if ebs.fightType[slotId] == RAID_IN_PROGRESS and ebs.Config.rewardRaid == 1 then
+                totalscore = ebs.Config.baseScore + ebs.Config.additionalScore * ebs.GetLastSuccessfulDifficulty(accountId, RAID_IN_PROGRESS)
+            end
+
+            local gain = score - oldScore
+            scoreEarned[accountId] = score
+            scoreTotal[accountId] = scoreTotal[accountId] + gain
             CharDBExecute('REPLACE INTO `'..ebs.Config.customDbName..'`.`eventscript_score` VALUES ('..accountId..', '..scoreEarned[accountId]..', '..scoreTotal[accountId]..');');
             local gameTime = (tonumber(tostring(GetGameTime())))
             local playerLowGuid = GetGUIDLow(playerGuid)
@@ -309,8 +323,8 @@ function ebs.onHello(_, player, creature)
         --todo: change broadcast message to whisper
         player:SendBroadcastMessage("Too many heroes are already fighting the enemies of time. Please hold on until i can support more timewalking magic.")
     else
-        player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant! (Difficulty " .. 1 + ebs.getLastSuccessfulDifficulty(GetGUIDLow(player:GetGUID()), PARTY_IN_PROGRESS) .. ")", ebs.encounter[eventInProgress].npc[2], 1)
-        player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything (Difficulty " .. 1 + ebs.getLastSuccessfulDifficulty(GetGUIDLow(player:GetGUID()), RAID_IN_PROGRESS) .. ")", ebs.encounter[eventInProgress].npc[2], 2)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant! (Difficulty " .. 1 + ebs.getLastSuccessfulDifficulty(player:GetAccountId(), PARTY_IN_PROGRESS) .. ")", ebs.encounter[eventInProgress].npc[2], 1)
+        player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything (Difficulty " .. 1 + ebs.getLastSuccessfulDifficulty(player:GetAccountId(), RAID_IN_PROGRESS) .. ")", ebs.encounter[eventInProgress].npc[2], 2)
     end
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", ebs.encounter[eventInProgress].npc[2], 0)
     player:GossipSendMenu(ebs.encounter[eventInProgress].npcText, creature, 0)
@@ -369,7 +383,7 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
 
         --start 5man encounter
         ebs.fightType[slotId] = PARTY_IN_PROGRESS
-        ebs.phaseIdDifficulty[slotId] = 1 + ebs.getLastSuccessfulDifficulty(GetGUIDLow(player:GetGUID()), ebs.fightType[slotId])
+        ebs.phaseIdDifficulty[slotId] = 1 + ebs.getLastSuccessfulDifficulty(player:GetAccountId(), ebs.fightType[slotId])
         spawnedCreature[1]= object:SpawnCreature(ebs.encounter[eventInProgress].addEntry, x, y, z+2, o, spawnType, despawnTime)
         spawnedCreature[1]:SetPhaseMask(ebs.Config.eventPhase[slotId])
         spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * ebs.getSize(slotId))
@@ -408,7 +422,7 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
 
         --start raid encounter
         ebs.fightType[slotId] = RAID_IN_PROGRESS
-        ebs.phaseIdDifficulty[slotId] = 1 + ebs.getLastSuccessfulDifficulty(GetGUIDLow(player:GetGUID()), ebs.fightType[slotId])
+        ebs.phaseIdDifficulty[slotId] = 1 + ebs.getLastSuccessfulDifficulty(player:GetAccountId(), ebs.fightType[slotId])
 
         spawnedBoss = object:SpawnCreature(ebs.encounter[eventInProgress].bossEntry, x, y, z+2, o, spawnType, despawnTime)
         spawnedBoss:SetPhaseMask(ebs.Config.eventPhase[slotId])
@@ -548,12 +562,12 @@ function ebs.finishPlayers(slotId)
     local player
     for _, v in pairs(ebs.playersInGroup[slotId]) do
         player = GetPlayerByGUID(v)
-        if not ebs.clearedDifficulty[GetGUIDLow(v)] then
-            ebs.clearedDifficulty[GetGUIDLow(v)] = {}
+        if not ebs.clearedDifficulty[v:GetAccountId()] then
+            ebs.clearedDifficulty[v:GetAccountId()] = {}
         end
-        if not ebs.clearedDifficulty[GetGUIDLow(v)][ebs.fightType[slotId]]
-                or ebs.clearedDifficulty[GetGUIDLow(v)][ebs.fightType[slotId]] < ebs.phaseIdDifficulty[slotId] then
-            ebs.clearedDifficulty[GetGUIDLow(v)][ebs.fightType[slotId]] = ebs.phaseIdDifficulty[slotId]
+        if not ebs.clearedDifficulty[v:GetAccountId()][ebs.fightType[slotId]]
+                or ebs.clearedDifficulty[v:GetAccountId()][ebs.fightType[slotId]] < ebs.phaseIdDifficulty[slotId] then
+            ebs.clearedDifficulty[v:GetAccountId()][ebs.fightType[slotId]] = ebs.phaseIdDifficulty[slotId]
         end
         if player then
             player:RegisterEvent(ebs.castFireworks, 1000, 20)
@@ -574,14 +588,10 @@ function ebs.bossReset(event, creature)
     ebs.spawnedBossGuid[slotId] = nil
     local playerListString = ebs.returnPlayers(slotId)
     if creature:IsDead() == true then
-        if Config.rewardRaid == 1 then
-            ebs.awardScore(slotId)
-        elseif Config.storeRaid == 1 then
-            ebs.storeEncounter(slotId)
-        end
+        ebs.finishPlayers(slotId)
+        ebs.awardScore(slotId)
         SendWorldMessage("The raid encounter "..creature:GetName().." was completed on difficulty " .. ebs.phaseIdDifficulty[slotId] ..
                 " in " .. ebs.getEncounterDuration(slotId).." by: "..playerListString..". Congratulations!")
-        ebs.finnishPlayers(slotId)
     end
 
     ebs.playersInGroup[slotId] = {}
@@ -606,14 +616,10 @@ function ebs.addReset(event, creature)
 
     local playerListString = ebs.returnPlayers(slotId)
     if creature:IsDead() == true then
-        if ebs.Config.rewardParty == 1 then
-            ebs.awardScore(slotId)
-        elseif ebs.Config.storeParty == 1 then
-            ebs.storeEncounter(slotId)
-        end
+        ebs.finishPlayers(slotId)
+        ebs.awardScore(slotId)
         SendWorldMessage("The party encounter "..creature:GetName().." was completed on difficulty " .. ebs.phaseIdDifficulty[slotId] ..
                 " in " ..ebs.getEncounterDuration(slotId).." by: "..playerListString..". Congratulations!")
-        ebs.finishPlayers(slotId)
     end
 
     ebs.playersInGroup[slotId] = {}
@@ -640,6 +646,7 @@ function ebs.closeLua(_)
     end
 end
 
+--on ReloadEluna / Startup
 local query = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`eventscript_score`;')
 if query ~= nil then
     local account
@@ -652,7 +659,6 @@ end
 
 math.randomseed(os.time())
 
---on ReloadEluna / Startup
 RegisterPlayerEvent(PLAYER_EVENT_ON_COMMAND, ebs.command)
 RegisterPlayerEvent(PLAYER_EVENT_ON_REPOP, ebs.resetPlayers)
 RegisterPlayerEvent(PLAYER_EVENT_ON_LOGOUT, ebs.resetPlayers)
