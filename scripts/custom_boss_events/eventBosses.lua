@@ -650,7 +650,7 @@ function ebs.closeLua(_)
 end
 
 --on ReloadEluna / Startup
-local query = CharDBQuery('SELECT * FROM `'..Config.customDbName..'`.`eventscript_score`;')
+local query = CharDBQuery('SELECT * FROM `'..ebs.Config.customDbName..'`.`eventscript_score`;')
 if query ~= nil then
     local account
     repeat
