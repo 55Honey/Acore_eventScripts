@@ -76,7 +76,7 @@ function bossNPC.onEnterCombat( event, creature, target )
     creature:CallForHelp( 200 )
     local difficulty = creature:GetData('ebs_difficulty')
     -- add custom scripting below
-    creature:RegisterEvent( bossNPC.Fire, GetTimer( 10000, difficulty ), 0 )
+    creature:RegisterEvent( bossNPC.Fire, ebs.GetTimer( 10000, difficulty ), 0 )
 end
 
 function bossNPC.reset( event, creature )
@@ -127,11 +127,11 @@ end
 function addNPC.reset( event, creature )
     creature:RemoveEvents()
     local difficulty = creature:GetData('ebs_difficulty')
-    -- add custom scripting below
 
     if creature:IsDead() then
-        if ebs.has_value( ebs.spawnedBossGuid, creature:GetGUID() ) then
-            slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
+        if ebs.has_value( ebs.spawnedBossGuid, creature:GetOwnerGUID() ) then
+            slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetOwnerGUID())
+            print("135: "..slotId)
         end
         if ebs.fightType[ slotId ] ~= RAID_IN_PROGRESS then
             ebs.addReset( event, creature )
@@ -145,6 +145,8 @@ function addNPC.reset( event, creature )
         if addDownCounter[ slotId ] == ebs.encounter[ encounterId ].addAmount then
             local boss = creature:GetOwner()
             if boss then
+                -- add custom scripting below
+
                 boss:SendUnitYell( "You will pay for your actions!", 0 )
                 boss:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 4000, difficulty ), 6000 }, 0 )
                 boss:RegisterEvent( bossNPC.Pool, { ebs.GetTimer( 10000, difficulty ), 12000}, 0 )

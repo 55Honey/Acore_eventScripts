@@ -280,32 +280,35 @@ end
 
 function ebs.awardScore(slotId)
     for _, playerGuid in pairs(ebs.playersInGroup[slotId]) do
-        local player GetPlayerByGUID(playerGuid)
-        if player then
-            local totalscore
-            local basescore
-            local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
-
-            if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
-            if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
-            local oldScore = scoreEarned[accountId]
-
-            if ebs.fightType[slotId] == PARTY_IN_PROGRESS and ebs.Config.rewardParty == 1 then
-                basescore = ebs.Config.baseScore + ebs.Config.additionalScore * ebs.GetLastSuccessfulDifficulty(accountId, PARTY_IN_PROGRESS)
-            end
-
-            if ebs.fightType[slotId] == RAID_IN_PROGRESS and ebs.Config.rewardRaid == 1 then
-                totalscore = ebs.Config.baseScore + ebs.Config.additionalScore * ebs.GetLastSuccessfulDifficulty(accountId, RAID_IN_PROGRESS)
-            end
-
-            local gain = score - oldScore
-            scoreEarned[accountId] = score
-            scoreTotal[accountId] = scoreTotal[accountId] + gain
-            CharDBExecute('REPLACE INTO `'..ebs.Config.customDbName..'`.`eventscript_score` VALUES ('..accountId..', '..scoreEarned[accountId]..', '..scoreTotal[accountId]..');');
-            local gameTime = (tonumber(tostring(GetGameTime())))
-            local playerLowGuid = GetGUIDLow(playerGuid)
-            CharDBExecute('INSERT IGNORE INTO `'..ebs.Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..ebs.phaseIdDifficulty[slotId]..', '..ebs.fightType[slotId]..', '..GetTimeDiff(ebs.encounterStartTime[slotId])..');');
+        local player = GetPlayerByGUID(playerGuid)
+        if not player then
+            PrintError("eventBosses.lua: Player with GUID "..tostring(playerGuid).." not found in ebs.awardScore(slotId).")
+            return
         end
+
+        local newScore
+        local baseScore
+        local accountId = GetPlayerByGUID(playerGuid):GetAccountId()
+
+        if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
+        if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
+        local oldScore = scoreEarned[accountId]
+
+        if ebs.fightType[slotId] == PARTY_IN_PROGRESS and ebs.Config.rewardParty == 1 then
+            newScore = ebs.Config.baseScore + ebs.Config.additionalScore * ebs.getLastSuccessfulDifficulty(accountId, PARTY_IN_PROGRESS)
+            baseScore = ebs.Config.baseScore + ebs.Config.additionalScore * ebs.getLastSuccessfulDifficulty(accountId, RAID_IN_PROGRESS)
+        end
+
+        if ebs.fightType[slotId] == RAID_IN_PROGRESS and ebs.Config.rewardRaid == 1 then
+            newScore = ebs.Config.baseScore + ebs.Config.additionalScore * ebs.getLastSuccessfulDifficulty(accountId, RAID_IN_PROGRESS)
+            baseScore= ebs.Config.baseScore + ebs.Config.additionalScore * ebs.getLastSuccessfulDifficulty(accountId, PARTY_IN_PROGRESS)
+        end
+
+        scoreEarned[accountId] = newScore + baseScore
+        CharDBExecute('REPLACE INTO `'..ebs.Config.customDbName..'`.`eventscript_score` VALUES ('..accountId..', '..scoreEarned[accountId]..', '..scoreTotal[accountId]..');');
+        local gameTime = (tonumber(tostring(GetGameTime())))
+        local playerLowGuid = GetGUIDLow(playerGuid)
+        CharDBExecute('INSERT IGNORE INTO `'..ebs.Config.customDbName..'`.`eventscript_encounters` VALUES ('..gameTime..', '..playerLowGuid..', '..eventInProgress..', '..ebs.phaseIdDifficulty[slotId]..', '..ebs.fightType[slotId]..', '..GetTimeDiff(ebs.encounterStartTime[slotId])..');');
     end
 end
 
@@ -511,6 +514,7 @@ function ebs.command(event, player, command, chatHandler)
         if eventInProgress == nil then
             eventInProgress = eventId
             ebs.summonEventNPC()
+            ebs.loadRecords()
             chatHandler:SendSysMessage("Starting event "..eventInProgress..".")
             return false
         else
@@ -576,7 +580,7 @@ function ebs.finishPlayers(slotId)
         if not ebs.clearedDifficulty[accountId][ebs.fightType[slotId]]
                 or ebs.clearedDifficulty[accountId][ebs.fightType[slotId]] < difficulty then
             ebs.clearedDifficulty[accountId][ebs.fightType[slotId]] = difficulty
-            ebs.SaveProgress(accountId, ebs.fightType[slotId], difficulty)
+            ebs.saveProgress(accountId, ebs.fightType[slotId], difficulty)
         end
         if player then
             player:RegisterEvent(ebs.castFireworks, 1000, 20)
@@ -588,10 +592,11 @@ function ebs.bossReset(event, creature)
     local slotId = 0
     if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUID()) then
         slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
+        print("595: "..slotId)
     end
 
     if slotId == 0 then
-        PrintError("eventBosses.lua: A Boss encounter ended without a valid slotId.")
+        PrintError("eventBosses.lua: A boss rest without a valid slotId.")
         return
     end
 
@@ -613,11 +618,13 @@ end
 function ebs.addReset(event, creature)
     local slotId = 0
     if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUID()) then
-        slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
+        slotId = ebs.returnKey
+        print("622: "..slotId)
+        (ebs.spawnedBossGuid, creature:GetGUID())
     end
 
     if slotId == 0 then
-        PrintError("eventBosses.lua: A Boss encounter ended without a valid slotId.")
+        PrintError("eventBosses.lua: An add reset without a valid slotId.")
         return
     end
     if ebs.fightType[slotId] ~= PARTY_IN_PROGRESS then
@@ -639,8 +646,25 @@ function ebs.addReset(event, creature)
     creature:DespawnOrUnsummon(0)
 end
 
-function ebs.SaveProgress(accountId, encounterType, difficulty)
+function ebs.saveProgress(accountId, encounterType, difficulty)
     CharDBExecute('REPLACE INTO `'..ebs.Config.customDbName..'`.`eventscript_difficulty` VALUES ('..accountId..', '..eventInProgress..', '..encounterType..', '..difficulty..');')
+end
+
+function ebs.loadRecords()
+    ebs.clearedDifficulty = {}
+    local query = CharDBQuery('SELECT * FROM `'..ebs.Config.customDbName..'`.`eventscript_difficulty` WHERE `encounter_id` = '..eventInProgress..';')
+    if query then
+        local accountId
+        local fightType
+        repeat
+            accountId = query:GetUInt32(0)
+            fightType = query:GetUInt32(2)
+            if not ebs.clearedDifficulty[accountId] then
+                ebs.clearedDifficulty[accountId] = {}
+            end
+            ebs.clearedDifficulty[accountId][fightType] = query:GetUInt32(3)
+        until not query:NextRow()
+    end
 end
 
 function ebs.closeLua(_)
@@ -664,7 +688,7 @@ end
 
 --on ReloadEluna / Startup
 local query = CharDBQuery('SELECT * FROM `'..ebs.Config.customDbName..'`.`eventscript_score`;')
-if query ~= nil then
+if query then
     local account
     repeat
         account = query:GetUInt32(0)
