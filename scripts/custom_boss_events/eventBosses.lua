@@ -69,6 +69,11 @@ if tostring(ebs.Config.customDbName) == "" or (ebs.Config.customDbName) == nil t
     ebs.Config.customDbName = "ac_eluna"
 end
 
+CharDBQuery('CREATE DATABASE IF NOT EXISTS `'..ebs.Config.customDbName..'`;');
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..ebs.Config.customDbName..'`.`eventscript_encounters` (`time_stamp` INT NOT NULL, `playerGuid` INT NOT NULL, `encounter` INT DEFAULT 0, `difficulty` TINYINT DEFAULT 0, `group_type` TINYINT DEFAULT 0, `duration` INT NOT NULL, PRIMARY KEY (`time_stamp`, `playerGuid`));');
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..ebs.Config.customDbName..'`.`eventscript_score` (`account_id` INT NOT NULL, `score_earned_current` INT DEFAULT 0, `score_earned_total` INT DEFAULT 0, PRIMARY KEY (`account_id`));')
+CharDBQuery('CREATE TABLE IF NOT EXISTS `'..ebs.Config.customDbName..'`.`eventscript_difficulty` (`account_id` INT NOT NULL, `encounter_id` INT NOT NULL, `encounter_type` INT NOT NULL, `difficulty` INT NOT NULL, PRIMARY KEY (`account_id`, `encounter_id`, `encounter_type`));')
+
 --constants
 local PLAYER_EVENT_ON_LOGOUT = 4            -- (event, player)
 local PLAYER_EVENT_ON_REPOP = 35            -- (event, player)
@@ -559,15 +564,19 @@ function ebs.returnPlayers(slotId)
 end
 
 function ebs.finishPlayers(slotId)
-    local player
     for _, v in pairs(ebs.playersInGroup[slotId]) do
+        local player
+        local accountId
         player = GetPlayerByGUID(v)
-        if not ebs.clearedDifficulty[player:GetAccountId()] then
-            ebs.clearedDifficulty[player:GetAccountId()] = {}
+        accountId = player:GetAccountId()
+        local difficulty = ebs.phaseIdDifficulty[slotId]
+        if not ebs.clearedDifficulty[accountId] then
+            ebs.clearedDifficulty[accountId] = {}
         end
-        if not ebs.clearedDifficulty[player:GetAccountId()][ebs.fightType[slotId]]
-                or ebs.clearedDifficulty[player:GetAccountId()][ebs.fightType[slotId]] < ebs.phaseIdDifficulty[slotId] then
-            ebs.clearedDifficulty[player:GetAccountId()][ebs.fightType[slotId]] = ebs.phaseIdDifficulty[slotId]
+        if not ebs.clearedDifficulty[accountId][ebs.fightType[slotId]]
+                or ebs.clearedDifficulty[accountId][ebs.fightType[slotId]] < difficulty then
+            ebs.clearedDifficulty[accountId][ebs.fightType[slotId]] = difficulty
+            ebs.SaveProgress(accountId, ebs.fightType[slotId], difficulty)
         end
         if player then
             player:RegisterEvent(ebs.castFireworks, 1000, 20)
@@ -628,6 +637,10 @@ function ebs.addReset(event, creature)
     ebs.playersInGroup[slotId] = {}
     ebs.fightType[slotId] = nil
     creature:DespawnOrUnsummon(0)
+end
+
+function ebs.SaveProgress(accountId, encounterType, difficulty)
+    CharDBExecute('REPLACE INTO `'..ebs.Config.customDbName..'`.`eventscript_difficulty` VALUES ('..accountId..', '..eventInProgress..', '..encounterType..', '..difficulty..');')
 end
 
 function ebs.closeLua(_)
