@@ -247,9 +247,9 @@ end
 
 function ebs.GetTimer(timer, difficulty)
     if difficulty == 1 then
-        return rawTimer
+        return timer
     else
-        local timer = rawTimer / (1 + ((difficulty - 1) / 9))
+        timer = timer / (1 + ((difficulty - 1) / 9))
         return timer
     end
 end
@@ -562,12 +562,12 @@ function ebs.finishPlayers(slotId)
     local player
     for _, v in pairs(ebs.playersInGroup[slotId]) do
         player = GetPlayerByGUID(v)
-        if not ebs.clearedDifficulty[v:GetAccountId()] then
-            ebs.clearedDifficulty[v:GetAccountId()] = {}
+        if not ebs.clearedDifficulty[player:GetAccountId()] then
+            ebs.clearedDifficulty[player:GetAccountId()] = {}
         end
-        if not ebs.clearedDifficulty[v:GetAccountId()][ebs.fightType[slotId]]
-                or ebs.clearedDifficulty[v:GetAccountId()][ebs.fightType[slotId]] < ebs.phaseIdDifficulty[slotId] then
-            ebs.clearedDifficulty[v:GetAccountId()][ebs.fightType[slotId]] = ebs.phaseIdDifficulty[slotId]
+        if not ebs.clearedDifficulty[player:GetAccountId()][ebs.fightType[slotId]]
+                or ebs.clearedDifficulty[player:GetAccountId()][ebs.fightType[slotId]] < ebs.phaseIdDifficulty[slotId] then
+            ebs.clearedDifficulty[player:GetAccountId()][ebs.fightType[slotId]] = ebs.phaseIdDifficulty[slotId]
         end
         if player then
             player:RegisterEvent(ebs.castFireworks, 1000, 20)

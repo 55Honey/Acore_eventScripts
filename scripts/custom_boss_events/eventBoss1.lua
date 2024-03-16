@@ -40,11 +40,11 @@ local encounterId = 1
 ebs.encounter[encounterId] = {
     --                type          entry  map   x        y       z       o  despawnTime
     ["npc"] = { TYPE_CREATURE, 1112002, 1, 5507.3, -3685.5, 1594.3, 1.97, 0 },          -- gossip NPC for players to interact with
-    ["npcText"] = 91111,                                                                    -- gossip NPC text ID
-    ["bossEntry"] = 1112001,                                                                -- boss entry (auto summoned)
-    ["addEntry"] = 1112003,                                                                 -- add entry (auto summoned, if addAmount > 0)
-    ["addHealthModifierParty"] = 0.2,                                                       -- modifier for add health in 5man mode
-    ["addAmount"] = 3                                                                       -- amount of adds to spawn right at the start of the encounter
+    ["npcText"] = 91111,                                                                -- gossip NPC text ID
+    ["bossEntry"] = 1112001,                                                            -- boss entry (auto summoned)
+    ["addEntry"] = 1112003,                                                             -- add entry (auto summoned, if addAmount > 0)
+    ["addHealthModifierParty"] = 0.2,                                                   -- modifier for add health in 5man mode
+    ["addAmount"] = 3                                                                   -- amount of adds to spawn right at the start of the encounter
 }
 
 --------------------------------------------------------------------------------------
@@ -116,6 +116,7 @@ function addNPC.onEnterCombat( event, creature, target )
     creature:CallForHelp( 200 )
     local difficulty = creature:GetData('ebs_difficulty')
     -- add custom scripting below
+
     creature:RegisterEvent( addNPC.HealBoss, { 10000, 15000 }, 0 )
     creature:RegisterEvent( addNPC.Splash, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
     if difficulty >= 3 or creature:GetData('ebs_mode') == PARTY_IN_PROGRESS then
@@ -127,6 +128,7 @@ function addNPC.reset( event, creature )
     creature:RemoveEvents()
     local difficulty = creature:GetData('ebs_difficulty')
     -- add custom scripting below
+
     if creature:IsDead() then
         if ebs.has_value( ebs.spawnedBossGuid, creature:GetGUID() ) then
             slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
@@ -149,6 +151,7 @@ function addNPC.reset( event, creature )
             end
         end
     end
+
     -- add custom scripting above
     ebs.addReset( event, creature )
 end
