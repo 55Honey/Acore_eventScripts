@@ -395,7 +395,7 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
         spawnedCreature[1]= object:SpawnCreature(ebs.encounter[eventInProgress].addEntry, x, y, z+2, o, spawnType, despawnTime)
         spawnedCreature[1]:SetPhaseMask(ebs.Config.eventPhase[slotId])
         spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * ebs.getSize(slotId))
-        ebs.spawnedBossGuid[slotId] = spawnedCreature[1]:GetGUID()
+        ebs.spawnedBossGuid[slotId] = spawnedCreature[1]:GetGUIDLow()
         spawnedCreature[1]:SetData('ebs_mode', ebs.fightType[slotId])
         spawnedCreature[1]:SetData('ebs_difficulty', ebs.phaseIdDifficulty[slotId])
 
@@ -435,7 +435,7 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
         spawnedBoss = object:SpawnCreature(ebs.encounter[eventInProgress].bossEntry, x, y, z+2, o, spawnType, despawnTime)
         spawnedBoss:SetPhaseMask(ebs.Config.eventPhase[slotId])
         spawnedBoss:SetScale(spawnedBoss:GetScale() * ebs.getSize(ebs.phaseIdDifficulty[slotId]))
-        ebs.spawnedBossGuid[slotId] = spawnedBoss:GetGUID()
+        ebs.spawnedBossGuid[slotId] = spawnedBoss:GetGUIDLow()
         spawnedBoss:SetData('ebs_difficulty', ebs.phaseIdDifficulty[slotId])
 
         if ebs.encounter[slotId].addAmount > 0 then
@@ -446,6 +446,7 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
                 spawnedCreature[c]:SetPhaseMask(ebs.Config.eventPhase[slotId])
                 spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * ebs.getSize(ebs.phaseIdDifficulty[slotId]))
                 spawnedCreature[c]:SetData('ebs_difficulty', ebs.phaseIdDifficulty[slotId])
+                spawnedCreature[c]:SetData('ebs_boss_lowguid', ebs.spawnedBossGuid[slotId])
             end
         end
 
@@ -590,9 +591,8 @@ end
 
 function ebs.bossReset(event, creature)
     local slotId = 0
-    if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUID()) then
-        slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUID())
-        print("595: "..slotId)
+    if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUIDLow()) then
+        slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUIDLow())
     end
 
     if slotId == 0 then
@@ -617,17 +617,16 @@ end
 
 function ebs.addReset(event, creature)
     local slotId = 0
-    if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUID()) then
-        slotId = ebs.returnKey
-        print("622: "..slotId)
-        (ebs.spawnedBossGuid, creature:GetGUID())
+    if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUIDLow()) then
+        slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUIDLow())
     end
 
-    if slotId == 0 then
-        PrintError("eventBosses.lua: An add reset without a valid slotId.")
+    if ebs.fightType[slotId] ~= PARTY_IN_PROGRESS then
         return
     end
-    if ebs.fightType[slotId] ~= PARTY_IN_PROGRESS then
+    -- Only do this check if it's a party-encounter. For the raid-encounter the add's GUID won't be used.
+    if slotId == 0 then
+        PrintError("eventBosses.lua: An add reset without a valid slotId.")
         return
     end
 

@@ -127,11 +127,12 @@ end
 function addNPC.reset( event, creature )
     creature:RemoveEvents()
     local difficulty = creature:GetData('ebs_difficulty')
-
+    local slotId
     if creature:IsDead() then
-        if ebs.has_value( ebs.spawnedBossGuid, creature:GetOwnerGUID() ) then
-            slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetOwnerGUID())
-            print("135: "..slotId)
+        local bossLowGUID = creature:GetData('ebs_boss_lowguid')
+
+        if ebs.has_value( ebs.spawnedBossGuid, bossLowGUID ) then
+            slotId = ebs.returnKey( ebs.spawnedBossGuid, bossLowGUID )
         end
         if ebs.fightType[ slotId ] ~= RAID_IN_PROGRESS then
             ebs.addReset( event, creature )
@@ -150,11 +151,13 @@ function addNPC.reset( event, creature )
                 boss:SendUnitYell( "You will pay for your actions!", 0 )
                 boss:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 4000, difficulty ), 6000 }, 0 )
                 boss:RegisterEvent( bossNPC.Pool, { ebs.GetTimer( 10000, difficulty ), 12000}, 0 )
+
+                -- add custom scripting above
             end
         end
     end
 
-    -- add custom scripting above
+
     ebs.addReset( event, creature )
 end
 
