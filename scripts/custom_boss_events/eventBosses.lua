@@ -128,8 +128,9 @@ SELECT_TARGET_FARTHEST = 4
 TYPE_CREATURE = 1
 TYPE_GAMEOBJECT = 2
 
-local PARTY_IN_PROGRESS = 1
-local RAID_IN_PROGRESS = 2
+PARTY_IN_PROGRESS = 1
+RAID_IN_PROGRESS = 2
+
 local eventInProgress
 
 ebs.playersInGroup = {
@@ -166,10 +167,10 @@ end
 function ebs.returnKey (tab, val)
     for index, value in ipairs(tab) do
         if value == val then
-            return index
+            return true, index
         end
     end
-    return 0
+    return false, 0
 end
 
 function ebs.returnIndex (tab, val)
@@ -590,10 +591,7 @@ function ebs.finishPlayers(slotId)
 end
 
 function ebs.bossReset(event, creature)
-    local slotId = 0
-    if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUIDLow()) then
-        slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUIDLow())
-    end
+    local hasValue, slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUIDLow())
 
     if slotId == 0 then
         PrintError("eventBosses.lua: A boss rest without a valid slotId.")
@@ -616,10 +614,7 @@ function ebs.bossReset(event, creature)
 end
 
 function ebs.addReset(event, creature)
-    local slotId = 0
-    if ebs.has_value(ebs.spawnedBossGuid, creature:GetGUIDLow()) then
-        slotId = ebs.returnKey(ebs.spawnedBossGuid, creature:GetGUIDLow())
-    end
+    local hasValue, slotId = ebs.returnKey (ebs.spawnedBossGuid, creature:GetGUIDLow())
 
     if ebs.fightType[slotId] ~= PARTY_IN_PROGRESS then
         return

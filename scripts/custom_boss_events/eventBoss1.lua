@@ -131,9 +131,8 @@ function addNPC.reset( event, creature )
     if creature:IsDead() then
         local bossLowGUID = creature:GetData('ebs_boss_lowguid')
 
-        if ebs.has_value( ebs.spawnedBossGuid, bossLowGUID ) then
-            slotId = ebs.returnKey( ebs.spawnedBossGuid, bossLowGUID )
-        end
+        local hasValue
+        hasValue, slotId = ebs.returnKey ( ebs.spawnedBossGuid, bossLowGUID )
         if ebs.fightType[ slotId ] ~= RAID_IN_PROGRESS then
             ebs.addReset( event, creature )
             return
@@ -142,9 +141,11 @@ function addNPC.reset( event, creature )
         if not addDownCounter[ slotId ] then
             addDownCounter[ slotId ] = 0
         end
+
         addDownCounter[ slotId ] = addDownCounter[ slotId ] + 1
         if addDownCounter[ slotId ] == ebs.encounter[ encounterId ].addAmount then
-            local boss = creature:GetOwner()
+            local guid = GetUnitGUID( bossLowGUID, ebs.encounter[ encounterId ].bossEntry )
+            local boss = creature:GetMap():GetWorldObject( guid )
             if boss then
                 -- add custom scripting below
 
