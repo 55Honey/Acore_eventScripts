@@ -224,7 +224,7 @@ end
 function ebs.getSize(difficulty)
     local value = 1
     if difficulty >= 1 then
-        value = 1 + (difficulty - 1) / 4
+        value = 1 + (difficulty - 1) / 8
     end
     return value
 end

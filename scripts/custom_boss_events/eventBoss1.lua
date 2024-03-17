@@ -76,6 +76,7 @@ function bossNPC.onEnterCombat( event, creature, target )
     creature:CallForHelp( 200 )
     local difficulty = creature:GetData('ebs_difficulty')
     -- add custom scripting below
+
     creature:RegisterEvent( bossNPC.Fire, ebs.GetTimer( 10000, difficulty ), 0 )
 end
 
@@ -92,7 +93,9 @@ function addNPC.RemoveInterrupt( eventid, delay, repeats, add )
 end
 
 function addNPC.HealBoss( eventid, delay, repeats, add )
-    local boss = add:GetOwner()
+    local bossLowGUID = creature:GetData('ebs_boss_lowguid')
+    local guid = GetUnitGUID( bossLowGUID, ebs.encounter[ encounterId ].bossEntry )
+    local boss = creature:GetMap():GetWorldObject( guid )
     if boss then
         if boss:GetHealthPct() < 90 then
             if math.random(1,2) == 1 then
