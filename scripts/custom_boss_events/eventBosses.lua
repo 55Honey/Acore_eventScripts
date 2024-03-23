@@ -54,10 +54,12 @@ ebs.Config = {
     ["addEnrageTimer"] = 300000,
     ["baseScore"] = 40,
     ["additionalScore"] = 10,
-    ["rewardRaid"] = 1,
+    ["giveScoreRaid"] = 1,
     ["storeRaid"] = 1,
-    ["rewardParty"] = 1,
-    ["storeParty"] = 1
+    ["rewardRaid"] = 1,
+    ["giveScoreParty"] = 1,
+    ["storeParty"] = 1,
+    ["rewardParty"] = 1
 }
 
 ------------------------------------------
@@ -295,12 +297,12 @@ function ebs.awardScore(slotId)
         if scoreTotal[accountId] == nil then scoreTotal[accountId] = 0 end
         local oldScore = scoreEarned[accountId]
 
-        if ebs.fightType[slotId] == PARTY_IN_PROGRESS and ebs.Config.rewardParty == 1 then
+        if ebs.fightType[slotId] == PARTY_IN_PROGRESS and ebs.Config.giveScoreParty == 1 then
             newScore = ebs.Config.baseScore + ebs.Config.additionalScore * ebs.getLastSuccessfulDifficulty(accountId, PARTY_IN_PROGRESS)
             baseScore = ebs.Config.baseScore + ebs.Config.additionalScore * ebs.getLastSuccessfulDifficulty(accountId, RAID_IN_PROGRESS)
         end
 
-        if ebs.fightType[slotId] == RAID_IN_PROGRESS and ebs.Config.rewardRaid == 1 then
+        if ebs.fightType[slotId] == RAID_IN_PROGRESS and ebs.Config.giveScoreRaid == 1 then
             newScore = ebs.Config.baseScore + ebs.Config.additionalScore * ebs.getLastSuccessfulDifficulty(accountId, RAID_IN_PROGRESS)
             baseScore= ebs.Config.baseScore + ebs.Config.additionalScore * ebs.getLastSuccessfulDifficulty(accountId, PARTY_IN_PROGRESS)
         end
@@ -466,6 +468,10 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
                         v:SetInCombatWith(spawnedCreature[c])
                         spawnedCreature[c]:AddThreat(v, 1)
                     end
+                end
+
+                if ebs.Config.rewardParty == 1 then
+                    ebs.buffInRaid(v)
                 end
             else
                 v:SendBroadcastMessage("You were too far away to join the fight.")
