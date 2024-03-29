@@ -93,9 +93,9 @@ function addNPC.RemoveInterrupt( eventid, delay, repeats, add )
 end
 
 function addNPC.HealBoss( eventid, delay, repeats, add )
-    local bossLowGUID = creature:GetData('ebs_boss_lowguid')
+    local bossLowGUID = add:GetData('ebs_boss_lowguid')
     local guid = GetUnitGUID( bossLowGUID, ebs.encounter[ encounterId ].bossEntry )
-    local boss = creature:GetMap():GetWorldObject( guid )
+    local boss = add:GetMap():GetWorldObject( guid )
     if boss then
         if boss:GetHealthPct() < 90 then
             if math.random(1,2) == 1 then
@@ -114,30 +114,30 @@ function addNPC.Splash( eventid, delay, repeats, add )
     add:CastCustomSpell( add:GetVictim(), 32014, false, nil, 150 )
 end
 
-function addNPC.onEnterCombat( event, creature, target )
-    creature:CallAssistance()
-    creature:CallForHelp( 200 )
-    local difficulty = creature:GetData('ebs_difficulty')
+function addNPC.onEnterCombat( event, add, target )
+    add:CallAssistance()
+    add:CallForHelp( 200 )
+    local difficulty = add:GetData('ebs_difficulty')
     -- add custom scripting below
 
-    creature:RegisterEvent( addNPC.HealBoss, { 10000, 15000 }, 0 )
-    creature:RegisterEvent( addNPC.Splash, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
-    if difficulty >= 3 or creature:GetData('ebs_mode') == PARTY_IN_PROGRESS then
-        creature:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
+    add:RegisterEvent( addNPC.HealBoss, { 10000, 15000 }, 0 )
+    add:RegisterEvent( addNPC.Splash, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
+    if difficulty >= 3 or add:GetData('ebs_mode') == PARTY_IN_PROGRESS then
+        add:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
     end
 end
 
-function addNPC.reset( event, creature )
-    creature:RemoveEvents()
-    local difficulty = creature:GetData('ebs_difficulty')
+function addNPC.reset( event, add )
+    add:RemoveEvents()
+    local difficulty = add:GetData('ebs_difficulty')
     local slotId
-    if creature:IsDead() then
-        local bossLowGUID = creature:GetData('ebs_boss_lowguid')
+    if add:IsDead() then
+        local bossLowGUID = add:GetData('ebs_boss_lowguid')
 
         local hasValue
         hasValue, slotId = ebs.returnKey ( ebs.spawnedBossGuid, bossLowGUID )
         if ebs.fightType[ slotId ] ~= RAID_IN_PROGRESS then
-            ebs.addReset( event, creature )
+            ebs.addReset( event, add )
             return
         end
 
@@ -148,7 +148,7 @@ function addNPC.reset( event, creature )
         addDownCounter[ slotId ] = addDownCounter[ slotId ] + 1
         if addDownCounter[ slotId ] == ebs.encounter[ encounterId ].addAmount then
             local guid = GetUnitGUID( bossLowGUID, ebs.encounter[ encounterId ].bossEntry )
-            local boss = creature:GetMap():GetWorldObject( guid )
+            local boss = add:GetMap():GetWorldObject( guid )
             if boss then
                 -- add custom scripting below
 
@@ -162,7 +162,7 @@ function addNPC.reset( event, creature )
     end
 
 
-    ebs.addReset( event, creature )
+    ebs.addReset( event, add )
 end
 
 RegisterCreatureEvent( ebs.encounter[ encounterId ].bossEntry, 1, bossNPC.onEnterCombat )
