@@ -31,22 +31,19 @@ end
 -- Begin of config section
 ------------------------------------------
 
-local MAX_REWARD_LEVEL = 10
-local REPUTATION_FACTOR = 2
-
 ebs.Config.cityAreas = { 3703, 3899,                                 -- Shattrath
                          4395, 4560, 4567, 4601, 4613, 4616, 4620    -- Dalaran
 }
-ebs.Config.cityAura = { [1] = 22586,  -- 5% speed
-                        [2] = 22586,  -- 5% speed
-                        [3] = 22587,  -- 8% speed
-                        [4] = 22587,  -- 8% speed
-                        [5] = 22588,  -- 10% speed
-                        [6] = 22588,  -- 10% speed
-                        [7] = 22589,  -- 13% speed
-                        [8] = 22589,  -- 13% speed
-                        [9] = 22590,  -- 15% speed
-                        [10] = 22590  -- 15% speed
+ebs.Config.cityAuras = { [1] = 22586,  -- 5% speed
+                         [2] = 22586,  -- 5% speed
+                         [3] = 22587,  -- 8% speed
+                         [4] = 22587,  -- 8% speed
+                         [5] = 22588,  -- 10% speed
+                         [6] = 22588,  -- 10% speed
+                         [7] = 22589,  -- 13% speed
+                         [8] = 22589,  -- 13% speed
+                         [9] = 22589,  -- 13% speed
+                         [10] = 22590  -- 15% speed
 }
 
 ebs.Config.raidAura = 2147
@@ -68,11 +65,8 @@ ebs.Config.boostedFactions = { 270, -- Zandalar Tribe
 -- NO ADJUSTMENTS REQUIRED BELOW THIS LINE
 ------------------------------------------
 
-if ebs.Config.rewardRaid == 1 then
-
-end
-
 function ebs.BuffInRaid(player)
+    print("69: actually buffing")
     if not ebs.clearedDifficulty[player:GetAccountId()] then
         ebs.clearedDifficulty[player:GetAccountId()] = {}
     end
@@ -80,39 +74,44 @@ function ebs.BuffInRaid(player)
     if not difficulty then
         return
     end
-    if difficulty > MAX_REWARD_LEVEL then
-        difficulty = MAX_REWARD_LEVEL
+    if difficulty > ebs.Config.maxRewardLevel then
+        difficulty = ebs.Config.maxRewardLevel
     end
 
-    local duration = raidAuraBaseDuration + (raidAuraAdditionalDuration * difficulty)
+    local duration = ebs.Config.raidAuraBaseDuration + (ebs.Config.raidAuraAdditionalDuration * difficulty)
     player:AddAura(ebs.Config.raidAura, player)
     player:RegisterEvent(function(_, _, _, player)
         player:RemoveAura(ebs.Config.raidAura)
     end, duration * 1000, 1)
 end
 
-function ebs.RemoveAuras(_, player)
+function ebs.RemovePlayerAuras(_, player)
     player:RemoveAura(ebs.Config.raidAura)
     for _,v in ipairs(ebs.Config.cityAreas) do
-        player:RemoveAura(ebs.Config.cityAura[v])
+        player:RemoveAura(v)
     end
 end
 
 function ebs.BuffInCity(event, player, oldArea, newArea)
     -- if the player is now in a main city area, buff it
     if ebs.has_value (ebs.Config.cityAreas, newArea) then
+        -- if the player has not completed anything, stop checking early
+        if ebs.clearedDifficulty[player:GetAccountId()] == nil then
+            return
+        end
+
         local difficulty = ebs.clearedDifficulty[player:GetAccountId()][RAID_IN_PROGRESS]
         if not difficulty then
             return
         end
-        if difficulty > MAX_REWARD_LEVEL then
-            difficulty = MAX_REWARD_LEVEL
+        if difficulty > ebs.Config.maxRewardLevel then
+            difficulty = ebs.Config.maxRewardLevel
         end
-        player:AddAura(ebs.Config.cityAura[difficulty], player)
+        player:AddAura(ebs.Config.cityAuras[difficulty], player)
 
-    -- if the player was in a main city area before, remove the auras
-    elseif ebs.has_value (ebs.Config.cityAreas, oldArea) then
-        ebs.RemoveAuras(_, player)
+        -- if the player was in a main city area before, remove the auras
+    else
+        ebs.RemovePlayerAuras(_, player)
     end
 end
 
@@ -123,9 +122,29 @@ function ebs.BoostReputation(_, player, factionId, standing, incremental) -- Can
         if not ebs.clearedDifficulty[player:GetAccountId()] then
             return
         end
-        if ebs.clearedDifficulty[player:GetAccountId()][RAID_IN_PROGRESS] >= MAX_REWARD_LEVEL then
+        if ebs.clearedDifficulty[player:GetAccountId()][RAID_IN_PROGRESS] >= ebs.Config.maxRewardLevel then
             print('standing: + incremental: '..standing + (incremental * REPUTATION_FACTOR))
             return standing + (incremental * REPUTATION_FACTOR)
+        end
+    end
+end
+
+function ebs.RemoveRaidAuras()
+    for m = 1,2 do
+        local players = GetPlayersInWorld( n )
+        for _, player in pairs(players) do
+            player:RemoveAura(ebs.Config.raidAura)
+        end
+    end
+end
+
+function ebs.RemovePartyAuras()
+    for n = 1,2 do
+        local players = GetPlayersInWorld( n )
+        for _, player in pairs(players) do
+            for _,v in ipairs(ebs.Config.cityAuras) do
+                player:RemoveAura(v)
+            end
         end
     end
 end
@@ -134,6 +153,13 @@ local PLAYER_EVENT_ON_LOGOUT = 4
 local PLAYER_EVENT_ON_REPUTATION_CHANGE = 15
 local PLAYER_EVENT_ON_UPDATE_AREA = 47
 
-RegisterPlayerEvent( PLAYER_EVENT_ON_LOGOUT, ebs.RemoveAuras )
-RegisterPlayerEvent( PLAYER_EVENT_ON_REPUTATION_CHANGE, ebs.BoostReputation )
-RegisterPlayerEvent( PLAYER_EVENT_ON_UPDATE_AREA, ebs.BuffInCity )
+RegisterPlayerEvent( PLAYER_EVENT_ON_LOGOUT, ebs.RemovePlayerAuras )
+
+if ebs.Config.reputationFactor ~= 1 then
+    RegisterPlayerEvent( PLAYER_EVENT_ON_REPUTATION_CHANGE, ebs.BoostReputation )
+end
+
+if ebs.Config.rewardRaid == 1 then
+    RegisterPlayerEvent( PLAYER_EVENT_ON_UPDATE_AREA, ebs.BuffInCity )
+    RegisterPlayerEvent( PLAYER_EVENT_ON_LOGIN, ebs.BuffInCity )
+end

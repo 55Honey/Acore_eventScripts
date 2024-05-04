@@ -59,7 +59,14 @@ ebs.Config = {
     ["rewardRaid"] = 1,
     ["giveScoreParty"] = 1,
     ["storeParty"] = 1,
-    ["rewardParty"] = 1
+    ["rewardParty"] = 1,
+
+    -- Factor for reputation increase with the `ebs.Config.boostedFactions`.
+    -- Not registering any events if 1
+    ["reputationFactor"] = 1,
+    -- Highest difficulty level that is taken into account for rewards.
+    -- Higher levels might be playable, but no additional rewartds are given.
+    ["maxRewardLevel"] = 10
 }
 
 ------------------------------------------
@@ -214,6 +221,7 @@ function ebs.isParticipating(player)
 end
 
 function ebs.resetPlayers(_, player)
+    ebs.RemovePlayerAuras(_, player)
     if ebs.isParticipating(player) then
         player:SetPhaseMask(1)
         player:SendBroadcastMessage("You left the event.")
@@ -449,6 +457,7 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
                 spawnedCreature[c]:SetPhaseMask(ebs.Config.eventPhase[slotId])
                 spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * ebs.getSize(ebs.phaseIdDifficulty[slotId]))
                 spawnedCreature[c]:SetData('ebs_difficulty', ebs.phaseIdDifficulty[slotId])
+                print("460: " .. ebs.phaseIdDifficulty[slotId])
                 spawnedCreature[c]:SetData('ebs_boss_lowguid', ebs.spawnedBossGuid[slotId])
             end
         end
@@ -471,7 +480,7 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
                 end
 
                 if ebs.Config.rewardParty == 1 then
-                    ebs.buffInRaid(v)
+                    ebs.BuffInRaid(v)
                 end
             else
                 v:SendBroadcastMessage("You were too far away to join the fight.")
@@ -623,6 +632,7 @@ function ebs.addReset(event, creature)
     local hasValue, slotId = ebs.returnKey (ebs.spawnedBossGuid, creature:GetGUIDLow())
 
     if ebs.fightType[slotId] ~= PARTY_IN_PROGRESS then
+        creature:DespawnOrUnsummon(0)
         return
     end
     -- Only do this check if it's a party-encounter. For the raid-encounter the add's GUID won't be used.
@@ -668,6 +678,14 @@ function ebs.loadRecords()
 end
 
 function ebs.closeLua(_)
+    if ebs.Config.rewardRaid == 1 then
+        ebs.RemoveRaidAuras()
+    end
+
+    if ebs.Config.rewardParty == 1 then
+        ebs.RemovePartyAuras()
+    end
+
     if eventInProgress then
         local npcObject
         local mapId

@@ -116,7 +116,6 @@ end
 
 function addNPC.onEnterCombat( event, add, target )
     add:CallAssistance()
-    add:CallForHelp( 200 )
     local difficulty = add:GetData('ebs_difficulty')
     -- add custom scripting below
 
