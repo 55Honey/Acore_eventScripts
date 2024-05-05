@@ -84,16 +84,17 @@ CharDBQuery('CREATE TABLE IF NOT EXISTS `'..ebs.Config.customDbName..'`.`eventsc
 CharDBQuery('CREATE TABLE IF NOT EXISTS `'..ebs.Config.customDbName..'`.`eventscript_difficulty` (`account_id` INT NOT NULL, `encounter_id` INT NOT NULL, `encounter_type` INT NOT NULL, `difficulty` INT NOT NULL, PRIMARY KEY (`account_id`, `encounter_id`, `encounter_type`));')
 
 --constants
-local PLAYER_EVENT_ON_LOGOUT = 4            -- (event, player)
-local PLAYER_EVENT_ON_REPOP = 35            -- (event, player)
-local PLAYER_EVENT_ON_COMMAND = 42          -- (event, player, command, chatHandler) - player is nil if command used from console. Can return false
-local TEMPSUMMON_MANUAL_DESPAWN = 8         -- despawns when UnSummon() is called
-local GOSSIP_EVENT_ON_HELLO = 1             -- (event, player, object) - Object is the Creature/GameObject/Item. Can return false to do default action. For item gossip can return false to stop spell casting.
-local GOSSIP_EVENT_ON_SELECT = 2            -- (event, player, object, sender, intid, code, menu_id)
-local OPTION_ICON_CHAT = 0
-local OPTION_ICON_BATTLE = 9
-local ELUNA_EVENT_ON_LUA_STATE_CLOSE = 16
-local ELUNA_EVENT_ON_LUA_STATE_OPEN = 33
+PLAYER_EVENT_ON_LOGIN = 3             -- (event, player)
+PLAYER_EVENT_ON_LOGOUT = 4            -- (event, player)
+PLAYER_EVENT_ON_REPOP = 35            -- (event, player)
+PLAYER_EVENT_ON_COMMAND = 42          -- (event, player, command, chatHandler) - player is nil if command used from console. Can return false
+TEMPSUMMON_MANUAL_DESPAWN = 8         -- despawns when UnSummon() is called
+GOSSIP_EVENT_ON_HELLO = 1             -- (event, player, object) - Object is the Creature/GameObject/Item. Can return false to do default action. For item gossip can return false to stop spell casting.
+GOSSIP_EVENT_ON_SELECT = 2            -- (event, player, object, sender, intid, code, menu_id)
+OPTION_ICON_CHAT = 0
+OPTION_ICON_BATTLE = 9
+ELUNA_EVENT_ON_LUA_STATE_CLOSE = 16
+ELUNA_EVENT_ON_LUA_STATE_OPEN = 33
 
 MECHANIC_CHARM = 1
 MECHANIC_DISORIENTED= 2
@@ -271,9 +272,9 @@ function ebs.GetTimer(timer, difficulty)
 end
 
 function ebs.getFreeSlot()
-    for k, v in ipairs(ebs.phaseIdDifficulty) do
-        if v == nil then
-            return k
+    for n = 1, 10 do
+        if ebs.phaseIdDifficulty[n] == nil then
+            return n
         end
     end
     return 1
@@ -457,7 +458,6 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
                 spawnedCreature[c]:SetPhaseMask(ebs.Config.eventPhase[slotId])
                 spawnedCreature[c]:SetScale(spawnedCreature[c]:GetScale() * ebs.getSize(ebs.phaseIdDifficulty[slotId]))
                 spawnedCreature[c]:SetData('ebs_difficulty', ebs.phaseIdDifficulty[slotId])
-                print("460: " .. ebs.phaseIdDifficulty[slotId])
                 spawnedCreature[c]:SetData('ebs_boss_lowguid', ebs.spawnedBossGuid[slotId])
             end
         end

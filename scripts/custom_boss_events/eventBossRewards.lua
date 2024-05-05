@@ -96,7 +96,8 @@ function ebs.BuffInCity(event, player, oldArea, newArea)
     -- if the player is now in a main city area, buff it
     if ebs.has_value (ebs.Config.cityAreas, newArea) then
         -- if the player has not completed anything, stop checking early
-        if ebs.clearedDifficulty[player:GetAccountId()] == nil then
+        if not ebs.clearedDifficulty[player:GetAccountId()] then
+            print("returned 100")
             return
         end
 
@@ -161,5 +162,4 @@ end
 
 if ebs.Config.rewardRaid == 1 then
     RegisterPlayerEvent( PLAYER_EVENT_ON_UPDATE_AREA, ebs.BuffInCity )
-    RegisterPlayerEvent( PLAYER_EVENT_ON_LOGIN, ebs.BuffInCity )
 end
