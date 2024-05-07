@@ -64,9 +64,15 @@ ebs.Config = {
     -- Factor for reputation increase with the `ebs.Config.boostedFactions`.
     -- Not registering any events if 1
     ["reputationFactor"] = 1,
+
     -- Highest difficulty level that is taken into account for rewards.
-    -- Higher levels might be playable, but no additional rewartds are given.
-    ["maxRewardLevel"] = 10
+    -- Higher levels might be playable, but no additional rewards are given.
+    ["maxRewardLevel"] = 10,
+
+    -- Amount of players with the lowest already cleared difficulty to ignore
+    -- when calculating the group's difficulty level.
+    ["ebs.Config.IgnoreLowestPartyAmount"] = 1,
+    ["ebs.Config.IgnoreLowestRaidAmount"] = 5
 }
 
 ------------------------------------------
@@ -88,13 +94,20 @@ PLAYER_EVENT_ON_LOGIN = 3             -- (event, player)
 PLAYER_EVENT_ON_LOGOUT = 4            -- (event, player)
 PLAYER_EVENT_ON_REPOP = 35            -- (event, player)
 PLAYER_EVENT_ON_COMMAND = 42          -- (event, player, command, chatHandler) - player is nil if command used from console. Can return false
+
 TEMPSUMMON_MANUAL_DESPAWN = 8         -- despawns when UnSummon() is called
+
 GOSSIP_EVENT_ON_HELLO = 1             -- (event, player, object) - Object is the Creature/GameObject/Item. Can return false to do default action. For item gossip can return false to stop spell casting.
 GOSSIP_EVENT_ON_SELECT = 2            -- (event, player, object, sender, intid, code, menu_id)
+
 OPTION_ICON_CHAT = 0
 OPTION_ICON_BATTLE = 9
+
 ELUNA_EVENT_ON_LUA_STATE_CLOSE = 16
 ELUNA_EVENT_ON_LUA_STATE_OPEN = 33
+
+GROUPTYPE_NORMAL = 0
+GROUPTYPE_RAID = 2
 
 MECHANIC_CHARM = 1
 MECHANIC_DISORIENTED= 2
@@ -343,8 +356,19 @@ function ebs.onHello(_, player, creature)
         --todo: change broadcast message to whisper
         player:SendBroadcastMessage("Too many heroes are already fighting the enemies of time. Please hold on until i can support more timewalking magic.")
     else
-        player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant! (Difficulty " .. 1 + ebs.getLastSuccessfulDifficulty(player:GetAccountId(), PARTY_IN_PROGRESS) .. ")", ebs.encounter[eventInProgress].npc[2], 1)
-        player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything (Difficulty " .. 1 + ebs.getLastSuccessfulDifficulty(player:GetAccountId(), RAID_IN_PROGRESS) .. ")", ebs.encounter[eventInProgress].npc[2], 2)
+        if player:GetGroup() then
+            if player:GetGroup():GetGroupType() == GROUPTYPE_NORMAL then
+                local MaxPartyLevel = ebs.getLowestGroupLevel(player, PARTY_IN_PROGRESS)
+                for n = 1,MaxPartyLevel do
+                    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We are ready to fight a servant! (Difficulty " .. n .. ")", ebs.encounter[eventInProgress].npc[2], n)
+                end
+            else
+                local MaxRaidLevel = ebs.getLowestGroupLevel(player, RAID_IN_PROGRESS)
+                for n = 1,MaxRaidLevel do
+                    player:GossipMenuAddItem(OPTION_ICON_CHAT, "We brought the best there is and we're ready for anything! (Difficulty " .. n .. ")", ebs.encounter[eventInProgress].npc[2], n + 10)
+                end
+            end
+        end
     end
     player:GossipMenuAddItem(OPTION_ICON_CHAT, "What's my score?", ebs.encounter[eventInProgress].npc[2], 0)
     player:GossipSendMenu(ebs.encounter[eventInProgress].npcText, creature, 0)
@@ -358,6 +382,8 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
 
     local group = player:GetGroup()
     local slotId = ebs.getFreeSlot()
+
+    -- Display the player's progress
     if intid == 0 then
         local accountId = player:GetAccountId()
         if scoreEarned[accountId] == nil then scoreEarned[accountId] = 0 end
@@ -368,7 +394,8 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
         return
     end
 
-    if intid == 1 or intid == 2 then
+    -- Check if the player is in a group and if they are the leader
+    if intid >= 1 and intid <= 20 then
         if slotId == nil then
             --todo: change broadcast message to whisper
             player:SendBroadcastMessage("Too many heroes are already fighting the enemies of time. Please hold on until i can support more timewalking magic.")
@@ -392,7 +419,8 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
     end
 
     local spawnType, entry, mapId, x, y, z, o, despawnTime = table.unpack(ebs.encounter[eventInProgress].npc)
-    if intid == 1 then
+
+    if intid <= 10 then
         if group:IsRaidGroup() == true then
             --todo: change broadcast message to whisper
             player:SendBroadcastMessage("You can not accept that task while in a raid group.")
@@ -400,10 +428,18 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
             return
         end
         groupPlayers = group:GetMembers()
+        local designatedDifficulty = intid
+        if ebs.getLowestGroupLevel(player, PARTY_IN_PROGRESS) < designatedDifficulty then
+            --todo: change broadcast message to whisper
+            player:SendBroadcastMessage("Group composition has changed. Please talk to Chromie again after adding members.")
+            player:GossipComplete()
+            return
+        end
 
         --start 5man encounter
         ebs.fightType[slotId] = PARTY_IN_PROGRESS
-        ebs.phaseIdDifficulty[slotId] = 1 + ebs.getLastSuccessfulDifficulty(player:GetAccountId(), ebs.fightType[slotId])
+        ebs.phaseIdDifficulty[slotId] = designatedDifficulty
+
         spawnedCreature[1]= object:SpawnCreature(ebs.encounter[eventInProgress].addEntry, x, y, z+2, o, spawnType, despawnTime)
         spawnedCreature[1]:SetPhaseMask(ebs.Config.eventPhase[slotId])
         spawnedCreature[1]:SetScale(spawnedCreature[1]:GetScale() * ebs.getSize(slotId))
@@ -429,9 +465,8 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
                 v:SendBroadcastMessage("You were too far away to join the fight.")
             end
         end
-    end
 
-    if intid == 2 then
+    elseif intid <= 20 then
         if group:IsRaidGroup() == false then
             --todo: change broadcast message to whisper
             player:SendBroadcastMessage("You can not accept that task without being in a raid group.")
@@ -439,10 +474,17 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
             return
         end
         groupPlayers = group:GetMembers()
+        local designatedDifficulty = intid - 10
+        if ebs.getLowestGroupLevel(player, RAID_IN_PROGRESS) < designatedDifficulty then
+            --todo: change broadcast message to whisper
+            player:SendBroadcastMessage("Group composition has changed. Please talk to Chromie again after adding members.")
+            player:GossipComplete()
+            return
+        end
 
         --start raid encounter
         ebs.fightType[slotId] = RAID_IN_PROGRESS
-        ebs.phaseIdDifficulty[slotId] = 1 + ebs.getLastSuccessfulDifficulty(player:GetAccountId(), ebs.fightType[slotId])
+        ebs.phaseIdDifficulty[slotId] = designatedDifficulty
 
         spawnedBoss = object:SpawnCreature(ebs.encounter[eventInProgress].bossEntry, x, y, z+2, o, spawnType, despawnTime)
         spawnedBoss:SetPhaseMask(ebs.Config.eventPhase[slotId])
@@ -488,6 +530,32 @@ function ebs.chromieGossip(_, player, object, sender, intid, code, menu_id)
         end
     end
     player:GossipComplete()
+end
+
+function ebs.getLowestGroupLevel(player, groupType)
+    local group = player:GetGroup()
+    local members = group:GetMembers()
+    local n = 1
+    local completedLevel = {}
+    for _,v in pairs(members) do
+        completedLevel[n] = ebs.getLastSuccessfulDifficulty(v:GetAccountId(), groupType)
+        n = n + 1
+    end
+    table.sort(completedLevel)
+    if group:GetGroupType() == GROUPTYPE_NORMAL then
+        if completedLevel[1 + ebs.Config.IgnoreLowestPartyAmount] then
+            return completedLevel[1 + ebs.Config.IgnoreLowestPartyAmount]
+        else
+            return completedLevel[completedLevel.maxn()]
+        end
+    elseif group:GetGroupType() == GROUPTYPE_RAID then
+        if completedLevel[1 + ebs.Config.IgnoreLowestRaidAmount] then
+            return completedLevel[1 + ebs.Config.IgnoreLowestRaidAmount]
+        else
+            return completedLevel[completedLevel.maxn()]
+        end
+    end
+    PrintError("eventBosses.lua: getLowestGroupLevel() failed.")
 end
 
 function ebs.summonEventNPC()

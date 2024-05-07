@@ -32,7 +32,7 @@ local addNPC = {}
 
 --------------------------------------------------------------------------------------
 -- The data below is mandatory for the main script to work with the encounter.      --
--- The encounterId must be unique for each encounter.                               --
+-- Adjust as needed. The encounterId must be unique for each encounter.             --
 --------------------------------------------------------------------------------------
 
 local encounterId = 1
@@ -48,90 +48,39 @@ ebs.encounter[encounterId] = {
 }
 
 --------------------------------------------------------------------------------------
-
+-- There are no changes required to this part. It is mandatory for the script to work.
+-- Custom scripting goes to the designated section at the bottom.
+--------------------------------------------------------------------------------------
+---
 local addDownCounter = {}
-
-function bossNPC.Fire( eventid, delay, repeats, creature )
-    local target = creature:GetAITarget( SELECT_TARGET_RANDOM, true, nil, -20 )
-    if target then
-        creature:CastSpell( target, 31340, false )
-    end
-end
-
-function bossNPC.PullIn( eventid, delay, repeats, creature )
-    local target = creature:GetAITarget( SELECT_TARGET_FARTHEST, true, nil, -20 )
-    creature:CastSpell( target, 59395, true )
-end
-
-function bossNPC.Pool( eventid, delay, repeats, creature )
-    if math.random(1,2) == 1 then
-        creature:CastSpell( creature, 32014, false )
-    else
-        creature:CastSpell( creature:GetVictim(), 53721, false )
-    end
-end
 
 function bossNPC.onEnterCombat( event, creature, target )
     creature:CallAssistance()
     creature:CallForHelp( 200 )
     local difficulty = creature:GetData('ebs_difficulty')
-    -- add custom scripting below
-
-    creature:RegisterEvent( bossNPC.Fire, ebs.GetTimer( 10000, difficulty ), 0 )
+    bossNPC.CustomEnterCombat( creature, target, difficulty )
 end
 
 function bossNPC.reset( event, creature )
     creature:RemoveEvents()
-    -- add custom scripting below
-
-    -- add custom scripting above
-    ebs.bossReset(event, creature)
-end
-
-function addNPC.RemoveInterrupt( eventid, delay, repeats, add )
-    add:SetImmuneTo( MECHANIC_INTERRUPT, false )
-end
-
-function addNPC.HealBoss( eventid, delay, repeats, add )
-    local bossLowGUID = add:GetData('ebs_boss_lowguid')
-    local guid = GetUnitGUID( bossLowGUID, ebs.encounter[ encounterId ].bossEntry )
-    local boss = add:GetMap():GetWorldObject( guid )
-    if boss then
-        if boss:GetHealthPct() < 90 then
-            if math.random(1,2) == 1 then
-                boss:SendUnitYell( "HAHAHA! You can't hurt me!", 0 )
-            else
-                add:SendUnitYell( "Don't you dare harm the master!", 0 )
-            end
-            --add:SetImmuneTo( MECHANIC_INTERRUPT, true )
-            add:CastCustomSpell( boss, 30878, false, nil, 1000000 )
-            --add:RegisterEvent( addNPC.RemoveInterrupt, 3000, 1 )
-        end
-    end
-end
-
-function addNPC.Splash( eventid, delay, repeats, add )
-    add:CastCustomSpell( add:GetVictim(), 32014, false, nil, 150 )
+    bossNPC.CustomReset( creature )
+    ebs.bossReset( event, creature )
 end
 
 function addNPC.onEnterCombat( event, add, target )
     add:CallAssistance()
     local difficulty = add:GetData('ebs_difficulty')
-    -- add custom scripting below
-
-    add:RegisterEvent( addNPC.HealBoss, { 10000, 15000 }, 0 )
-    add:RegisterEvent( addNPC.Splash, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
-    if difficulty >= 3 or add:GetData('ebs_mode') == PARTY_IN_PROGRESS then
-        add:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
-    end
+    addNPC.CustomEnterCombat( add, target, difficulty )
 end
 
 function addNPC.reset( event, add )
     add:RemoveEvents()
-    local difficulty = add:GetData('ebs_difficulty')
     local slotId
+    local difficulty = add:GetData('ebs_difficulty')
+    local bossLowGUID = add:GetData('ebs_boss_lowguid')
+    local guid = GetUnitGUID( bossLowGUID, ebs.encounter[ encounterId ].bossEntry )
+    local boss = add:GetMap():GetWorldObject( guid )
     if add:IsDead() then
-        local bossLowGUID = add:GetData('ebs_boss_lowguid')
 
         local hasValue
         hasValue, slotId = ebs.returnKey ( ebs.spawnedBossGuid, bossLowGUID )
@@ -146,23 +95,123 @@ function addNPC.reset( event, add )
 
         addDownCounter[ slotId ] = addDownCounter[ slotId ] + 1
         if addDownCounter[ slotId ] == ebs.encounter[ encounterId ].addAmount then
-            local guid = GetUnitGUID( bossLowGUID, ebs.encounter[ encounterId ].bossEntry )
-            local boss = add:GetMap():GetWorldObject( guid )
+
             if boss then
-                -- add custom scripting below
+                -------------------------------------------------------------------------------
+                -- last add died, boss is still alive
+                -------------------------------------------------------------------------------
+                addNPC.CustomLastAddDead( add, boss, difficulty, slotId )
 
-                boss:SendUnitYell( "You will pay for your actions!", 0 )
-                boss:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 4000, difficulty ), 6000 }, 0 )
-                boss:RegisterEvent( bossNPC.Pool, { ebs.GetTimer( 10000, difficulty ), 12000}, 0 )
-
-                -- add custom scripting above
             end
         end
     end
 
-
+    addNPC.CustomReset( add, boss, difficulty, slotId )
     ebs.addReset( event, add )
 end
+
+-------------------------------------------------------------------------------
+-- CUSTOM SCRIPTING BELOW
+-------------------------------------------------------------------------------
+
+function bossNPC.CustomEnterCombat( creature, target, difficulty )
+    creature:RegisterEvent( bossNPC.Fire, ebs.GetTimer( 10000, difficulty ), 0 )
+end
+
+function bossNPC.CustomReset( creature )
+    -------------------------------------------------------------------------------
+    -- This function runs for the boss when it resets. This includes everything which ends their combat.
+    -- You can add custom scripting here, e.g. checking:
+    -- if creature:IsDead() then
+    -------------------------------------------------------------------------------
+end
+
+function addNPC.CustomEnterCombat( add, target, difficulty )
+    add:RegisterEvent( addNPC.HealBoss, { 10000, 15000 }, 0 )
+    add:RegisterEvent( addNPC.Splash, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
+    if difficulty >= 3 or add:GetData('ebs_mode') == PARTY_IN_PROGRESS then
+        add:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
+    end
+end
+
+function addNPC.CustomLastAddDead( add, boss, difficulty, slotId )
+    boss:SendUnitYell( "You will pay for your actions!", 0 )
+    boss:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 4000, difficulty ), 6000 }, 0 )
+    boss:RegisterEvent( bossNPC.Pool, { ebs.GetTimer( 10000, difficulty ), 12000}, 0 )
+end
+
+function addNPC.CustomReset( add, boss, difficulty, slotId )
+    -------------------------------------------------------------------------------
+    -- This function runs for every add that resets. This includes everything which ends their combat.
+    -- You can add custom scripting here, e.g. checking:
+    -- if add:IsDead() then
+    -------------------------------------------------------------------------------
+end
+
+-------------------------------------------------------------------------------
+-- End of pre-defined hooks
+-------------------------------------------------------------------------------
+local RAIN_OF_FIRE = 31340
+local ABOMINATION_HOOK = 59395
+local AIR_BURST = 32014
+local DEATH_AND_DECAY = 53721
+local HEAL = 30878
+
+function bossNPC.Fire( _, _, _, creature )
+    local target = creature:GetAITarget( SELECT_TARGET_RANDOM, true, nil, -10 )
+    if target then
+        creature:CastSpell( target, RAIN_OF_FIRE, false )
+    end
+end
+
+function bossNPC.PullIn( _, _, _, creature )
+    local target = creature:GetAITarget( SELECT_TARGET_FARTHEST, true, nil, -10 )
+    creature:CastSpell( target, ABOMINATION_HOOK, true )
+end
+
+function bossNPC.Pool( _, _, _, creature )
+    if math.random(1,2) == 1 then
+        creature:CastSpell( creature, AIR_BURST, false )
+    else
+        creature:CastSpell( creature:GetVictim(), DEATH_AND_DECAY, false )
+    end
+end
+
+function addNPC.RemoveInterrupt( _, _, _, add )
+    add:SetImmuneTo( MECHANIC_INTERRUPT, false )
+end
+
+function addNPC.HealBoss( _, _, _, add )
+    local bossLowGUID = add:GetData('ebs_boss_lowguid')
+    local guid = GetUnitGUID( bossLowGUID, ebs.encounter[ encounterId ].bossEntry )
+    local boss = add:GetMap():GetWorldObject( guid )
+    if boss then
+        if boss:GetHealthPct() < 90 then
+            if math.random(1,2) == 1 then
+                boss:SendUnitYell( "HAHAHA! You can't hurt me!", 0 )
+            else
+                add:SendUnitYell( "Don't you dare harm the master!", 0 )
+            end
+            --add:SetImmuneTo( MECHANIC_INTERRUPT, true )
+            add:UnitMoveStop()
+            add:CastCustomSpell( boss, HEAL, false, 1000000 )
+            add:RegisterEvent( addNPC.ResumeChase, 2600, 1)
+            --add:RegisterEvent( addNPC.RemoveInterrupt, 3000, 1 )
+        end
+    end
+end
+
+function addNPC.Splash( _, _, _, add )
+    add:CastCustomSpell( add:GetVictim(), AIR_BURST, false, nil, 150 )
+end
+
+function addNPC.ResumeChase( _, _, _, add )
+    add:UnitMoveChase()
+end
+
+-------------------------------------------------------------------------------
+-- END OF CUSTOM SCRIPTING
+-------------------------------------------------------------------------------
 
 RegisterCreatureEvent( ebs.encounter[ encounterId ].bossEntry, 1, bossNPC.onEnterCombat )
 RegisterCreatureEvent( ebs.encounter[ encounterId ].bossEntry, 2, bossNPC.reset ) -- OnLeaveCombat
