@@ -115,6 +115,9 @@ end
 -------------------------------------------------------------------------------
 
 function bossNPC.CustomEnterCombat( creature, target, difficulty )
+    -------------------------------------------------------------------------------
+    -- This function runs when the raid boss enters combat. It's main use is to register events.
+    -------------------------------------------------------------------------------
     creature:RegisterEvent( bossNPC.Fire, ebs.GetTimer( 10000, difficulty ), 0 )
 end
 
@@ -127,6 +130,9 @@ function bossNPC.CustomReset( creature )
 end
 
 function addNPC.CustomEnterCombat( add, target, difficulty )
+    -------------------------------------------------------------------------------
+    -- This function runs when an add enters combat. It's main use is to register events.
+    -------------------------------------------------------------------------------
     add:RegisterEvent( addNPC.HealBoss, { 10000, 15000 }, 0 )
     add:RegisterEvent( addNPC.Splash, { ebs.GetTimer( 10000, difficulty ), 15000 }, 0 )
     if difficulty >= 3 or add:GetData('ebs_mode') == PARTY_IN_PROGRESS then
@@ -135,6 +141,9 @@ function addNPC.CustomEnterCombat( add, target, difficulty )
 end
 
 function addNPC.CustomLastAddDead( add, boss, difficulty, slotId )
+    -------------------------------------------------------------------------------
+    -- This function runs when the last add has died but the boss is still alive.
+    -------------------------------------------------------------------------------
     boss:SendUnitYell( "You will pay for your actions!", 0 )
     boss:RegisterEvent( bossNPC.PullIn, { ebs.GetTimer( 4000, difficulty ), 6000 }, 0 )
     boss:RegisterEvent( bossNPC.Pool, { ebs.GetTimer( 10000, difficulty ), 12000}, 0 )
