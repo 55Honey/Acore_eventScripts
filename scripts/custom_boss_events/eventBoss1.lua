@@ -30,10 +30,10 @@ end
 local bossNPC = {}
 local addNPC = {}
 
---------------------------------------------------------------------------------------
--- The data below is mandatory for the main script to work with the encounter.      --
--- Adjust as needed. The encounterId must be unique for each encounter.             --
---------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+-- The data below is mandatory for the main script to work with the encounter.          --
+-- Adjust as needed. The encounterId must be unique for each encounter.                 --
+------------------------------------------------------------------------------------------
 
 local encounterId = 1
 
@@ -47,11 +47,11 @@ ebs.encounter[encounterId] = {
     ["addAmount"] = 3                                                                   -- amount of adds to spawn right at the start of the encounter
 }
 
---------------------------------------------------------------------------------------
--- There are no changes required to this part. It is mandatory for the script to work.
--- Custom scripting goes to the designated section at the bottom.
---------------------------------------------------------------------------------------
----
+------------------------------------------------------------------------------------------
+-- There are no changes required to this part. It is mandatory for the script to work.  --
+-- Custom scripting goes to the designated section at the bottom.                       --
+------------------------------------------------------------------------------------------
+
 local addDownCounter = {}
 
 function bossNPC.onEnterCombat( event, creature, target )
@@ -63,7 +63,8 @@ end
 
 function bossNPC.reset( event, creature )
     creature:RemoveEvents()
-    bossNPC.CustomReset( creature )
+    local difficulty = creature:GetData('ebs_difficulty')
+    bossNPC.CustomReset( creature, difficulty )
     ebs.bossReset( event, creature )
 end
 
@@ -110,9 +111,9 @@ function addNPC.reset( event, add )
     ebs.addReset( event, add )
 end
 
--------------------------------------------------------------------------------
--- CUSTOM SCRIPTING BELOW
--------------------------------------------------------------------------------
+--**********************************************************************************
+--****                          CUSTOM SCRIPTING BELOW                          ****
+--**********************************************************************************
 
 function bossNPC.CustomEnterCombat( creature, target, difficulty )
     -------------------------------------------------------------------------------
@@ -121,7 +122,7 @@ function bossNPC.CustomEnterCombat( creature, target, difficulty )
     creature:RegisterEvent( bossNPC.Fire, ebs.GetTimer( 10000, difficulty ), 0 )
 end
 
-function bossNPC.CustomReset( creature )
+function bossNPC.CustomReset( creature, difficulty )
     -------------------------------------------------------------------------------
     -- This function runs for the boss when it resets. This includes everything which ends their combat.
     -- You can add custom scripting here, e.g. checking:
@@ -218,9 +219,9 @@ function addNPC.ResumeChase( _, _, _, add )
     add:UnitMoveChase()
 end
 
--------------------------------------------------------------------------------
--- END OF CUSTOM SCRIPTING
--------------------------------------------------------------------------------
+--**********************************************************************************
+--****                         END OF CUSTOM SCRIPTING                          ****
+--**********************************************************************************
 
 RegisterCreatureEvent( ebs.encounter[ encounterId ].bossEntry, 1, bossNPC.onEnterCombat )
 RegisterCreatureEvent( ebs.encounter[ encounterId ].bossEntry, 2, bossNPC.reset ) -- OnLeaveCombat
