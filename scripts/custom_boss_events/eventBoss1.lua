@@ -33,6 +33,10 @@ local addNPC = {}
 ------------------------------------------------------------------------------------------
 -- The data below is mandatory for the main script to work with the encounter.          --
 -- Adjust as needed. The encounterId must be unique for each encounter.                 --
+-- entry ..XX1 is the boss.                                                             --
+-- entry ..XX2 is the gossip NPC.                                                       --
+-- entry ..XX3 is the add.                                                              --
+-- For encounterId 2, the entries are 1112011, 1112012, 1112013. Add +10 per Id.        --
 ------------------------------------------------------------------------------------------
 
 local encounterId = 1
@@ -98,11 +102,7 @@ function addNPC.reset( event, add )
         if addDownCounter[ slotId ] == ebs.encounter[ encounterId ].addAmount then
 
             if boss then
-                -------------------------------------------------------------------------------
-                -- last add died, boss is still alive
-                -------------------------------------------------------------------------------
                 addNPC.CustomLastAddDead( add, boss, difficulty, slotId )
-
             end
         end
     end
